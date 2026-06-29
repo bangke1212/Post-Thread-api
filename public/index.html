@@ -350,7 +350,7 @@ function buildPromptContent(tonePrompt, langPrompt, formatInstruction) {
   let imgInfo = '';
   if (tweetImages.length > 0) {
     imgInfo = '\n\nGAMBAR DALAM TWEET:\n' + tweetImages.map((url, i) => `Gambar ${i+1}: ${url}`).join('\n');
-    imgInfo += '\n(Lihat dan pahami isi gambar di atas, reply berdasarkan ISI GAMBAR juga, bukan cuma teks caption)';
+    imgInfo += '\n\nTUGAS: Lihat gambar di atas. Reply WAJIB berdasarkan ISI GAMBAR (detail visual, teks, objek dalam gambar). Jangan cuma reply caption teks.';
   }
 
   return `Ini tweet yang perlu direply:
