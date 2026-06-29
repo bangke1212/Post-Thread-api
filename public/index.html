@@ -173,7 +173,7 @@
     <div class="card-title">🔗 Paste Link Tweet</div>
     <div class="input-wrap">
       <input class="input-main" id="urlInput" placeholder="https://x.com/user/status/123..." oninput="onUrlInput()">
-      <button class="btn btn-primary btn-sm" id="btnRead" onclick="readTweet()" style="display:none">📖 Baca</button>
+      <!-- Auto-read: no button needed -->
     </div>
     <div class="link-bar" id="linkBar">
       <span class="link-icon">🔗</span>
@@ -257,13 +257,15 @@ function getApiKey() {
 }
 
 // ===== URL INPUT =====
+let autoReadTimer = null;
 function onUrlInput() {
   const url = document.getElementById('urlInput').value.trim();
-  const btn = document.getElementById('btnRead');
+  clearTimeout(autoReadTimer);
   if (url && (url.includes('x.com') || url.includes('twitter.com'))) {
-    btn.style.display = 'inline-flex';
+    // Auto-read after 600ms pause (debounce)
+    autoReadTimer = setTimeout(() => readTweet(), 600);
   } else {
-    btn.style.display = 'none';
+    clearUrl();
   }
 }
 
@@ -285,10 +287,7 @@ async function readTweet() {
   if (!url) return;
   
   tweetUrl = url;
-  const btn = document.getElementById('btnRead');
   const status = document.getElementById('readStatus');
-  btn.textContent = '⏳...';
-  btn.disabled = true;
   status.textContent = '📖 Membaca tweet...';
   status.style.color = 'var(--warning)';
   
@@ -326,8 +325,7 @@ async function readTweet() {
     status.style.color = 'var(--red)';
   }
   
-  btn.textContent = '📖 Baca';
-  btn.disabled = false;
+  // auto-read — no button
 }
 
 // ===== TONE =====
@@ -460,7 +458,7 @@ function toast(msg) {
 document.getElementById('urlInput').addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
-    if (tweetContent) generateReply(); else readTweet();
+    generateReply();
   }
 });
 
