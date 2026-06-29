@@ -3,294 +3,445 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Threads Generator</title>
+  <title>Post Generator — X</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <style>
     :root {
-      --bg: #0a0a0a; --card: #141416; --border: #252529; --text: #e4e4e7;
-      --muted: #71717a; --accent: #6366f1; --accent-glow: #818cf8;
-      --success: #22c55e; --warning: #f59e0b; --error: #ef4444; --radius: 12px;
+      --bg: #060606;
+      --card: #0f0f11;
+      --card2: #111114;
+      --border: #1e1e24;
+      --text: #e4e4e7;
+      --muted: #71717a;
+      --accent: #6366f1;
+      --accent-glow: #818cf8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --radius: 14px;
+      --radius-sm: 10px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg); color: var(--text); min-height: 100vh;
-      background-image: radial-gradient(ellipse at top, rgba(99,102,241,0.08) 0%, transparent 70%),
-                        radial-gradient(ellipse at bottom right, rgba(129,140,248,0.04) 0%, transparent 60%); }
-    .container { max-width: 720px; margin: 0 auto; padding: 24px 20px; }
-    .header { text-align: center; padding: 48px 0 32px; }
-    .header .icon { font-size: 56px; margin-bottom: 16px; }
-    .header h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.5px;
-      background: linear-gradient(135deg, var(--accent-glow), #c084fc, var(--accent-glow));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .header p { color: var(--muted); font-size: 16px; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; margin-bottom: 24px; }
-    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; text-align: center; }
-    .stat-card .num { font-size: 28px; font-weight: 700; color: var(--accent-glow); }
-    .stat-card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
-    .card h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-    .card h2 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
-    .card h2 .dot.off { background: var(--error); }
-    .card h2 .dot.idle { background: var(--warning); }
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(ellipse at top, rgba(99,102,241,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse at bottom right, rgba(129,140,248,0.03) 0%, transparent 60%);
+    }
+    .container { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+    
+    /* Header */
+    .header { text-align: center; padding: 40px 0 28px; }
+    .header .icon { font-size: 48px; margin-bottom: 12px; }
+    .header h1 { 
+      font-size: 30px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; 
+      background: linear-gradient(135deg, var(--accent-glow), #c084fc);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header p { color: var(--muted); font-size: 14px; }
+
+    /* Cards */
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 22px; margin-bottom: 14px;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+    }
+    .card-header h2 { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .card-header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+    .card-header .dot.idle { background: var(--warning); }
+
+    /* API Key card */
+    .key-setup { display: flex; gap: 8px; }
+    .key-setup input {
+      flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 10px 14px; color: var(--text); font-size: 14px; font-family: 'SF Mono', monospace;
+    }
+    .key-setup input:focus { outline: none; border-color: var(--accent); }
+    .key-hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+    /* Topic input */
+    .topic-input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 12px 14px; color: var(--text); font-size: 15px; margin-bottom: 14px;
+    }
+    .topic-input:focus { outline: none; border-color: var(--accent); }
+    .topic-input::placeholder { color: #3f3f46; }
+
+    /* Generated text preview box */
+    .preview-box {
+      background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 18px; margin-bottom: 14px; position: relative; min-height: 60px;
+    }
+    .preview-box.empty { display: flex; align-items: center; justify-content: center; }
+    .preview-box .placeholder {
+      color: #3f3f46; font-size: 14px; text-align: center;
+    }
+    .preview-box .post-text {
+      font-size: 16px; line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+    }
+    .preview-box .char-count {
+      position: absolute; top: 10px; right: 14px; font-size: 11px; 
+      font-family: 'SF Mono', monospace; padding: 2px 8px; border-radius: 10px;
+      background: var(--bg);
+    }
+    .char-count.ok { color: var(--success); }
+    .char-count.warn { color: var(--warning); }
+    .char-count.over { color: var(--error); }
+    .preview-meta {
+      display: flex; align-items: center; gap: 12px; margin-top: 12px; 
+      font-size: 12px; color: var(--muted);
+    }
+    .preview-meta .time { display: flex; align-items: center; gap: 4px; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px; padding: 10px 18px;
       border-radius: 8px; font-size: 14px; font-weight: 600; border: none; cursor: pointer;
-      transition: all 0.2s; text-decoration: none; color: white; }
+      transition: all 0.2s; color: white;
+    }
     .btn-primary { background: var(--accent); }
     .btn-primary:hover { background: var(--accent-glow); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,0.3); }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-outline:hover { border-color: var(--accent); color: var(--accent-glow); }
-    .btn-success { background: var(--success); color: white; }
-    .btn-sm { padding: 6px 14px; font-size: 13px; }
-    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost { background: transparent; color: var(--muted); padding: 8px 12px; font-size: 13px; }
+    .btn-ghost:hover { color: var(--text); }
+    .btn-success { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.2); }
+    .btn-success:hover { background: rgba(34,197,94,0.25); }
     
-    /* Input */
-    .input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
-    .input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border);
-      background: var(--bg); color: var(--text); font-size: 14px; font-family: 'SF Mono', monospace;
-      outline: none; transition: border-color 0.2s; }
-    .input:focus { border-color: var(--accent); }
-    .input::placeholder { color: var(--muted); }
-    
-    /* Status messages */
-    .status-msg { padding: 8px 12px; border-radius: 8px; margin-top: 8px; font-size: 14px; }
-    .status-msg.success { background: rgba(34,197,94,0.1); color: var(--success); }
-    .status-msg.error { background: rgba(239,68,68,0.1); color: var(--error); }
-    .status-msg.info { background: rgba(99,102,241,0.1); color: var(--accent-glow); }
-    .post-preview { background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
-      padding: 16px; margin-top: 12px; white-space: pre-wrap; font-size: 15px; line-height: 1.6; }
-    .log-area { background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
-      padding: 12px 16px; max-height: 220px; overflow-y: auto; font-family: 'SF Mono', monospace;
-      font-size: 13px; line-height: 1.7; }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+    .btn:disabled { opacity: 0.5; pointer-events: none; }
+    .loading { opacity: 0.6; pointer-events: none; position: relative; }
+    .loading::after { content: ''; position: absolute; inset: 0; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 20px; font-size: 13px; z-index: 100; opacity: 0; transition: opacity 0.3s;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5); pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+    .toast.success { border-color: rgba(34,197,94,0.3); color: var(--success); }
+    .toast.error { border-color: rgba(239,68,68,0.3); color: var(--error); }
+    .toast.info { border-color: rgba(99,102,241,0.3); color: var(--accent-glow); }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin-bottom: 6px;
+      align-items: center;
+    }
+    .stats-bar .badge {
+      padding: 3px 10px; border-radius: 20px; font-weight: 600; font-size: 11px;
+    }
+    .badge-ready { background: rgba(34,197,94,0.1); color: var(--success); }
+    .badge-missing { background: rgba(239,68,68,0.1); color: var(--error); }
+    .badge-warn { background: rgba(245,158,11,0.1); color: var(--warning); }
+
+    /* Activity */
+    .activity-log {
+      background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 10px 14px; max-height: 180px; overflow-y: auto;
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; line-height: 1.8;
+    }
     .log-line { color: var(--muted); }
-    .log-line.success { color: var(--success); }
-    .log-line.error { color: var(--error); }
-    .log-line.info { color: var(--accent-glow); }
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .badge-online { background: rgba(34,197,94,0.15); color: var(--success); }
-    .badge-offline { background: rgba(239,68,68,0.15); color: var(--error); }
-    .badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); }
-    .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .provider-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(99,102,241,0.1); border-radius: 6px; font-size: 12px; color: var(--accent-glow); }
-    @media (max-width: 500px) { .header { padding: 32px 0 24px; } .header h1 { font-size: 28px; } .btn-group { flex-direction: column; } }
+    .log-line.ok { color: var(--success); }
+    .log-line.err { color: var(--error); }
+    .log-line.hl { color: var(--accent-glow); }
+
+    /* Footer */
+    .footer { text-align: center; padding: 32px 0; color: var(--muted); font-size: 12px; }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { 
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.2); 
+      border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite;
+      display: inline-block; vertical-align: middle; margin-right: 4px;
+    }
+
+    @media (max-width: 500px) {
+      .header h1 { font-size: 26px; }
+      .btn { padding: 10px 14px; font-size: 13px; }
+      .btn-group { gap: 6px; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Header -->
     <div class="header">
-      <div class="icon">🧵</div>
-      <h1>Threads Generator</h1>
-      <p>AI-powered content engine — <span class="provider-badge">⚡ Agnes AI</span></p>
+      <div class="icon">✍️</div>
+      <h1>Post Generator</h1>
+      <p>AI-powered content, post ke mana aja</p>
     </div>
 
-    <div class="stats" id="stats">
-      <div class="stat-card"><div class="num" id="totalPosts">—</div><div class="label">Total Posts</div></div>
-      <div class="stat-card"><div class="num" id="lastPost">—</div><div class="label">Last Post</div></div>
-      <div class="stat-card"><div class="num" id="botStatus"><span class="badge badge-offline">offline</span></div><div class="label">Bot Status</div></div>
-    </div>
-
-    <!-- API Key Section -->
-    <div class="card" id="apiKeyCard">
-      <h2>🔑 API Key Setup</h2>
-      <p style="color: var(--muted); font-size: 14px; margin-bottom: 12px;">
-        Dapetin free API key dari <a href="https://agnes-ai.com" target="_blank" style="color: var(--accent-glow);">agnes-ai.com</a>, tempel di sini.
-      </p>
-      <div class="input-row">
-        <input type="password" class="input" id="apiKeyInput" placeholder="sk-... (Agnes AI API Key)" autocomplete="off">
-        <button class="btn btn-primary btn-sm" onclick="saveApiKey()" id="btnSaveKey">💾 Save Key</button>
+    <!-- API Key Setup -->
+    <div class="card" id="apiCard">
+      <div class="card-header">
+        <h2>🔑 API Key</h2>
+        <span class="badge badge-missing" id="keyBadge">belum</span>
       </div>
-      <div id="apiKeyStatus"></div>
-      <div class="hint">Key disimpan di localStorage browser kamu (aman, cuma dipakai buat API call dari dashboard).</div>
+      <div class="key-setup">
+        <input type="password" id="apiKeyInput" placeholder="sk-... dari agnes-ai.com" autocomplete="off">
+        <button class="btn btn-primary" onclick="saveKey()">💾 Save</button>
+      </div>
+      <div class="key-hint">Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent-glow)">agnes-ai.com</a>. Disimpan aman di localStorage.</div>
     </div>
 
-    <!-- Post Generator -->
+    <!-- Post Generator — MAIN CARD -->
     <div class="card">
-      <h2><span class="dot" id="statusDot"></span> Post Generator</h2>
-      <p style="color: var(--muted); margin-bottom: 16px; font-size: 14px;">Generate & post ke Threads langsung dari dashboard.</p>
-      <div class="flex-between" style="margin-bottom: 12px;">
-        <div class="input-row" style="flex:1; margin-bottom:0;">
-          <input class="input" id="topicInput" placeholder="Topic (optional, e.g. AI, bisnis, motivasi)" style="font-family:sans-serif;">
+      <div class="card-header">
+        <h2><span class="dot" id="statusDot"></span> Post Generator</h2>
+        <span style="font-size:12px;color:var(--muted)" id="genStatus"></span>
+      </div>
+
+      <!-- Topic -->
+      <input type="text" class="topic-input" id="topicInput" 
+             placeholder="Topik... contoh: Bisnis mobil, Teknologi AI, Motivasi pagi"
+             onkeydown="if(event.key==='Enter')generatePost(false)">
+
+      <!-- Result preview -->
+      <div class="preview-box empty" id="previewBox">
+        <div class="placeholder" id="previewPlaceholder">
+          💡 Masukin topik, klik Generate
+        </div>
+        <div class="post-text" id="previewText" style="display:none"></div>
+        <span class="char-count" id="charCount" style="display:none"></span>
+        <div class="preview-meta" id="previewMeta" style="display:none">
+          <span class="time">🕐 <span id="previewTime"></span></span>
+          <span id="previewStatus"></span>
         </div>
       </div>
+
+      <!-- Buttons -->
       <div class="btn-group">
-        <button class="btn btn-primary" onclick="generatePost(false)" id="btnGenerate">✨ Generate & Post</button>
-        <button class="btn btn-outline" onclick="generatePost(true)">🔍 Dry Run</button>
+        <button class="btn btn-outline" onclick="generatePost(true)" id="btnDry">🔍 Dry Run</button>
+        <button class="btn" style="background:#1d9bf0" onclick="generatePost(false)" id="btnGen">✨ Generate</button>
+        <button class="btn btn-ghost" id="btnCopy" onclick="copyText()" style="display:none">📋 Copy</button>
       </div>
-      <div id="resultArea"></div>
     </div>
 
-    <!-- Schedule -->
+    <!-- Schedule info -->
     <div class="card">
-      <h2>⏰ Schedule</h2>
-      <p style="color: var(--muted); margin-bottom: 16px; font-size: 14px;">Cron runs at <strong>12:15</strong> and <strong>19:30 WIB</strong> daily.</p>
+      <div class="card-header">
+        <h2>⏰ Schedule</h2>
+        <span style="font-size:12px;color:var(--muted)">beta</span>
+      </div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Cron tiap <strong>12:15</strong> & <strong>19:30 WIB</strong>.</p>
       <div class="btn-group">
-        <button class="btn btn-outline" onclick="triggerCron()">🔄 Run Cron Now</button>
-        <button class="btn btn-outline" onclick="checkDebug()">🩺 Check Status</button>
+        <button class="btn btn-outline" onclick="triggerCron()">🔄 Run Cron</button>
+        <button class="btn btn-outline" onclick="checkStatus()">📊 Status</button>
       </div>
-      <div id="scheduleResult"></div>
     </div>
 
-    <!-- Activity Log -->
+    <!-- Activity log -->
     <div class="card">
-      <h2>📋 Activity</h2>
-      <div class="log-area" id="logs">
-        <div class="log-line">Waiting for activity...</div>
+      <div class="card-header"><h2>📋 Log</h2></div>
+      <div class="activity-log" id="logs">
+        <div class="log-line" id="logEmpty">Menunggu aktivitas...</div>
       </div>
     </div>
 
-    <div style="text-align: center; padding: 40px 0; color: var(--muted); font-size: 13px;">
-      Built with <span style="color: var(--accent-glow);">Netlify Functions</span> + <span style="color: #c084fc;">Agnes AI</span>
-    </div>
+    <div class="footer">Built with AI — generate dulu, posting nyusul 🚀</div>
   </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
 
   <script>
     const API = '/.netlify/functions';
+    let lastGeneratedText = '';
+    let lastGeneratedTime = '';
 
-    function addLog(msg, type = '') {
-      const logs = document.getElementById('logs');
-      const time = new Date().toLocaleTimeString();
-      const cls = type ? 'log-line ' + type : 'log-line';
-      logs.innerHTML += '<div class="' + cls + '">[' + time + '] ' + msg + '</div>';
-      const first = logs.children[0];
-      if (first && first.textContent === 'Waiting for activity...') logs.innerHTML = '';
-      logs.scrollTop = logs.scrollHeight;
-    }
-
-    function setResult(id, msg, type) {
-      document.getElementById(id).innerHTML = '<div class="status-msg ' + type + '">' + msg + '</div>';
-    }
-
-    // === API Key Management ===
+    // ========== API KEY ==========
     function getApiKey() {
       return localStorage.getItem('agnes_api_key') || '';
     }
-
-    function saveApiKey() {
+    function saveKey() {
       const key = document.getElementById('apiKeyInput').value.trim();
-      if (!key) {
-        setResult('apiKeyStatus', '⚠️ Masukkan API key dulu', 'error');
-        return;
-      }
+      if (!key) return toast('Masukin API key dulu', 'error');
       localStorage.setItem('agnes_api_key', key);
-      document.getElementById('apiKeyInput').value = '';
-      setResult('apiKeyStatus', '✅ API Key saved! Siap generate.', 'success');
-      updateBotStatus(true);
-      addLog('🔑 API Key saved', 'success');
-    }
-
-    function clearApiKey() {
-      localStorage.removeItem('agnes_api_key');
-      setResult('apiKeyStatus', '🗑️ API Key dihapus', 'info');
-      updateBotStatus(false);
-      addLog('🗑️ API Key dihapus', '');
-    }
-
-    function updateBotStatus(online) {
-      const badge = document.getElementById('botStatus');
-      const dot = document.getElementById('statusDot');
-      if (online) {
-        badge.innerHTML = '<span class="badge badge-online">ready</span>';
-        dot.className = 'dot';
-      } else {
-        badge.innerHTML = '<span class="badge badge-offline">no key</span>';
-        dot.className = 'dot off';
-      }
-    }
-
-    async function checkDebug() {
-      addLog('🔍 Checking status...', 'info');
-      try {
-        const r = await fetch(API + '/debug');
-        const data = await r.json();
-        const hasEnvKey = data.hasApiKey || data.hasOpenRouterKey;
-        const hasLocalKey = !!getApiKey();
-        const hasKey = hasEnvKey || hasLocalKey;
-        updateBotStatus(hasKey);
-        addLog('Env: ' + JSON.stringify(data.env || data), hasEnvKey ? 'success' : 'warn');
-        addLog('Local key: ' + (hasLocalKey ? '✅ saved' : '❌ not set'), hasLocalKey ? 'success' : 'warn');
-      } catch(e) {
-        addLog('Check failed: ' + e.message, 'error');
-      }
-    }
-
-    // === Generate Post ===
-    async function generatePost(dryRun) {
-      const apiKey = getApiKey();
-      if (!apiKey) {
-        setResult('resultArea', '⚠️ Set API Key dulu di atas! Dapetin gratis dari agnes-ai.com', 'error');
-        return;
-      }
-
-      const btn = document.getElementById('btnGenerate');
-      btn.classList.add('loading-disabled');
-      btn.disabled = true;
-      addLog(dryRun ? '🏃 Dry run...' : '🚀 Generating...', 'info');
-
-      try {
-        const topic = document.getElementById('topicInput').value.trim() || 'trending topic';
-        const url = dryRun ? API + '/manual?dry=true' : API + '/manual';
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Api-Key': apiKey,
-            'X-Topic': topic
-          }
-        });
-        const data = await res.json();
-
-        if (res.ok && data.status === 'success') {
-          const html = '<div class="post-preview">' + escapeHtml(data.generatedText || data.text || '') + '</div>' +
-            (data.postId ? '<p style="margin-top:8px;color:var(--muted)">Post ID: ' + data.postId + '</p>' : '');
-          document.getElementById('resultArea').innerHTML += html;
-          setResult('resultArea', dryRun ? '✅ Preview!' : '✅ Posted!', 'success');
-          addLog(dryRun ? '✅ Dry run OK' : '✅ Posted: ' + data.postId, 'success');
-          document.getElementById('lastPost').textContent = new Date().toLocaleTimeString();
-        } else if (data.status === 'no_action') {
-          setResult('resultArea', '⏭️ ' + (data.message || 'No action'), 'info');
-        } else {
-          throw new Error(data.error || 'Unknown');
-        }
-      } catch(err) {
-        setResult('resultArea', '❌ ' + err.message, 'error');
-        addLog('❌ ' + err.message, 'error');
-      } finally {
-        btn.disabled = false;
-      }
-    }
-
-    async function triggerCron() {
-      addLog('🔄 Running cron...', 'info');
-      try {
-        const res = await fetch(API + '/cron');
-        const data = await res.json();
-        if (res.ok) {
-          setResult('scheduleResult', '✅ Cron done: ' + (data.status || 'ok'), 'success');
-        } else {
-          throw new Error(data.error || 'failed');
-        }
-      } catch(err) {
-        setResult('scheduleResult', '❌ ' + err.message, 'error');
-      }
-    }
-
-    function escapeHtml(t) {
-      const d = document.createElement('div');
-      d.textContent = t;
-      return d.innerHTML;
+      document.getElementById('keyBadge').className = 'badge badge-ready';
+      document.getElementById('keyBadge').textContent = 'ready';
+      toast('API key disimpan!', 'success');
     }
 
     // Init
     (function init() {
-      const key = getApiKey();
-      if (key) {
-        document.getElementById('apiKeyInput').placeholder = '✅ Key saved (' + key.slice(0,8) + '...)';
-        updateBotStatus(true);
-        addLog('🔑 API Key loaded from storage', 'info');
+      const saved = getApiKey();
+      if (saved) {
+        document.getElementById('apiKeyInput').value = saved;
+        document.getElementById('keyBadge').className = 'badge badge-ready';
+        document.getElementById('keyBadge').textContent = 'ready';
       }
-      checkDebug();
+      addLog('📡 Dashboard ready', 'hl');
     })();
+
+    // ========== GENERATE ==========
+    async function generatePost(dryRun) {
+      const topic = document.getElementById('topicInput').value.trim();
+      const apiKey = getApiKey();
+
+      if (!apiKey) {
+        document.getElementById('apiKeyInput').focus();
+        return toast('API key belum di-set! Isi di atas ☝️', 'error');
+      }
+
+      const btnGen = document.getElementById('btnGen');
+      const btnDry = document.getElementById('btnDry');
+      btnGen.disabled = true;
+      btnDry.disabled = true;
+      if (!dryRun) btnGen.innerHTML = '<span class="spinner"></span> Generating...';
+      else btnDry.innerHTML = '<span class="spinner"></span> Dry run...';
+
+      addLog(dryRun ? '🔍 Dry run: ' + (topic || 'random') : '✨ Generate: ' + (topic || 'random'), 'hl');
+
+      try {
+        const url = dryRun ? `${API}/manual?dry=true` : `${API}/manual`;
+        const headers = {
+          'Content-Type': 'application/json',
+          'X-Api-Key': apiKey
+        };
+        const body = topic ? JSON.stringify({ topic }) : '{}';
+        
+        const res = await fetch(url, { 
+          method: 'POST', 
+          headers,
+          body: res.ok ? body : undefined 
+        });
+        
+        // Try again without body if first attempt fails
+        let data;
+        try {
+          data = await res.json();
+        } catch {
+          // Maybe endpoint doesn't support body, try without
+          const res2 = await fetch(url, { method: 'POST', headers });
+          data = await res2.json();
+        }
+
+        if (data.generatedText || data.text || data.message) {
+          const text = data.generatedText || data.text || data.message;
+          showPreview(text);
+          addLog(dryRun ? '✅ Dry run OK (' + text.length + ' chars)' : '✅ Generated (' + text.length + ' chars)', 'ok');
+          toast(dryRun ? 'Teks siap!' : 'Teks berhasil dibuat!', 'success');
+        } else if (data.error) {
+          throw new Error(data.error);
+        } else {
+          throw new Error('Response kosong dari server');
+        }
+      } catch (err) {
+        toast('Gagal: ' + err.message, 'error');
+        addLog('❌ ' + err.message, 'err');
+      } finally {
+        btnGen.disabled = false;
+        btnDry.disabled = false;
+        btnGen.innerHTML = '✨ Generate';
+        btnDry.innerHTML = '🔍 Dry Run';
+      }
+    }
+
+    function showPreview(text) {
+      lastGeneratedText = text;
+      lastGeneratedTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      
+      const box = document.getElementById('previewBox');
+      const placeholder = document.getElementById('previewPlaceholder');
+      const textEl = document.getElementById('previewText');
+      const charCount = document.getElementById('charCount');
+      const meta = document.getElementById('previewMeta');
+      const timeEl = document.getElementById('previewTime');
+      const statusEl = document.getElementById('previewStatus');
+      const btnCopy = document.getElementById('btnCopy');
+      const genStatus = document.getElementById('genStatus');
+
+      box.classList.remove('empty');
+      placeholder.style.display = 'none';
+      textEl.style.display = 'block';
+      textEl.textContent = text;
+      charCount.style.display = 'block';
+      charCount.textContent = text.length;
+      charCount.className = 'char-count ' + (text.length <= 280 ? 'ok' : text.length <= 350 ? 'warn' : 'over');
+      meta.style.display = 'flex';
+      timeEl.textContent = lastGeneratedTime + ' WIB';
+      statusEl.innerHTML = text.length <= 280 ? '✅ Pas buat X' : '⚠️ >280 char';
+      statusEl.style.color = text.length <= 280 ? 'var(--success)' : 'var(--warning)';
+      btnCopy.style.display = 'inline-flex';
+      genStatus.textContent = '✅ Teks siap';
+      genStatus.style.color = 'var(--success)';
+    }
+
+    function copyText() {
+      if (!lastGeneratedText) return;
+      navigator.clipboard.writeText(lastGeneratedText).then(() => {
+        toast('📋 Teks dicopy!', 'success');
+      }).catch(() => {
+        toast('Gagal copy :(', 'error');
+      });
+    }
+
+    // ========== CRON / STATUS ==========
+    async function triggerCron() {
+      addLog('🔄 Run cron...', 'hl');
+      try {
+        const res = await fetch(`${API}/cron`, { method: 'POST', headers: { 'X-Api-Key': getApiKey() } });
+        const data = await res.json();
+        if (res.ok) {
+          if (data.generatedText) showPreview(data.generatedText);
+          addLog('✅ Cron OK', 'ok');
+          toast('Cron jalan!', 'success');
+        } else {
+          throw new Error(data.error || 'Cron gagal');
+        }
+      } catch (err) {
+        addLog('❌ ' + err.message, 'err');
+        toast(err.message, 'error');
+      }
+    }
+
+    async function checkStatus() {
+      addLog('📊 Cek status...', 'hl');
+      try {
+        const res = await fetch(`${API}/debug`);
+        const data = await res.json();
+        const msg = [];
+        if (data.hasOpenRouterKey) msg.push('✅ AI key OK');
+        else msg.push('❌ AI key missing');
+        msg.push(data.model || '');
+        toast(msg.join(' | '), data.hasOpenRouterKey ? 'success' : 'error');
+        addLog('📊 ' + msg.join(' '), data.hasOpenRouterKey ? 'ok' : 'err');
+      } catch (err) {
+        addLog('❌ ' + err.message, 'err');
+      }
+    }
+
+    // ========== HELPERS ==========
+    function addLog(msg, cls) {
+      const logs = document.getElementById('logs');
+      const empty = document.getElementById('logEmpty');
+      if (empty) empty.remove();
+      const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const div = document.createElement('div');
+      div.className = 'log-line' + (cls ? ' ' + cls : '');
+      div.textContent = '[' + time + '] ' + msg;
+      logs.appendChild(div);
+      if (logs.children.length > 50) logs.firstChild.remove();
+      logs.scrollTop = logs.scrollHeight;
+    }
+
+    function toast(msg, type) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast ' + (type || '') + ' show';
+      clearTimeout(el._timeout);
+      el._timeout = setTimeout(() => el.classList.remove('show'), 2500);
+    }
   </script>
 </body>
 </html>
