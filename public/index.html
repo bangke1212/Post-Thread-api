@@ -251,19 +251,16 @@
         <span style="font-size:12px;color:var(--muted)" id="genStatus"></span>
       </div>
 
-      <!-- Topic -->
+      <!-- Unified input: Topik ATAU link -->
       <input type="text" class="topic-input" id="topicInput" 
-             placeholder="Topik... contoh: Bisnis kopi, Teknologi AI, Motivasi pagi"
+             placeholder="Topik... atau paste link (X, artikel, blog)"
+             oninput="onTopicInput()"
              onkeydown="if(event.key==='Enter')generatePost(false)">
-
-      <!-- Link input -->
-      <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
-        <input type="url" class="topic-input" id="linkInput" 
-               placeholder="🔗 Atau paste link artikel/video... (AI baca isinya)"
-               style="margin-bottom:0;flex:1;font-size:13px"
-               oninput="onLinkInput()"
-               onkeydown="if(event.key==='Enter')generatePost(false)">
-        <button class="btn btn-ghost" id="btnClearLink" onclick="clearLink()" style="display:none;padding:10px 12px;color:var(--muted)">✕</button>
+      
+      <!-- Baca Link button (appears when URL detected) -->
+      <div id="linkBar" style="display:none;gap:8px;margin-bottom:14px;align-items:center">
+        <span style="font-size:12px;color:var(--accent);flex:1">🔗 Link terdeteksi — baca dulu isinya?</span>
+        <button class="btn btn-ghost" id="btnReadLink" onclick="readLink()" style="padding:8px 14px;font-size:12px">📖 Baca Link</button>
       </div>
 
       <!-- Link input -->
@@ -571,14 +568,72 @@
     }
 
     // ========== LINK INPUT ==========
-    function onLinkInput() {
-      const link = document.getElementById('linkInput').value.trim();
-      const btnClear = document.getElementById('btnClearLink');
-      btnClear.style.display = link ? 'inline-flex' : 'none';
+    let linkContentCache = '';
+
+    function onTopicInput() {
+      const val = document.getElementById('topicInput').value.trim();
+      const linkBar = document.getElementById('linkBar');
+      const isLink = /^https?:\/\//.test(val);
+      linkBar.style.display = isLink ? 'flex' : 'none';
+      // Clear cached link content when input changes
+      if (!isLink) linkContentCache = '';
     }
+
+    async function readLink() {
+      const url = document.getElementById('topicInput').value.trim();
+      if (!url) return;
+      
+      const btn = document.getElementById('btnReadLink');
+      const status = document.getElementById('genStatus');
+      btn.textContent = '⏳ Membaca...';
+      btn.disabled = true;
+      status.textContent = '📖 Membaca konten link...';
+      status.style.color = 'var(--warning)';
+      
+      try {
+        // Use fxtwitter for X/Twitter
+        let fetchUrl = url;
+        try {
+          const u = new URL(url);
+          if (u.hostname === 'x.com' || u.hostname === 'twitter.com') {
+            fetchUrl = url.replace(/\/(twitter|x)\.com\//, '/fxtwitter.com/');
+          }
+        } catch(e) {}
+        
+        const res = await fetch(fetchUrl);
+        if (res.ok) {
+          const raw = await res.text();
+          // Extract og:description or strip HTML
+          const ogDesc = raw.match(/<meta[^>]*og:description[^>]*content="([^"]*)"/);
+          const ogTitle = raw.match(/<meta[^>]*og:title[^>]*content="([^"]*)"/);
+          if (ogDesc) {
+            linkContentCache = (ogTitle ? ogTitle[1].replace(/ on X$/, '') + ': ' : '') + ogDesc[1];
+            linkContentCache = linkContentCache.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
+          } else {
+            linkContentCache = raw.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
+              .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+              .replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ')
+              .replace(/\s+/g, ' ').trim().slice(0, 3000);
+          }
+          status.textContent = '✅ Link terbaca! (' + linkContentCache.length + ' karakter)';
+          status.style.color = 'var(--success)';
+          addLog('📖 Link dibaca: ' + url.slice(0, 40) + '...', 'hl');
+        } else {
+          status.textContent = '⚠️ Gagal baca link (status ' + res.status + '). Tetap bisa generate pake topik.';
+          status.style.color = 'var(--warning)';
+        }
+      } catch(e) {
+        status.textContent = '⚠️ Gagal fetch link. Tetap bisa generate pake topik.';
+        status.style.color = 'var(--warning)';
+      }
+      btn.textContent = '📖 Baca Link';
+      btn.disabled = false;
+    }
+
     function clearLink() {
-      document.getElementById('linkInput').value = '';
-      document.getElementById('btnClearLink').style.display = 'none';
+      document.getElementById('topicInput').value = '';
+      document.getElementById('linkBar').style.display = 'none';
+      linkContentCache = '';
       document.getElementById('topicInput').focus();
     }
 
