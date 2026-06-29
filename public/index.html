@@ -143,13 +143,24 @@
       cursor: pointer;
     }
     .btn-preset:hover { border-color: var(--accent) !important; color: white !important; }
-    .preset-simpati:hover { background: rgba(34,197,94,0.15) !important; border-color: var(--success) !important; }
-    .preset-debat:hover { background: rgba(245,158,11,0.15) !important; border-color: var(--warning) !important; }
-    .preset-ejek:hover { background: rgba(239,68,68,0.15) !important; border-color: var(--error) !important; }
+
     .btn-preset.active-preset { background: var(--accent) !important; border-color: var(--accent-glow) !important; color: white !important; }
     .preset-simpati.active-preset { background: rgba(34,197,94,0.25) !important; border-color: var(--success) !important; }
-    .preset-debat.active-preset { background: rgba(245,158,11,0.25) !important; border-color: var(--warning) !important; }
-    .preset-ejek.active-preset { background: rgba(239,68,68,0.25) !important; border-color: var(--error) !important; }
+    .preset-debat.active-preset { background: rgba(99,102,241,0.25) !important; border-color: var(--accent) !important; }
+    .preset-ejek.active-preset { background: rgba(245,158,11,0.25) !important; border-color: var(--warning) !important; }
+    .preset-marah.active-preset { background: rgba(239,68,68,0.25) !important; border-color: var(--error) !important; }
+    .preset-kaget.active-preset { background: rgba(168,85,247,0.25) !important; border-color: #a855f7 !important; }
+    .preset-sedih.active-preset { background: rgba(59,130,246,0.25) !important; border-color: #3b82f6 !important; }
+    .preset-bangga.active-preset { background: rgba(236,72,153,0.25) !important; border-color: #ec4899 !important; }
+    .preset-takut.active-preset { background: rgba(107,114,128,0.25) !important; border-color: #6b7280 !important; }
+    .preset-simpati:hover { background: rgba(34,197,94,0.15) !important; border-color: var(--success) !important; }
+    .preset-debat:hover { background: rgba(99,102,241,0.15) !important; border-color: var(--accent) !important; }
+    .preset-ejek:hover { background: rgba(245,158,11,0.15) !important; border-color: var(--warning) !important; }
+    .preset-marah:hover { background: rgba(239,68,68,0.15) !important; border-color: var(--error) !important; }
+    .preset-kaget:hover { background: rgba(168,85,247,0.15) !important; border-color: #a855f7 !important; }
+    .preset-sedih:hover { background: rgba(59,130,246,0.15) !important; border-color: #3b82f6 !important; }
+    .preset-bangga:hover { background: rgba(236,72,153,0.15) !important; border-color: #ec4899 !important; }
+    .preset-takut:hover { background: rgba(107,114,128,0.15) !important; border-color: #6b7280 !important; }
 
     /* Stats bar */
 
@@ -222,9 +233,14 @@
         <span style="font-size:12px;color:var(--muted)">pilih nada — topik tetap dari input</span>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-preset preset-simpati" onclick="setTopic('simpati')">💚 Simpati</button>
-        <button class="btn btn-preset preset-debat" onclick="setTopic('debat+solusi')">⚖️ Debat + Solusi</button>
-        <button class="btn btn-preset preset-ejek" onclick="setTopic('mengejek oknum')">🎭 Mengejek Oknum</button>
+        <button class="btn btn-preset preset-simpati" onclick="setTopic('simpati')">🥹 Simpati</button>
+        <button class="btn btn-preset preset-debat" onclick="setTopic('debat+solusi')">🤔 Debat + Solusi</button>
+        <button class="btn btn-preset preset-ejek" onclick="setTopic('mengejek oknum')">😏 Mengejek Oknum</button>
+        <button class="btn btn-preset preset-marah" onclick="setTopic('marah')">😤 Marah</button>
+        <button class="btn btn-preset preset-kaget" onclick="setTopic('kaget')">😱 Kaget</button>
+        <button class="btn btn-preset preset-sedih" onclick="setTopic('sedih')">😢 Sedih</button>
+        <button class="btn btn-preset preset-bangga" onclick="setTopic('bangga')">🥳 Bangga</button>
+        <button class="btn btn-preset preset-takut" onclick="setTopic('takut')">😨 Takut</button>
       </div>
     </div>
 
@@ -467,7 +483,7 @@
       document.querySelectorAll('.btn-preset').forEach(b => b.classList.remove('active-preset'));
       const activeBtn = document.querySelector('.preset-' + tone);
       if (activeBtn) activeBtn.classList.add('active-preset');
-      const labels = { simpati: '💚 Simpati', 'debat+solusi': '⚖️ Debat + Solusi', 'mengejek oknum': '🎭 Mengejek Oknum' };
+      const labels = { simpati: '🥹 Simpati', 'debat+solusi': '🤔 Debat + Solusi', 'mengejek oknum': '😏 Mengejek Oknum', marah: '😤 Marah', kaget: '😱 Kaget', sedih: '😢 Sedih', bangga: '🥳 Bangga', takut: '😨 Takut' };
       addLog('🎯 Tone: ' + labels[tone], 'hl');
       toast('Nada: ' + labels[tone] + ' — topik tetap dari input kamu', 'info');
     }
