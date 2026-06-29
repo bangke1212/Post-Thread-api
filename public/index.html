@@ -212,27 +212,22 @@
       <div class="icon">✍️</div>
       <h1>Post Generator</h1>
       <p>AI-powered content, post ke mana aja</p>
-    </div>
 
     <!-- API Key Setup -->
     <div class="card" id="apiCard">
       <div class="card-header">
         <h2>🔑 API Key</h2>
         <span class="badge badge-missing" id="keyBadge">belum</span>
-      </div>
       <div class="key-setup">
         <input type="password" id="apiKeyInput" placeholder="sk-... dari agnes-ai.com" autocomplete="off">
         <button class="btn btn-primary" onclick="saveKey()">💾 Save</button>
-      </div>
       <div class="key-hint">Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent-glow)">agnes-ai.com</a>. Disimpan aman di localStorage.</div>
-    </div>
 
     <!-- Topic Presets -->
     <div class="card">
       <div class="card-header">
         <h2>🎯 Tone / Gaya Tulisan</h2>
         <span style="font-size:12px;color:var(--muted)">pilih nada — topik tetap dari input</span>
-      </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-preset preset-simpati" onclick="setTopic('simpati')">🥹 Simpati</button>
         <button class="btn btn-preset preset-debat" onclick="setTopic('debat+solusi')">🤔 Debat + Solusi</button>
@@ -242,15 +237,12 @@
         <button class="btn btn-preset preset-sedih" onclick="setTopic('sedih')">😢 Sedih</button>
         <button class="btn btn-preset preset-bangga" onclick="setTopic('bangga')">🥳 Bangga</button>
         <button class="btn btn-preset preset-takut" onclick="setTopic('takut')">😨 Takut</button>
-      </div>
-    </div>
 
     <!-- Post Generator — MAIN CARD -->
     <div class="card">
       <div class="card-header">
         <h2><span class="dot" id="statusDot"></span> Post Generator</h2>
         <span style="font-size:12px;color:var(--muted)" id="genStatus"></span>
-      </div>
 
       <!-- Unified input: Topik ATAU link -->
       <input type="text" class="topic-input" id="topicInput" 
@@ -262,30 +254,19 @@
       <div id="linkBar" style="display:none;gap:8px;margin-bottom:14px;align-items:center">
         <span style="font-size:12px;color:var(--accent);flex:1">🔗 Link terdeteksi — baca dulu isinya?</span>
         <button class="btn btn-ghost" id="btnReadLink" onclick="readLink()" style="padding:8px 14px;font-size:12px">📖 Baca Link</button>
-      </div>
 
-      <!-- Link input -->
-      <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
-        <input type="url" class="topic-input" id="linkInput" 
-               placeholder="📎 Atau paste link artikel/video/post... (biar AI baca isinya)"
                style="margin-bottom:0;flex:1;font-size:13px"
-               oninput="onLinkInput()"
                onkeydown="if(event.key==='Enter')generatePost(false)">
-        <button class="btn btn-ghost" id="btnClearLink" onclick="clearLink()" style="display:none;padding:10px 12px">✕</button>
-      </div>
 
       <!-- Result preview -->
       <div class="preview-box empty" id="previewBox">
         <div class="placeholder" id="previewPlaceholder">
           💡 Masukin topik, klik Generate
-        </div>
         <div class="post-text" id="previewText" style="display:none"></div>
         <span class="char-count" id="charCount" style="display:none"></span>
         <div class="preview-meta" id="previewMeta" style="display:none">
           <span class="time">🕐 <span id="previewTime"></span></span>
           <span id="previewStatus"></span>
-        </div>
-      </div>
 
       <!-- Buttons -->
       <div class="btn-group">
@@ -293,32 +274,24 @@
         <button class="btn" style="background:#1d9bf0" onclick="generatePost(false)" id="btnGen">✨ Generate</button>
         <button class="btn btn-ghost" id="btnCopy" onclick="copyText()" style="display:none">📋 Copy</button>
         <button class="btn btn-ghost" id="btnDelete" onclick="clearPreview()" style="display:none;color:var(--error)">🗑️ Hapus</button>
-      </div>
-    </div>
 
     <!-- Schedule info -->
     <div class="card">
       <div class="card-header">
         <h2>⏰ Schedule</h2>
         <span style="font-size:12px;color:var(--muted)">beta</span>
-      </div>
       <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Cron tiap <strong>12:15</strong> & <strong>19:30 WIB</strong>.</p>
       <div class="btn-group">
         <button class="btn btn-outline" onclick="triggerCron()">🔄 Run Cron</button>
         <button class="btn btn-outline" onclick="checkStatus()">📊 Status</button>
-      </div>
-    </div>
 
     <!-- Activity log -->
     <div class="card">
       <div class="card-header"><h2>📋 Log</h2></div>
       <div class="activity-log" id="logs">
         <div class="log-line" id="logEmpty">Menunggu aktivitas...</div>
-      </div>
-    </div>
 
     <div class="footer">Built with AI — generate dulu, posting nyusul 🚀</div>
-  </div>
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
@@ -546,29 +519,7 @@
       }
     }
 
-    // ========== LINK INPUT ==========
-    function onLinkInput() {
-      const link = document.getElementById('linkInput').value.trim();
-      const btnClear = document.getElementById('btnClearLink');
-      if (link) {
-        btnClear.style.display = 'inline-flex';
-        document.getElementById('topicInput').placeholder = 'Topik... (optional — AI akan baca link)';
-      } else {
-        btnClear.style.display = 'none';
-        document.getElementById('topicInput').placeholder = 'Topik... contoh: Bisnis kopi, Teknologi AI, Motivasi pagi';
-      }
-    }
-    function clearLink() {
-      document.getElementById('linkInput').value = '';
-      document.getElementById('btnClearLink').style.display = 'none';
-      document.getElementById('topicInput').placeholder = 'Topik... contoh: Bisnis kopi, Teknologi AI, Motivasi pagi';
-      document.getElementById('topicInput').focus();
-    }
-    function getLink() {
-      return document.getElementById('linkInput').value.trim();
-    }
 
-    // ========== LINK INPUT ==========
     let linkContentCache = '';
 
     function onTopicInput() {
@@ -616,12 +567,6 @@
       btn.disabled = false;
     }
 
-    function clearLink() {
-      document.getElementById('topicInput').value = '';
-      document.getElementById('linkBar').style.display = 'none';
-      linkContentCache = '';
-      document.getElementById('topicInput').focus();
-    }
 
     // ========== HELPERS ==========
     // ========== TONE PRESETS ==========
