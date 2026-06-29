@@ -25,8 +25,8 @@ export default async (req) => {
     try { const b = JSON.parse(body); return b.tone || ''; } 
     catch { return ''; }
   })();
-  const link = (() => {
-    try { const b = JSON.parse(body); return b.link || ''; } 
+  const linkContent = (() => {
+    try { const b = JSON.parse(body); return b.linkContent || ''; } 
     catch { return ''; }
   })();
   const lang = (() => {
@@ -46,7 +46,7 @@ export default async (req) => {
       openrouterModel: 'agnes-2.0-flash',
       tone: tone,
       lang: lang,
-      link: link,
+      linkContent: linkContent,
       threadsAppId: process.env.THREADS_APP_ID || 'dashboard',
       threadsAccessToken: process.env.THREADS_ACCESS_TOKEN || '',
       searchQueries: [topic],
