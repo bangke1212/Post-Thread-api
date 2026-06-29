@@ -28,7 +28,7 @@ export async function runPipeline(config, options = {}) {
   const keywords = config.searchQueries || ['trending'];
   let text;
   try {
-    text = await withRetry(() => generateText(config, keywords, historyTexts));
+    text = await withRetry(() => generateText(config, keywords, historyTexts, config.tone || ''));
   } catch (err) {
     return { status: 'error', error: 'AI failed: ' + err.message };
   }
