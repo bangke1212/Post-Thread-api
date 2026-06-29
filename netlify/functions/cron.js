@@ -1,27 +1,42 @@
 // netlify/functions/cron.js
-import { getConfig } from './config.js';
 import { runPipeline } from './pipeline.js';
 import { logger } from './logger.js';
-import { RunLockError } from './errors.js';
 
 export default async (req) => {
-  logger.info('Cron triggered');
-  
-  try {
-    const config = getConfig();
-    const result = await runPipeline(config);
+  // Get API key — priority: header > env vars
+  const apiKey = req?.headers?.get?.('X-Api-Key') || 
+                  req?.headers?.get?.('x-api-key') ||
+                  process.env.OPENROUTER_API_KEY || 
+                  process.env.AGNES_API_KEY;
 
+  if (!apiKey) {
+    logger.warn('Cron skipped: no API key');
+    return new Response(JSON.stringify({ status: 'skipped', error: 'Missing API key (set OPENROUTER_API_KEY or AGNES_API_KEY)' }), 
+      { status: 200, headers: { 'Access-Control-Allow-Origin': '*' } });
+  }
+
+  try {
+    const config = {
+      openrouterApiKey: apiKey,
+      openrouterModel: 'agnes-2.0-flash',
+      threadsAppId: process.env.THREADS_APP_ID || 'dashboard',
+      threadsAccessToken: process.env.THREADS_ACCESS_TOKEN || '',
+      searchQueries: ['trending','teknologi','bisnis','startup','motivasi','AI','inspirasi'],
+      dbDir: process.env.DB_DIR || '/tmp',
+    };
+
+    logger.info('Cron triggered');
+    const result = await runPipeline(config, { dryRun: false });
+    
     return new Response(JSON.stringify(result), {
-      status: result.status === 'error' ? 500 : 200,
+      status: 200,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   } catch (err) {
-    if (err instanceof RunLockError) {
-      return new Response(JSON.stringify({ status: 'locked', message: err.message }), { status: 409 });
-    }
     logger.error('Cron failed', { error: err.message });
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: err.message }), { 
+      status: 500, 
+      headers: { 'Access-Control-Allow-Origin': '*' } 
+    });
   }
 };
-
-export const config = { schedule: '15 5,12 * * *' };
