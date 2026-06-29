@@ -131,7 +131,28 @@
     .toast.error { border-color: rgba(239,68,68,0.3); color: var(--error); }
     .toast.info { border-color: rgba(99,102,241,0.3); color: var(--accent-glow); }
 
+    /* Topic Presets */
+    .btn-preset {
+      border: 1px solid var(--border) !important; 
+      background: var(--card2) !important;
+      color: var(--text) !important;
+      font-size: 13px;
+      padding: 8px 16px !important;
+      border-radius: 20px !important;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .btn-preset:hover { border-color: var(--accent) !important; color: white !important; }
+    .preset-simpati:hover { background: rgba(34,197,94,0.15) !important; border-color: var(--success) !important; }
+    .preset-debat:hover { background: rgba(245,158,11,0.15) !important; border-color: var(--warning) !important; }
+    .preset-ejek:hover { background: rgba(239,68,68,0.15) !important; border-color: var(--error) !important; }
+    .btn-preset.active-preset { background: var(--accent) !important; border-color: var(--accent-glow) !important; color: white !important; }
+    .preset-simpati.active-preset { background: rgba(34,197,94,0.25) !important; border-color: var(--success) !important; }
+    .preset-debat.active-preset { background: rgba(245,158,11,0.25) !important; border-color: var(--warning) !important; }
+    .preset-ejek.active-preset { background: rgba(239,68,68,0.25) !important; border-color: var(--error) !important; }
+
     /* Stats bar */
+
     .stats-bar {
       display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin-bottom: 6px;
       align-items: center;
@@ -192,6 +213,19 @@
         <button class="btn btn-primary" onclick="saveKey()">💾 Save</button>
       </div>
       <div class="key-hint">Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent-glow)">agnes-ai.com</a>. Disimpan aman di localStorage.</div>
+    </div>
+
+    <!-- Topic Presets -->
+    <div class="card">
+      <div class="card-header">
+        <h2>🎯 Topic Presets</h2>
+        <span style="font-size:12px;color:var(--muted)">klik buat auto-isi</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-preset preset-simpati" onclick="setTopic('simpati')">💚 Simpati</button>
+        <button class="btn btn-preset preset-debat" onclick="setTopic('debat+solusi')">⚖️ Debat + Solusi</button>
+        <button class="btn btn-preset preset-ejek" onclick="setTopic('mengejek oknum')">🎭 Mengejek Oknum</button>
+      </div>
     </div>
 
     <!-- Post Generator — MAIN CARD -->
@@ -419,6 +453,26 @@
     }
 
     // ========== HELPERS ==========
+    // ========== TOPIC PRESETS ==========
+    let activePreset = '';
+    const topicPresets = {
+      simpati: 'Cerita yang menyentuh hati tentang kebaikan orang biasa, berbagi rezeki, gotong royong, solidaritas — bikin pembaca terharu dan percaya masih banyak orang baik',
+      'debat+solusi': 'Masalah sosial yang lagi rame diperdebatkan, kontroversial tapi tetap respectful — ajak pembaca diskusi sehat dan kasih solusi dari dua sisi',
+      'mengejek oknum': 'Sindiran cerdas ke pejabat/koruptor/pejabat publik yang bikin kebijakan konyol — satire, lucu, ngena, bikin pembaca ketawa getir'
+    };
+    function setTopic(preset) {
+      const input = document.getElementById('topicInput');
+      input.value = topicPresets[preset];
+      activePreset = preset;
+      // Highlight active
+      document.querySelectorAll('.btn-preset').forEach(b => b.classList.remove('active-preset'));
+      const activeBtn = document.querySelector('.preset-' + preset);
+      if (activeBtn) activeBtn.classList.add('active-preset');
+      input.focus();
+      addLog('🎯 Preset: ' + preset, 'hl');
+      toast('Topik "' + preset + '" siap! Klik Generate', 'info');
+    }
+
     function addLog(msg, cls) {
       const logs = document.getElementById('logs');
       const empty = document.getElementById('logEmpty');
