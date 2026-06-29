@@ -1,11 +1,8 @@
 {
   "name": "threads-smart-bot",
   "version": "0.2.2",
-  "description": "Threads bot for Vercel",
+  "private": true,
   "engines": {
     "node": ">=20"
-  },
-  "scripts": {},
-  "dependencies": {},
-  "devDependencies": {}
+  }
 }
