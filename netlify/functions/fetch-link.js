@@ -1,4 +1,4 @@
-// Proxy for fetching link content server-side (no CORS)
+// Proxy for fetching tweet content + images server-side (no CORS)
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -8,11 +8,12 @@ const headers = {
 async function fetchContent(url) {
   let fetchUrl = url;
   let useJsonApi = false;
+  let tweetId = '';
   try {
     const u = new URL(url);
     if (u.hostname === 'x.com' || u.hostname === 'twitter.com') {
       const parts = u.pathname.split('/').filter(Boolean);
-      const tweetId = parts[parts.indexOf('status') + 1] || parts[0];
+      tweetId = parts[parts.indexOf('status') + 1] || parts[0];
       if (tweetId && /^\d+$/.test(tweetId)) {
         fetchUrl = `https://api.fxtwitter.com/status/${tweetId}`;
         useJsonApi = true;
@@ -26,7 +27,34 @@ async function fetchContent(url) {
   if (useJsonApi) {
     const json = await res.json();
     const tweet = json.tweet || json;
-    return { ok: true, content: tweet.text || json.text || '', author: tweet.author?.name || '', source: 'fxtwitter-api' };
+    
+    // Extract media URLs (images + video thumbs)
+    let images = [];
+    if (tweet.media?.photos) {
+      images = tweet.media.photos.map(p => p.url || p.direct_url).filter(Boolean);
+    }
+    // Also check media.all for videos
+    if (tweet.media?.videos) {
+      tweet.media.videos.forEach(v => {
+        if (v.thumbnail_url) images.push(v.thumbnail_url);
+      });
+    }
+    // Fallback: if tweet has media_extracted
+    if (tweet.media_extended) {
+      tweet.media_extended.forEach(m => {
+        if (m.type === 'photo' && m.url) images.push(m.url);
+        if ((m.type === 'video' || m.type === 'gif') && m.thumbnail_url) images.push(m.thumbnail_url);
+      });
+    }
+    
+    return { 
+      ok: true, 
+      content: tweet.text || json.text || '', 
+      author: tweet.author?.name || '', 
+      source: 'fxtwitter-api',
+      images: images.slice(0, 4), // max 4 images
+      hasMedia: images.length > 0
+    };
   }
 
   const raw = await res.text();
@@ -39,7 +67,7 @@ async function fetchContent(url) {
   } else {
     content = raw.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ').replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 3000);
   }
-  return { ok: true, content, source: 'html-parse' };
+  return { ok: true, content, source: 'html-parse', images: [], hasMedia: false };
 }
 
 exports.handler = async (event) => {
