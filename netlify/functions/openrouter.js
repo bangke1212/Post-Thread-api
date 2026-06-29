@@ -5,7 +5,7 @@ const BASE_URL = 'https://apihub.agnes-ai.com/v1';
 
 export async function generateText(config, keywords, history = [], retries = 3) {
   const topic = keywords[0] || 'trending topic';
-  const prompt = 'Buat satu postingan Threads viral tentang "' + topic + '". Maks 500 karakter, Bahasa Indonesia natural, hook kuat, 1-2 emoji, akhiri dengan CTA atau diskusi. NO hashtag. Output HANYA teks.';
+  const prompt = 'Buat satu postingan pendek (maks 280 karakter, cocok buat X/Twitter) tentang "' + topic + '". Bahasa Indonesia natural dan engaging. Gaya santai tapi insightful. Hook menarik di awal. 1 emoji maksimal. Akhiri dengan pertanyaan atau call-to-action ringan. NO hashtag, NO quote mark di awal/akhir. Output HANYA teks postingan jadi, jangan ada intro atau outro lain.';
 
   const body = {
     model: 'agnes-2.0-flash',
