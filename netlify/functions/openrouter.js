@@ -3,7 +3,7 @@ import { logger } from './logger.js';
 
 const BASE_URL = 'https://apihub.agnes-ai.com/v1';
 
-function buildPrompt(topic, tone, history, linkContent) {
+function buildPrompt(topic, tone, history, linkContent, lang) {
   const historyBlock = history.length > 0 
     ? '\nJANGAN ulangi postingan sebelumnya:\n' + history.map((t,i) => (i+1) + '. ' + t.slice(0,80)).join('\n')
     : '';
@@ -28,17 +28,22 @@ function buildPrompt(topic, tone, history, linkContent) {
     ? 'Gunakan ' + toneInstruction + '\n'
     : '';
 
-  return 'Buat satu postingan pendek (maks 280 karakter) tentang "' + topic + '".\n' +
+  return (lang === 'en'
+    ? 'Create a short post (max 280 characters) about "' + topic + '".\n'
+    : 'Buat satu postingan pendek (maks 280 karakter) tentang "' + topic + '".\n') +
     toneBlock +
     linkBlock + '\n' +
-    'Bahasa Indonesia natural dan engaging. Maks 280 karakter. NO hashtag, NO kutipan di awal/akhir. Output HANYA teks postingan jadi, jangan ada intro/outro lain.' + 
+    (lang === 'en' 
+      ? 'Write in NATURAL, ENGAGING English. Max 280 characters. NO hashtags, NO quotes at beginning/end. Output ONLY the final post text, no intro/outro.'
+      : 'Bahasa Indonesia natural dan engaging. Maks 280 karakter. NO hashtag, NO kutipan di awal/akhir. Output HANYA teks postingan jadi, jangan ada intro/outro lain.') + 
     historyBlock;
 }
 
 export async function generateText(config, keywords, history = [], tone = '', linkContent = '', retries = 3) {
+  const lang = config.lang || 'id';
   const topic = keywords[0] || 'trending topic';
   const toneInput = tone || config.tone || '';
-  const prompt = buildPrompt(topic, toneInput, history, linkContent);
+  const prompt = buildPrompt(topic, toneInput, history, linkContent, lang);
 
   const body = {
     model: 'agnes-2.0-flash',
