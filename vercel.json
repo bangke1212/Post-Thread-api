@@ -1,0 +1,19 @@
+{
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "@vercel/node@3",
+      "includeFiles": "dist/**",
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "15 5 * * *"
+    },
+    {
+      "path": "/api/cron",
+      "schedule": "30 12 * * *"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "name": "threads-smart-bot",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Threads bot that crawls trending posts, generates original Bahasa Indonesia content with OpenRouter, and publishes on demand or on a schedule — Vercel deployable",
   "license": "MIT",
   "type": "module",
@@ -10,12 +10,8 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "dev:cron": "tsx api/cron.ts",
-    "dev:auth": "tsx src/cli.ts auth",
-    "dev:run": "tsx src/cli.ts run",
-    "dev:run:dry": "tsx src/cli.ts run --dry"
+    "start": "node dist/cli.js",
+    "dev": "tsx src/cli.ts"
   },
   "dependencies": {
     "@vercel/node": "^3.2.0"
