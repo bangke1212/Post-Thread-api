@@ -1,8 +1,8 @@
 // api/cron.cjs — Vercel Cron Job handler
-const { getConfig } = require('../dist/config.js');
-const { runPipeline } = require('../dist/pipeline.js');
-const { RunLockError } = require('../dist/errors.js');
-const { logger } = require('../dist/logger.js');
+const { getConfig } = require('./lib/config.js');
+const { runPipeline } = require('./lib/pipeline.js');
+const { RunLockError } = require('./lib/errors.js');
+const { logger } = require('./lib/logger.js');
 
 module.exports = async function handler(req, res) {
   logger.info('Cron job triggered');
