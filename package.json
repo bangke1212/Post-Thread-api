@@ -1,8 +1,0 @@
-{
-  "name": "threads-smart-bot",
-  "version": "0.2.2",
-  "private": true,
-  "engines": {
-    "node": ">=20"
-  }
-}
