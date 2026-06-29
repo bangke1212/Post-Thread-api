@@ -259,6 +259,16 @@
       <!-- Link input -->
       <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
         <input type="url" class="topic-input" id="linkInput" 
+               placeholder="🔗 Atau paste link artikel/video... (AI baca isinya)"
+               style="margin-bottom:0;flex:1;font-size:13px"
+               oninput="onLinkInput()"
+               onkeydown="if(event.key==='Enter')generatePost(false)">
+        <button class="btn btn-ghost" id="btnClearLink" onclick="clearLink()" style="display:none;padding:10px 12px;color:var(--muted)">✕</button>
+      </div>
+
+      <!-- Link input -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+        <input type="url" class="topic-input" id="linkInput" 
                placeholder="📎 Atau paste link artikel/video/post... (biar AI baca isinya)"
                style="margin-bottom:0;flex:1;font-size:13px"
                oninput="onLinkInput()"
@@ -558,6 +568,18 @@
     }
     function getLink() {
       return document.getElementById('linkInput').value.trim();
+    }
+
+    // ========== LINK INPUT ==========
+    function onLinkInput() {
+      const link = document.getElementById('linkInput').value.trim();
+      const btnClear = document.getElementById('btnClearLink');
+      btnClear.style.display = link ? 'inline-flex' : 'none';
+    }
+    function clearLink() {
+      document.getElementById('linkInput').value = '';
+      document.getElementById('btnClearLink').style.display = 'none';
+      document.getElementById('topicInput').focus();
     }
 
     // ========== HELPERS ==========
