@@ -123,7 +123,7 @@ function saveToken(secret, accessToken, expiresAt, userId) {
 }
 
 // --- MAIN HANDLER ---
-module.exports = async function handler(req, res) {
+exports.handler = async (event, context) => {
   const code = req.query['code'];
 
   if (code && typeof code === 'string') {
