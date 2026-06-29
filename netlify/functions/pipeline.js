@@ -39,7 +39,7 @@ export async function runPipeline(config, options = {}) {
 
   // Post — skip if no threads token
   if (!config.threadsAccessToken || config.threadsAppId === 'dashboard') {
-    return { status: 'success', generatedText: text, postId: null, dryRun: false, note: 'No Threads token (env var THREADS_ACCESS_TOKEN not set)' };
+    return { status: 'success', generatedText: text, postId: null, dryRun: false, note: 'No posting token configured — text ready' };
   }
 
   try {
