@@ -123,8 +123,8 @@ function saveToken(secret, accessToken, expiresAt, userId) {
 }
 
 // --- MAIN HANDLER ---
-exports.handler = async (event, context) => {
-  const code = event.queryStringParameters ? event.queryStringParameters['code'] : null;
+module.exports = async function handler(req, res) {
+  const code = req.query['code'];
 
   if (code && typeof code === 'string') {
     try {
@@ -134,9 +134,9 @@ exports.handler = async (event, context) => {
       const shortLived = await client.exchangeCode(code);
       await client.getLongLivedToken(shortLived.access_token, shortLived.user_id);
       logger.info('Auth successful');
-      return { statusCode: 200, body: JSON.stringify({ success: true, message: 'Auth successful!' }) };
+      return res.status(200).json({ success: true, message: 'Auth successful!' });
     } catch (err) {
-      return { statusCode: 500, body: JSON.stringify({ success: false, error: err.message }) };
+      return res.status(500).json({ success: false, error: err.message });
     }
   }
 
@@ -146,9 +146,9 @@ exports.handler = async (event, context) => {
     const client = new ThreadsClient(config);
     const expectedState = randomBytes(24).toString('hex');
     const authUrl = client.buildAuthUrl(expectedState);
-    // Cookie set via Netlify response headers
-    return { statusCode: 302, headers: { Location: authUrl, 'Set-Cookie': 'oauth_state=' + expectedState + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=600' } };
+    res.setHeader('Set-Cookie', 'oauth_state=' + expectedState + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=600');
+    return res.redirect(authUrl);
   } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Config error: ' + err.message }) };
+    return res.status(500).json({ error: 'Config error: ' + err.message });
   }
 };
