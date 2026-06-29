@@ -308,22 +308,19 @@
           'Content-Type': 'application/json',
           'X-Api-Key': apiKey
         };
-        const body = topic ? JSON.stringify({ topic }) : '{}';
+        const reqBody = JSON.stringify({ topic: topic || 'trending' });
         
         const res = await fetch(url, { 
           method: 'POST', 
           headers,
-          body: res.ok ? body : undefined 
+          body: reqBody
         });
         
-        // Try again without body if first attempt fails
         let data;
         try {
           data = await res.json();
         } catch {
-          // Maybe endpoint doesn't support body, try without
-          const res2 = await fetch(url, { method: 'POST', headers });
-          data = await res2.json();
+          data = {};
         }
 
         if (data.generatedText || data.text || data.message) {
