@@ -1,8 +1,8 @@
 // api/manual.cjs — Manual pipeline trigger
-const { getConfig } = require('../dist/config.js');
-const { runPipeline } = require('../dist/pipeline.js');
-const { RunLockError } = require('../dist/errors.js');
-const { logger } = require('../dist/logger.js');
+const { getConfig } = require('./config.js');
+const { runPipeline } = require('./pipeline.js');
+const { RunLockError } = require('./errors.js');
+const { logger } = require('./logger.js');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
