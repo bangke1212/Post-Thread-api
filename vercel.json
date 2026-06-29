@@ -1,11 +1,13 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
   "crons": [
     {
       "path": "/api/cron",
       "schedule": "15 5 * * *"
     },
     {
-      "path": "/api/cron",
+      "path": "/api/cron", 
       "schedule": "30 12 * * *"
     }
   ]
