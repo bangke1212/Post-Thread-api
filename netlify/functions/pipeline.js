@@ -1,16 +1,9 @@
-// netlify/functions/pipeline.js
 import { getConfig } from './config.js';
-import { pickKeywords, formatPost } from './prompt.js';
 import { generateText } from './openrouter.js';
 import { publishToThreads } from './threads-api.js';
-import { 
-  isRateLimited, incrementPostCount, getPostHistory, addToHistory,
-  getLastPostTimestamp, setLastPostTimestamp 
-} from './storage.js';
+import { addToHistory, getPostHistory, incrementPostCount, setLastPostTimestamp, isRateLimited, getLastPostTimestamp } from './storage.js';
 import { logger } from './logger.js';
 import { withRetry } from './retry.js';
-
-const MIN_INTERVAL_MINUTES = 90; // Minimum 90 min between posts
 
 export async function runPipeline(config, options = {}) {
   const { dryRun = false } = options;
@@ -21,50 +14,39 @@ export async function runPipeline(config, options = {}) {
   const lastPost = await getLastPostTimestamp(dbDir);
   const minutesSinceLastPost = (now - lastPost) / 60000;
   
-  if (minutesSinceLastPost < MIN_INTERVAL_MINUTES && lastPost > 0) {
-    const waitMinutes = Math.ceil(MIN_INTERVAL_MINUTES - minutesSinceLastPost);
-    return { status: 'no_action', message: `Wait ${waitMinutes} more minutes before next post` };
+  if (minutesSinceLastPost < 90 && lastPost > 0) {
+    return { status: 'no_action', message: 'Wait ' + Math.ceil(90 - minutesSinceLastPost) + ' min' };
   }
 
   if (await isRateLimited(dbDir)) {
-    return { status: 'no_action', message: 'Daily rate limit reached' };
+    return { status: 'no_action', message: 'Daily rate limit' };
   }
 
-  // Pick keywords
-  const keywords = pickKeywords(config);
-  
-  // Get history to avoid repetition
-  const history = await getPostHistory(dbDir, 10);
+  // Get history
+  const history = await getPostHistory(dbDir, 5);
   const historyTexts = history.map(h => h.text);
 
-  // Generate with AI
-  let generatedText;
+  // Generate
+  const keywords = config.searchQueries || ['trending'];
+  let text;
   try {
-    generatedText = await withRetry(() => generateText(config, keywords, historyTexts));
+    text = await withRetry(() => generateText(config, keywords, historyTexts));
   } catch (err) {
-    return { status: 'error', error: `AI generation failed: ${err.message}` };
+    return { status: 'error', error: 'AI failed: ' + err.message };
   }
-
-  // Format
-  const postText = formatPost(generatedText);
-  logger.info('Post ready', { text: postText.slice(0, 50) + '...' });
 
   if (dryRun) {
-    return { status: 'success', generatedText: postText, dryRun: true };
+    return { status: 'success', generatedText: text, dryRun: true };
   }
 
-  // Post to Threads
+  // Post
   try {
-    const postId = await withRetry(() => publishToThreads(config, postText));
-    
-    // Update storage
+    const postId = await withRetry(() => publishToThreads(config, text));
     await setLastPostTimestamp(dbDir, now);
     await incrementPostCount(dbDir);
-    await addToHistory(dbDir, { text: postText, postId, timestamp: now });
-    
-    logger.info('Pipeline complete', { postId });
-    return { status: 'success', postId, generatedText: postText };
+    await addToHistory(dbDir, { text, postId, timestamp: now });
+    return { status: 'success', generatedText: text, postId };
   } catch (err) {
-    return { status: 'error', error: `Post failed: ${err.message}` };
+    return { status: 'error', error: 'Post failed: ' + err.message };
   }
 }
