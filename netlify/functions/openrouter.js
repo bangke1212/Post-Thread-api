@@ -3,9 +3,13 @@ import { logger } from './logger.js';
 
 const BASE_URL = 'https://apihub.agnes-ai.com/v1';
 
-function buildPrompt(topic, tone, history) {
+function buildPrompt(topic, tone, history, linkContent) {
   const historyBlock = history.length > 0 
     ? '\nJANGAN ulangi postingan sebelumnya:\n' + history.map((t,i) => (i+1) + '. ' + t.slice(0,80)).join('\n')
+    : '';
+  
+  const linkBlock = linkContent && linkContent.length > 10 
+    ? '\nKONTEKS DARI LINK (jadikan inspirasi, JANGAN copy-paste mentah — tulis ulang dengan gaya sendiri):\n' + linkContent.slice(0, 1500)
     : '';
   
   const toneMap = {
@@ -28,10 +32,10 @@ function buildPrompt(topic, tone, history) {
     toneBlock +
     'Bahasa Indonesia natural dan engaging. Maks 280 karakter. NO hashtag, NO kutipan di awal/akhir. Output HANYA teks postingan jadi, jangan ada intro/outro lain.' + 
     historyBlock;
-}export async function generateText(config, keywords, history = [], tone = '', retries = 3) {
+}export async function generateText(config, keywords, history = [], tone = '', linkContent = '', retries = 3) {
   const topic = keywords[0] || 'trending topic';
   const toneInput = tone || config.tone || '';
-  const prompt = buildPrompt(topic, toneInput, history);
+  const prompt = buildPrompt(topic, toneInput, history, linkContent);
 
   const body = {
     model: 'agnes-2.0-flash',
