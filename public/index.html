@@ -253,8 +253,18 @@
 
       <!-- Topic -->
       <input type="text" class="topic-input" id="topicInput" 
-             placeholder="Topik... contoh: Bisnis mobil, Teknologi AI, Motivasi pagi"
+             placeholder="Topik... contoh: Bisnis kopi, Teknologi AI, Motivasi pagi"
              onkeydown="if(event.key==='Enter')generatePost(false)">
+
+      <!-- Link input -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+        <input type="url" class="topic-input" id="linkInput" 
+               placeholder="📎 Atau paste link artikel/video/post... (biar AI baca isinya)"
+               style="margin-bottom:0;flex:1;font-size:13px"
+               oninput="onLinkInput()"
+               onkeydown="if(event.key==='Enter')generatePost(false)">
+        <button class="btn btn-ghost" id="btnClearLink" onclick="clearLink()" style="display:none;padding:10px 12px">✕</button>
+      </div>
 
       <!-- Result preview -->
       <div class="preview-box empty" id="previewBox">
@@ -351,7 +361,11 @@
       if (!dryRun) btnGen.innerHTML = '<span class="spinner"></span> Generating...';
       else btnDry.innerHTML = '<span class="spinner"></span> Dry run...';
 
-      addLog(dryRun ? '🔍 Dry run: ' + (topic || 'random') : '✨ Generate: ' + (topic || 'random'), 'hl');
+              const link = getLink();
+        let logMsg = dryRun ? '🔍 Dry run' : '✨ Generate';
+        if (link) logMsg += ' dari link';
+        logMsg += ': ' + (topic || (link ? 'dari URL' : 'random'));
+        addLog(logMsg, 'hl');
 
       // Reset preview state while loading
       document.getElementById('previewPlaceholder').textContent = '⏳ Generating...';
@@ -371,7 +385,12 @@
           'Content-Type': 'application/json',
           'X-Api-Key': apiKey
         };
-        const reqBody = JSON.stringify({ topic: topic || 'trending topic', tone: getTone() });
+        const link = getLink();
+        const reqBody = JSON.stringify({ 
+          topic: topic || 'trending topic', 
+          tone: getTone(),
+          link: link || ''
+        });
         
         const res = await fetch(url, { 
           method: 'POST', 
@@ -517,6 +536,28 @@
       } catch (err) {
         addLog('❌ ' + err.message, 'err');
       }
+    }
+
+    // ========== LINK INPUT ==========
+    function onLinkInput() {
+      const link = document.getElementById('linkInput').value.trim();
+      const btnClear = document.getElementById('btnClearLink');
+      if (link) {
+        btnClear.style.display = 'inline-flex';
+        document.getElementById('topicInput').placeholder = 'Topik... (optional — AI akan baca link)';
+      } else {
+        btnClear.style.display = 'none';
+        document.getElementById('topicInput').placeholder = 'Topik... contoh: Bisnis kopi, Teknologi AI, Motivasi pagi';
+      }
+    }
+    function clearLink() {
+      document.getElementById('linkInput').value = '';
+      document.getElementById('btnClearLink').style.display = 'none';
+      document.getElementById('topicInput').placeholder = 'Topik... contoh: Bisnis kopi, Teknologi AI, Motivasi pagi';
+      document.getElementById('topicInput').focus();
+    }
+    function getLink() {
+      return document.getElementById('linkInput').value.trim();
     }
 
     // ========== HELPERS ==========
