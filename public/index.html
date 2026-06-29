@@ -381,7 +381,7 @@ async function generateReply() {
 
 ${tonePrompt}
 ${langPrompt}
-Format: 2 paragraf pendek dipisahkan 1 baris kosong. NO hashtag. NO prefix "Reply:". Output HANYA teks reply jadi.`
+Format WAJIB: 2 paragraf pendek, tiap paragraf MAKS 140 karakter, dipisahkan 1 baris kosong (total < 280 karakter). NO hashtag. NO prefix "Reply:". Output HANYA teks reply jadi.`
         }],
         max_tokens: 200,
         temperature: 0.9
