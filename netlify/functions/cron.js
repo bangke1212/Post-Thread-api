@@ -4,7 +4,7 @@ const { runPipeline } = require('./pipeline.js');
 const { RunLockError } = require('./errors.js');
 const { logger } = require('./logger.js');
 
-module.exports = async function handler(req, res) {
+exports.handler = async (event, context) => {
   logger.info('Cron job triggered');
 
   try {
@@ -12,17 +12,17 @@ module.exports = async function handler(req, res) {
     const result = await runPipeline(config);
 
     if (result.status === 'success') {
-      return res.status(200).json({ status: 'ok', postId: result.postId, text: result.generatedText });
+      return { statusCode: 200, body: JSON.stringify({ status: 'ok', postId: result.postId, text: result.generatedText }) };
     } else if (result.status === 'skipped') {
-      return res.status(200).json({ status: 'skipped', error: result.error });
+      return { statusCode: 200, body: JSON.stringify({ status: 'skipped', error: result.error }) };
     } else {
-      return res.status(500).json({ error: result.error });
+      return { statusCode: 500, body: JSON.stringify({ error: result.error }) };
     }
   } catch (err) {
     if (err instanceof RunLockError) {
-      return res.status(200).json({ status: 'skipped', error: 'Pipeline already running' });
+      return { statusCode: 200, body: JSON.stringify({ status: 'skipped', error: 'Pipeline already running' }) };
     }
     logger.critical('Cron pipeline exception', { error: err.message });
-    return res.status(500).json({ error: err.message });
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 }
