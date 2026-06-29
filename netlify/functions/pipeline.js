@@ -1,4 +1,4 @@
-import { getConfig } from './config.js';
+// netlify/functions/pipeline.js
 import { generateText } from './openrouter.js';
 import { publishToThreads } from './threads-api.js';
 import { addToHistory, getPostHistory, incrementPostCount, setLastPostTimestamp, isRateLimited, getLastPostTimestamp } from './storage.js';
@@ -9,20 +9,18 @@ export async function runPipeline(config, options = {}) {
   const { dryRun = false } = options;
   const dbDir = config.dbDir || '/tmp';
 
-  // Rate limit check
+  // Rate limit
   const now = Date.now();
   const lastPost = await getLastPostTimestamp(dbDir);
-  const minutesSinceLastPost = (now - lastPost) / 60000;
-  
-  if (minutesSinceLastPost < 90 && lastPost > 0) {
-    return { status: 'no_action', message: 'Wait ' + Math.ceil(90 - minutesSinceLastPost) + ' min' };
+  const minSince = (now - lastPost) / 60000;
+  if (minSince < 90 && lastPost > 0) {
+    return { status: 'no_action', message: 'Wait ' + Math.ceil(90 - minSince) + ' min' };
   }
-
   if (await isRateLimited(dbDir)) {
     return { status: 'no_action', message: 'Daily rate limit' };
   }
 
-  // Get history
+  // History
   const history = await getPostHistory(dbDir, 5);
   const historyTexts = history.map(h => h.text);
 
@@ -39,7 +37,11 @@ export async function runPipeline(config, options = {}) {
     return { status: 'success', generatedText: text, dryRun: true };
   }
 
-  // Post
+  // Post — skip if no threads token
+  if (!config.threadsAccessToken || config.threadsAppId === 'dashboard') {
+    return { status: 'success', generatedText: text, postId: null, dryRun: false, note: 'No Threads token (env var THREADS_ACCESS_TOKEN not set)' };
+  }
+
   try {
     const postId = await withRetry(() => publishToThreads(config, text));
     await setLastPostTimestamp(dbDir, now);
