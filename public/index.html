@@ -274,6 +274,7 @@
         <button class="btn btn-outline" onclick="generatePost(true)" id="btnDry">🔍 Dry Run</button>
         <button class="btn" style="background:#1d9bf0" onclick="generatePost(false)" id="btnGen">✨ Generate</button>
         <button class="btn btn-ghost" id="btnCopy" onclick="copyText()" style="display:none">📋 Copy</button>
+        <button class="btn btn-ghost" id="btnDelete" onclick="clearPreview()" style="display:none;color:var(--error)">🗑️ Hapus</button>
       </div>
     </div>
 
@@ -352,6 +353,18 @@
 
       addLog(dryRun ? '🔍 Dry run: ' + (topic || 'random') : '✨ Generate: ' + (topic || 'random'), 'hl');
 
+      // Reset preview state while loading
+      document.getElementById('previewPlaceholder').textContent = '⏳ Generating...';
+      document.getElementById('previewPlaceholder').style.display = 'block';
+      document.getElementById('previewText').style.display = 'none';
+      document.getElementById('charCount').style.display = 'none';
+      document.getElementById('previewMeta').style.display = 'none';
+      document.getElementById('btnCopy').style.display = 'none';
+      const btnDel = document.getElementById('btnDelete');
+      if (btnDel) btnDel.style.display = 'none';
+      document.getElementById('genStatus').textContent = '⏳ Processing...';
+      document.getElementById('genStatus').style.color = 'var(--warning)';
+
       try {
         const url = dryRun ? `${API}/manual?dry=true` : `${API}/manual`;
         const headers = {
@@ -367,7 +380,19 @@
         });
         
         let data;
-        try {
+        // Reset preview state while loading
+      document.getElementById('previewPlaceholder').textContent = '⏳ Generating...';
+      document.getElementById('previewPlaceholder').style.display = 'block';
+      document.getElementById('previewText').style.display = 'none';
+      document.getElementById('charCount').style.display = 'none';
+      document.getElementById('previewMeta').style.display = 'none';
+      document.getElementById('btnCopy').style.display = 'none';
+      const btnDel = document.getElementById('btnDelete');
+      if (btnDel) btnDel.style.display = 'none';
+      document.getElementById('genStatus').textContent = '⏳ Processing...';
+      document.getElementById('genStatus').style.color = 'var(--warning)';
+
+      try {
           data = await res.json();
         } catch {
           data = {};
@@ -420,6 +445,8 @@
       statusEl.innerHTML = text.length <= 280 ? '✅ Pas buat X' : '⚠️ >280 char';
       statusEl.style.color = text.length <= 280 ? 'var(--success)' : 'var(--warning)';
       btnCopy.style.display = 'inline-flex';
+      const btnDelete = document.getElementById('btnDelete');
+      btnDelete.style.display = 'inline-flex';
       genStatus.textContent = '✅ Teks siap';
       genStatus.style.color = 'var(--success)';
     }
@@ -436,6 +463,18 @@
     // ========== CRON / STATUS ==========
     async function triggerCron() {
       addLog('🔄 Run cron...', 'hl');
+      // Reset preview state while loading
+      document.getElementById('previewPlaceholder').textContent = '⏳ Generating...';
+      document.getElementById('previewPlaceholder').style.display = 'block';
+      document.getElementById('previewText').style.display = 'none';
+      document.getElementById('charCount').style.display = 'none';
+      document.getElementById('previewMeta').style.display = 'none';
+      document.getElementById('btnCopy').style.display = 'none';
+      const btnDel = document.getElementById('btnDelete');
+      if (btnDel) btnDel.style.display = 'none';
+      document.getElementById('genStatus').textContent = '⏳ Processing...';
+      document.getElementById('genStatus').style.color = 'var(--warning)';
+
       try {
         const res = await fetch(`${API}/cron`, { method: 'POST', headers: { 'X-Api-Key': getApiKey() } });
         const data = await res.json();
@@ -454,6 +493,18 @@
 
     async function checkStatus() {
       addLog('📊 Cek status...', 'hl');
+      // Reset preview state while loading
+      document.getElementById('previewPlaceholder').textContent = '⏳ Generating...';
+      document.getElementById('previewPlaceholder').style.display = 'block';
+      document.getElementById('previewText').style.display = 'none';
+      document.getElementById('charCount').style.display = 'none';
+      document.getElementById('previewMeta').style.display = 'none';
+      document.getElementById('btnCopy').style.display = 'none';
+      const btnDel = document.getElementById('btnDelete');
+      if (btnDel) btnDel.style.display = 'none';
+      document.getElementById('genStatus').textContent = '⏳ Processing...';
+      document.getElementById('genStatus').style.color = 'var(--warning)';
+
       try {
         const res = await fetch(`${API}/debug`);
         const data = await res.json();
@@ -501,6 +552,31 @@
       logs.appendChild(div);
       if (logs.children.length > 50) logs.firstChild.remove();
       logs.scrollTop = logs.scrollHeight;
+    }
+
+    function clearPreview() {
+      lastGeneratedText = '';
+      lastGeneratedTime = '';
+      const box = document.getElementById('previewBox');
+      const placeholder = document.getElementById('previewPlaceholder');
+      const textEl = document.getElementById('previewText');
+      const charCount = document.getElementById('charCount');
+      const meta = document.getElementById('previewMeta');
+      const btnCopy = document.getElementById('btnCopy');
+      const btnDelete = document.getElementById('btnDelete');
+      const genStatus = document.getElementById('genStatus');
+
+      box.classList.add('empty');
+      placeholder.style.display = 'block';
+      placeholder.textContent = '💡 Masukin topik, klik Generate';
+      textEl.style.display = 'none';
+      textEl.textContent = '';
+      charCount.style.display = 'none';
+      meta.style.display = 'none';
+      btnCopy.style.display = 'none';
+      btnDelete.style.display = 'none';
+      genStatus.textContent = '';
+      addLog('🗑️ Hasil dihapus', 'err');
     }
 
     function toast(msg, type) {
