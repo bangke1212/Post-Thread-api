@@ -1,29 +1,28 @@
-const path = require('path');
-// netlify/functions/cron.js — Scheduled function for Netlify
-const { getConfig } = require(path.join(__dirname, 'config.js'));
-const { runPipeline } = require(path.join(__dirname, 'pipeline.js'));
-const { RunLockError } = require(path.join(__dirname, 'errors.js'));
-const { logger } = require(path.join(__dirname, 'logger.js'));
-
 exports.handler = async (event, context) => {
-  logger.info('Cron job triggered');
-
   try {
+    const crypto = require('crypto');
+    const requirePath = require('path');
+    
+    // Test: can we require our dependencies?
+    const { getConfig } = require(requirePath.join(__dirname, 'config.js'));
     const config = getConfig();
-    const result = await runPipeline(config);
-
-    if (result.status === 'success') {
-      return { statusCode: 200, body: JSON.stringify({ status: 'ok', postId: result.postId, text: result.generatedText }) };
-    } else if (result.status === 'skipped') {
-      return { statusCode: 200, body: JSON.stringify({ status: 'skipped', error: result.error }) };
-    } else {
-      return { statusCode: 500, body: JSON.stringify({ error: result.error }) };
-    }
+    
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        ok: true,
+        msg: 'Cron triggered',
+        configKeys: Object.keys(config).join(', '),
+        hasOpenRouterKey: !!config.openrouterApiKey
+      })
+    };
   } catch (err) {
-    if (err instanceof RunLockError) {
-      return { statusCode: 200, body: JSON.stringify({ status: 'skipped', error: 'Pipeline already running' }) };
-    }
-    logger.critical('Cron pipeline exception', { error: err.message });
-    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        error: err.message,
+        stack: err.stack?.split('\n').slice(0, 5).join(' | ')
+      })
+    };
   }
-}
+};
