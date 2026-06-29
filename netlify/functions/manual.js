@@ -4,12 +4,12 @@ const { runPipeline } = require('./pipeline.js');
 const { RunLockError } = require('./errors.js');
 const { logger } = require('./logger.js');
 
-module.exports = async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+exports.handler = async (event, context) => {
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed. Use POST.' }) };
   }
 
-  const dryRun = req.query['dry'] === 'true';
+  const dryRun = event.queryStringParameters ? event.queryStringParameters['dry'] === 'true' : false;
   logger.info('Manual pipeline triggered', { dryRun });
 
   try {
@@ -23,9 +23,9 @@ module.exports = async function handler(req, res) {
     });
   } catch (err) {
     if (err instanceof RunLockError) {
-      return res.status(200).json({ status: 'skipped', error: 'Pipeline already running' });
+      return { statusCode: 200, body: JSON.stringify({ status: 'skipped', error: 'Pipeline already running' }) };
     }
     logger.critical('Manual pipeline exception', { error: err.message });
-    return res.status(500).json({ error: err.message });
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 }
