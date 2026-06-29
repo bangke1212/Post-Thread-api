@@ -1,5 +1,4 @@
 {
-  "buildCommand": "npm run build && mkdir -p api/lib && cp dist/*.js api/lib/",
   "crons": [
     {
       "path": "/api/cron",
