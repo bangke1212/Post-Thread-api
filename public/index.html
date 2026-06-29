@@ -218,8 +218,8 @@
     <!-- Topic Presets -->
     <div class="card">
       <div class="card-header">
-        <h2>🎯 Topic Presets</h2>
-        <span style="font-size:12px;color:var(--muted)">klik buat auto-isi</span>
+        <h2>🎯 Tone / Gaya Tulisan</h2>
+        <span style="font-size:12px;color:var(--muted)">pilih nada — topik tetap dari input</span>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-preset preset-simpati" onclick="setTopic('simpati')">💚 Simpati</button>
@@ -342,7 +342,7 @@
           'Content-Type': 'application/json',
           'X-Api-Key': apiKey
         };
-        const reqBody = JSON.stringify({ topic: topic || 'trending' });
+        const reqBody = JSON.stringify({ topic: topic || 'trending topic', tone: getTone() });
         
         const res = await fetch(url, { 
           method: 'POST', 
@@ -453,25 +453,26 @@
     }
 
     // ========== HELPERS ==========
-    // ========== TOPIC PRESETS ==========
-    let activePreset = '';
-    const topicPresets = {
-      simpati: 'Cerita yang menyentuh hati tentang kebaikan orang biasa, berbagi rezeki, gotong royong, solidaritas — bikin pembaca terharu dan percaya masih banyak orang baik',
-      'debat+solusi': 'Masalah sosial yang lagi rame diperdebatkan, kontroversial tapi tetap respectful — ajak pembaca diskusi sehat dan kasih solusi dari dua sisi',
-      'mengejek oknum': 'Sindiran cerdas ke pejabat/koruptor/pejabat publik yang bikin kebijakan konyol — satire, lucu, ngena, bikin pembaca ketawa getir'
-    };
-    function setTopic(preset) {
-      const input = document.getElementById('topicInput');
-      input.value = topicPresets[preset];
-      activePreset = preset;
-      // Highlight active
+    // ========== TONE PRESETS ==========
+    let activeTone = '';
+    function setTopic(tone) {
+      if (activeTone === tone) {
+        // Unselect
+        activeTone = '';
+        document.querySelectorAll('.btn-preset').forEach(b => b.classList.remove('active-preset'));
+        addLog('🎯 Tone: none (default)', 'hl');
+        return;
+      }
+      activeTone = tone;
       document.querySelectorAll('.btn-preset').forEach(b => b.classList.remove('active-preset'));
-      const activeBtn = document.querySelector('.preset-' + preset);
+      const activeBtn = document.querySelector('.preset-' + tone);
       if (activeBtn) activeBtn.classList.add('active-preset');
-      input.focus();
-      addLog('🎯 Preset: ' + preset, 'hl');
-      toast('Topik "' + preset + '" siap! Klik Generate', 'info');
+      const labels = { simpati: '💚 Simpati', 'debat+solusi': '⚖️ Debat + Solusi', 'mengejek oknum': '🎭 Mengejek Oknum' };
+      addLog('🎯 Tone: ' + labels[tone], 'hl');
+      toast('Nada: ' + labels[tone] + ' — topik tetap dari input kamu', 'info');
     }
+    
+    function getTone() { return activeTone; }
 
     function addLog(msg, cls) {
       const logs = document.getElementById('logs');
