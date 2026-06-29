@@ -8,19 +8,27 @@ function buildPrompt(topic, tone, history) {
     ? '\nJANGAN ulangi postingan sebelumnya:\n' + history.map((t,i) => (i+1) + '. ' + t.slice(0,80)).join('\n')
     : '';
   
-  if (tone === 'simpati') {
-    return 'Buat satu postingan dengan NADA SIMPATI / menyentuh hati tentang "' + topic + '". Cerita relatable yang bikin orang terharu dan ingin berbuat baik. Bahasa Indonesia natural. Maks 280 karakter. 1 emoji maksimal. NO hashtag. Output HANYA teks.' + historyBlock;
-  }
-  if (tone === 'debat+solusi') {
-    return 'Buat satu postingan dengan NADA DEBAT SEHAT + SOLUSI tentang "' + topic + '". Fair dan balanced, tunjukkan dua sisi. Ajak diskusi dewasa. Bahasa Indonesia respectful. Maks 280 karakter. NO hashtag. Output HANYA teks.' + historyBlock;
-  }
-  if (tone === 'mengejek oknum') {
-    return 'Buat satu postingan dengan NADA SATIRE / SINDIRAN CERDAS tentang "' + topic + '". Lucu, ngena, elegan — bukan ujaran kebencian. Gaya komedi sosial. Bahasa Indonesia. Maks 280 karakter. 1 emoji. NO hashtag. Output HANYA teks.' + historyBlock;
-  }
-  return 'Buat satu postingan pendek (maks 280 karakter) tentang "' + topic + '". Bahasa Indonesia natural dan engaging. Hook menarik di awal. 1 emoji maksimal. Akhiri dengan pertanyaan atau call-to-action. NO hashtag. Output HANYA teks postingan jadi.' + historyBlock;
-}
+  const toneMap = {
+    'simpati':        'NADA SIMPATI / MENYENTUH HATI. Cerita relatable yang bikin pembaca terharu, ingin berbuat baik, percaya kebaikan. Hangat, manusiawi. 1 emoji 🥹💚🤝.',
+    'debat+solusi':   'NADA DEBAT SEHAT + SOLUSI. Fair & balanced, tunjukkan dua sisi. Ajak diskusi dewasa, kasih sudut pandang membangun. Respectful. No emoji atau 1 maks.',
+    'mengejek oknum': 'NADA SATIRE / SINDIRAN CERDAS. Lucu, ngena, elegan — bukan ujaran kebencian. Gaya komedi sosial, ketawa getir. 1 emoji 😏🎭.',
+    'marah':          'NADA MARAH / GERAM. Emosi meledak tapi tetap elegan, bukan cacian. Ungkapin kekecewaan atau kemarahan yang justified. 1-2 emoji 😤🤬🔥.',
+    'kaget':          'NADA KAGET / SHOCK. Terkejut, tidak percaya, wtf moment. Dramatis tapi tetap engaging. 1-2 emoji 😱🤯💀.',
+    'sedih':          'NADA SEDIH / MELANKOLIS. Menyentuh, sendu, bikin pembaca ikut merasakan. Puitis tapi nggak lebay. 1 emoji 😢💔🥀.',
+    'bangga':         'NADA BANGGA / CELEBRATORY. Energi positif, uplifting, membanggakan. Rayakan pencapaian atau hal baik. 1-2 emoji 🥳🎉🔥.',
+    'takut':          'NADA TAKUT / CEMAS. Bikin merinding, warning, concern yang genuine. Bukan fearmongering. 1 emoji 😨😰⚠️.'
+  };
+  
+  const toneInstruction = toneMap[tone] || '';
+  const toneBlock = toneInstruction 
+    ? 'Gunakan ' + toneInstruction + '\n'
+    : '';
 
-export async function generateText(config, keywords, history = [], tone = '', retries = 3) {
+  return 'Buat satu postingan pendek (maks 280 karakter) tentang "' + topic + '".\n' +
+    toneBlock +
+    'Bahasa Indonesia natural dan engaging. Maks 280 karakter. NO hashtag, NO kutipan di awal/akhir. Output HANYA teks postingan jadi, jangan ada intro/outro lain.' + 
+    historyBlock;
+}export async function generateText(config, keywords, history = [], tone = '', retries = 3) {
   const topic = keywords[0] || 'trending topic';
   const toneInput = tone || config.tone || '';
   const prompt = buildPrompt(topic, toneInput, history);
