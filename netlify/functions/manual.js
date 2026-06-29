@@ -1,8 +1,9 @@
+const path = require('path');
 // netlify/functions/manual.js — Manual pipeline trigger for Netlify
-const { getConfig } = require('./config.js');
-const { runPipeline } = require('./pipeline.js');
-const { RunLockError } = require('./errors.js');
-const { logger } = require('./logger.js');
+const { getConfig } = require(path.join(__dirname, 'config.js'));
+const { runPipeline } = require(path.join(__dirname, 'pipeline.js'));
+const { RunLockError } = require(path.join(__dirname, 'errors.js'));
+const { logger } = require(path.join(__dirname, 'logger.js'));
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
