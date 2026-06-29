@@ -1,8 +1,8 @@
 // api/auth.cjs — OAuth auth endpoint for Vercel
 const { randomBytes } = require('crypto');
-const { getAuthConfig } = require('./lib/config.js');
-const { ThreadsClient } = require('./lib/threads-api.js');
-const { logger } = require('./lib/logger.js');
+const { getAuthConfig } = require('../dist/config.js');
+const { ThreadsClient } = require('../dist/threads-api.js');
+const { logger } = require('../dist/logger.js');
 
 module.exports = async function handler(req, res) {
   const code = req.query['code'];
