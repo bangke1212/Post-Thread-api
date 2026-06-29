@@ -1,13 +1,12 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".",
+  "buildCommand": "npm run build && mkdir -p api/lib && cp dist/*.js api/lib/",
   "crons": [
     {
       "path": "/api/cron",
       "schedule": "15 5 * * *"
     },
     {
-      "path": "/api/cron", 
+      "path": "/api/cron",
       "schedule": "30 12 * * *"
     }
   ]
