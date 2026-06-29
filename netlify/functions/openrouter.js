@@ -30,9 +30,12 @@ function buildPrompt(topic, tone, history, linkContent) {
 
   return 'Buat satu postingan pendek (maks 280 karakter) tentang "' + topic + '".\n' +
     toneBlock +
+    linkBlock + '\n' +
     'Bahasa Indonesia natural dan engaging. Maks 280 karakter. NO hashtag, NO kutipan di awal/akhir. Output HANYA teks postingan jadi, jangan ada intro/outro lain.' + 
     historyBlock;
-}export async function generateText(config, keywords, history = [], tone = '', linkContent = '', retries = 3) {
+}
+
+export async function generateText(config, keywords, history = [], tone = '', linkContent = '', retries = 3) {
   const topic = keywords[0] || 'trending topic';
   const toneInput = tone || config.tone || '';
   const prompt = buildPrompt(topic, toneInput, history, linkContent);
