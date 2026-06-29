@@ -591,29 +591,46 @@
       status.style.color = 'var(--warning)';
       
       try {
-        // Use fxtwitter for X/Twitter
+        // For X/Twitter: use api.fxtwitter.com (JSON, no JS needed)
         let fetchUrl = url;
+        let useJsonApi = false;
         try {
           const u = new URL(url);
           if (u.hostname === 'x.com' || u.hostname === 'twitter.com') {
-            fetchUrl = url.replace(/\/(twitter|x)\.com\//, '/fxtwitter.com/');
+            // Grab tweet ID from path
+            const parts = u.pathname.split('/').filter(Boolean);
+            const tweetId = parts[parts.indexOf('status') + 1] || parts[0];
+            if (tweetId && /^\d+$/.test(tweetId)) {
+              fetchUrl = 'https://api.fxtwitter.com/status/' + tweetId;
+              useJsonApi = true;
+            }
           }
         } catch(e) {}
         
         const res = await fetch(fetchUrl);
         if (res.ok) {
-          const raw = await res.text();
-          // Extract og:description or strip HTML
-          const ogDesc = raw.match(/<meta[^>]*og:description[^>]*content="([^"]*)"/);
-          const ogTitle = raw.match(/<meta[^>]*og:title[^>]*content="([^"]*)"/);
-          if (ogDesc) {
-            linkContentCache = (ogTitle ? ogTitle[1].replace(/ on X$/, '') + ': ' : '') + ogDesc[1];
-            linkContentCache = linkContentCache.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
+          if (useJsonApi) {
+            // fxtwitter JSON API — clean, structured
+            const json = await res.json();
+            if (json.tweet && json.tweet.text) {
+              linkContentCache = json.tweet.text;
+            } else if (json.text) {
+              linkContentCache = json.text;
+            }
           } else {
-            linkContentCache = raw.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
-              .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
-              .replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ')
-              .replace(/\s+/g, ' ').trim().slice(0, 3000);
+            // Non-Twitter links: parse HTML
+            const raw = await res.text();
+            const ogDesc = raw.match(/<meta[^>]*og:description[^>]*content="([^"]*)"/);
+            const ogTitle = raw.match(/<meta[^>]*og:title[^>]*content="([^"]*)"/);
+            if (ogDesc) {
+              linkContentCache = (ogTitle ? ogTitle[1].replace(/ on X$/, '') + ': ' : '') + ogDesc[1];
+              linkContentCache = linkContentCache.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
+            } else {
+              linkContentCache = raw.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
+                .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+                .replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ')
+                .replace(/\s+/g, ' ').trim().slice(0, 3000);
+            }
           }
           status.textContent = '✅ Link terbaca! (' + linkContentCache.length + ' karakter)';
           status.style.color = 'var(--success)';
