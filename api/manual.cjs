@@ -1,11 +1,10 @@
-// api/manual.js — Manual pipeline trigger endpoint
+// api/manual.cjs — Manual pipeline trigger
+const { getConfig } = require('../dist/config.js');
+const { runPipeline } = require('../dist/pipeline.js');
+const { RunLockError } = require('../dist/errors.js');
+const { logger } = require('../dist/logger.js');
 
-import { getConfig } from '../dist/config.js';
-import { runPipeline } from '../dist/pipeline.js';
-import { RunLockError } from '../dist/errors.js';
-import { logger } from '../dist/logger.js';
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
@@ -16,7 +15,6 @@ export default async function handler(req, res) {
   try {
     const config = getConfig();
     const result = await runPipeline(config, dryRun);
-
     return res.status(200).json({
       status: result.status,
       postId: result.postId,

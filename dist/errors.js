@@ -1,5 +1,8 @@
+"use strict";
 // src/errors.ts — typed error hierarchy
-export class AppError extends Error {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RunLockError = exports.TokenExpiredError = exports.ConfigError = exports.TransientError = exports.RateLimitError = exports.AuthError = exports.AppError = void 0;
+class AppError extends Error {
     code;
     constructor(message, code) {
         super(message);
@@ -8,42 +11,48 @@ export class AppError extends Error {
         Error.captureStackTrace(this, this.constructor);
     }
 }
+exports.AppError = AppError;
 /** HTTP 401 from Threads API — trigger token refresh */
-export class AuthError extends AppError {
+class AuthError extends AppError {
     constructor(message = 'Authentication failed; token may be expired') {
         super(message, 'AUTH_ERROR');
     }
 }
+exports.AuthError = AuthError;
 /** HTTP 429 — rate limited; skip this run */
-export class RateLimitError extends AppError {
+class RateLimitError extends AppError {
     constructor(message = 'Rate limited by Threads API') {
         super(message, 'RATE_LIMIT');
     }
 }
+exports.RateLimitError = RateLimitError;
 /** 5xx or network failure — eligible for retry */
-export class TransientError extends AppError {
+class TransientError extends AppError {
     statusCode;
     constructor(message, statusCode) {
         super(message, 'TRANSIENT_ERROR');
         this.statusCode = statusCode;
     }
 }
+exports.TransientError = TransientError;
 /** Config is incomplete or invalid */
-export class ConfigError extends AppError {
+class ConfigError extends AppError {
     constructor(message) {
         super(message, 'CONFIG_ERROR');
     }
 }
+exports.ConfigError = ConfigError;
 /** Token is fully expired; re-auth required */
-export class TokenExpiredError extends AppError {
+class TokenExpiredError extends AppError {
     constructor(message = 'Access token expired — run `auth` to re-authenticate') {
         super(message, 'TOKEN_EXPIRED');
     }
 }
+exports.TokenExpiredError = TokenExpiredError;
 /** Pipeline overlapping run detected */
-export class RunLockError extends AppError {
+class RunLockError extends AppError {
     constructor(message = 'A pipeline run is already in progress') {
         super(message, 'RUN_LOCK');
     }
 }
-//# sourceMappingURL=errors.js.map
+exports.RunLockError = RunLockError;

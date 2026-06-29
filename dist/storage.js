@@ -1,8 +1,21 @@
+"use strict";
 // src/storage.ts — JSON file-based storage (Vercel-compatible, replaces SQLite)
 // Uses /tmp for serverless compatibility.
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { dirname } from 'path';
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.saveToken = saveToken;
+exports.updateTokenUserId = updateTokenUserId;
+exports.loadToken = loadToken;
+exports.savePostRecord = savePostRecord;
+exports.getRecentPosts = getRecentPosts;
+exports.startRunRecord = startRunRecord;
+exports.completeRunRecord = completeRunRecord;
+exports.countRecentFailures = countRecentFailures;
+exports.getUsedImageIds = getUsedImageIds;
+exports.markImageUsed = markImageUsed;
+exports.resetStorage = resetStorage;
+const fs_1 = require("fs");
+const path_1 = require("path");
+const crypto_1 = require("crypto");
 function emptyState() {
     return {
         posts: [],
@@ -26,11 +39,11 @@ function loadState() {
         return _state;
     const dbPath = getDbPath();
     try {
-        const dir = dirname(dbPath);
-        if (!existsSync(dir))
-            mkdirSync(dir, { recursive: true, mode: 0o700 });
-        if (existsSync(dbPath)) {
-            const raw = readFileSync(dbPath, 'utf-8');
+        const dir = (0, path_1.dirname)(dbPath);
+        if (!(0, fs_1.existsSync)(dir))
+            (0, fs_1.mkdirSync)(dir, { recursive: true, mode: 0o700 });
+        if ((0, fs_1.existsSync)(dbPath)) {
+            const raw = (0, fs_1.readFileSync)(dbPath, 'utf-8');
             _state = JSON.parse(raw);
             if (!_state.nextIds)
                 _state.nextIds = { posts: 1, runs: 1 };
@@ -54,17 +67,17 @@ function loadState() {
 function saveState() {
     if (!_state)
         return;
-    const dir = dirname(getDbPath());
-    if (!existsSync(dir))
-        mkdirSync(dir, { recursive: true, mode: 0o700 });
-    writeFileSync(getDbPath(), JSON.stringify(_state, null, 2), { mode: 0o600 });
+    const dir = (0, path_1.dirname)(getDbPath());
+    if (!(0, fs_1.existsSync)(dir))
+        (0, fs_1.mkdirSync)(dir, { recursive: true, mode: 0o700 });
+    (0, fs_1.writeFileSync)(getDbPath(), JSON.stringify(_state, null, 2), { mode: 0o600 });
 }
 function deriveTokenKey(secret) {
-    return createHash('sha256').update(secret).digest();
+    return (0, crypto_1.createHash)('sha256').update(secret).digest();
 }
 function encryptToken(accessToken, secret) {
-    const iv = randomBytes(12);
-    const cipher = createCipheriv('aes-256-gcm', deriveTokenKey(secret), iv);
+    const iv = (0, crypto_1.randomBytes)(12);
+    const cipher = (0, crypto_1.createCipheriv)('aes-256-gcm', deriveTokenKey(secret), iv);
     const encrypted = Buffer.concat([cipher.update(accessToken, 'utf8'), cipher.final()]);
     const tag = cipher.getAuthTag();
     return 'enc:v1:' + iv.toString('base64') + ':' + tag.toString('base64') + ':' + encrypted.toString('base64');
@@ -79,7 +92,7 @@ function decryptToken(payload, secret) {
     if (!ivBase64 || !tagBase64 || !cipherBase64) {
         throw new Error('Stored token payload is malformed');
     }
-    const decipher = createDecipheriv('aes-256-gcm', deriveTokenKey(secret), Buffer.from(ivBase64, 'base64'));
+    const decipher = (0, crypto_1.createDecipheriv)('aes-256-gcm', deriveTokenKey(secret), Buffer.from(ivBase64, 'base64'));
     decipher.setAuthTag(Buffer.from(tagBase64, 'base64'));
     const decrypted = Buffer.concat([
         decipher.update(Buffer.from(cipherBase64, 'base64')),
@@ -87,7 +100,7 @@ function decryptToken(payload, secret) {
     ]);
     return decrypted.toString('utf8');
 }
-export function saveToken(secret, accessToken, expiresAt, userId) {
+function saveToken(secret, accessToken, expiresAt, userId) {
     const s = loadState();
     const existing = s.tokens.find(function (t) { return t.id === 1; });
     const persistedUserId = userId !== undefined ? String(userId) : (existing ? existing.user_id : null);
@@ -108,35 +121,35 @@ export function saveToken(secret, accessToken, expiresAt, userId) {
     }
     saveState();
 }
-export function updateTokenUserId(userId) {
+function updateTokenUserId(userId) {
     const s = loadState();
     const token = s.tokens.find(function (t) { return t.id === 1; });
     if (token)
         token.user_id = String(userId);
     saveState();
 }
-export function loadToken(secret) {
+function loadToken(secret) {
     const s = loadState();
     const token = s.tokens.find(function (t) { return t.id === 1; });
     if (!token)
         return undefined;
     return { ...token, access_token: decryptToken(token.access_token, secret) };
 }
-export function savePostRecord(post) {
+function savePostRecord(post) {
     const s = loadState();
     const id = s.nextIds.posts++;
     s.posts.push({ id: id, ...post });
     saveState();
     return id;
 }
-export function getRecentPosts(limit = 5) {
+function getRecentPosts(limit = 5) {
     const s = loadState();
     return s.posts
         .filter(function (p) { return p.threads_post_id !== null; })
         .sort(function (a, b) { return b.id - a.id; })
         .slice(0, limit);
 }
-export function startRunRecord() {
+function startRunRecord() {
     const s = loadState();
     const id = s.nextIds.runs++;
     s.runs.push({
@@ -149,7 +162,7 @@ export function startRunRecord() {
     saveState();
     return id;
 }
-export function completeRunRecord(runId, status, errorMessage) {
+function completeRunRecord(runId, status, errorMessage) {
     const s = loadState();
     const run = s.runs.find(function (r) { return r.id === runId; });
     if (run) {
@@ -159,18 +172,18 @@ export function completeRunRecord(runId, status, errorMessage) {
     }
     saveState();
 }
-export function countRecentFailures(last = 3) {
+function countRecentFailures(last = 3) {
     const s = loadState();
     const recent = s.runs.sort(function (a, b) { return b.id - a.id; }).slice(0, last);
     if (recent.length < last)
         return 0;
     return recent.every(function (r) { return r.status === 'failed'; }) ? last : 0;
 }
-export function getUsedImageIds() {
+function getUsedImageIds() {
     const s = loadState();
     return new Set(s.used_images.map(function (r) { return r.image_id; }));
 }
-export function markImageUsed(imageId, imageUrl) {
+function markImageUsed(imageId, imageUrl) {
     const s = loadState();
     s.used_images.push({
         image_id: imageId,
@@ -182,7 +195,6 @@ export function markImageUsed(imageId, imageUrl) {
     }
     saveState();
 }
-export function resetStorage() {
+function resetStorage() {
     _state = undefined;
 }
-//# sourceMappingURL=storage.js.map

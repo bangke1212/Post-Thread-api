@@ -1,20 +1,10 @@
-// api/cron.js — Vercel Cron Job handler
+// api/cron.cjs — Vercel Cron Job handler
+const { getConfig } = require('../dist/config.js');
+const { runPipeline } = require('../dist/pipeline.js');
+const { RunLockError } = require('../dist/errors.js');
+const { logger } = require('../dist/logger.js');
 
-import { getConfig } from '../dist/config.js';
-import { runPipeline } from '../dist/pipeline.js';
-import { RunLockError } from '../dist/errors.js';
-import { logger } from '../dist/logger.js';
-
-export default async function handler(req, res) {
-  const cronSecret = process.env['CRON_SECRET'];
-  if (cronSecret) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || authHeader !== 'Bearer ' + cronSecret) {
-      logger.warn('Cron unauthorized');
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-  }
-
+module.exports = async function handler(req, res) {
   logger.info('Cron job triggered');
 
   try {

@@ -1,7 +1,10 @@
+"use strict";
 // src/threads-api.ts — Threads Graph API client (Vercel-adapted)
-import { AuthError, RateLimitError, TransientError } from './errors.js';
-import { logger } from './logger.js';
-import { loadToken, saveToken, updateTokenUserId } from './storage.js';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ThreadsClient = void 0;
+const errors_js_1 = require("./errors.js");
+const logger_js_1 = require("./logger.js");
+const storage_js_1 = require("./storage.js");
 const BASE_URL = 'https://graph.threads.net/v1.0';
 const AUTH_BASE = 'https://threads.net/oauth';
 const OAUTH_API_BASE = 'https://graph.threads.net/oauth';
@@ -13,14 +16,14 @@ async function apiFetch(url, opts = {}) {
         res = await fetch(url, opts);
     }
     catch (err) {
-        throw new TransientError('Network error: ' + err.message);
+        throw new errors_js_1.TransientError('Network error: ' + err.message);
     }
     if (res.status === 401)
-        throw new AuthError();
+        throw new errors_js_1.AuthError();
     if (res.status === 429)
-        throw new RateLimitError();
+        throw new errors_js_1.RateLimitError();
     if (res.status >= 500) {
-        throw new TransientError('Threads API server error ' + res.status, res.status);
+        throw new errors_js_1.TransientError('Threads API server error ' + res.status, res.status);
     }
     if (!res.ok) {
         const errorBody = await res.text();
@@ -28,19 +31,19 @@ async function apiFetch(url, opts = {}) {
     }
     return res.json();
 }
-export class ThreadsClient {
+class ThreadsClient {
     config;
     resolvedThreadsUserId;
     constructor(config) {
         this.config = config;
     }
     getAccessToken() {
-        const token = loadToken(this.config.threadsAppSecret);
+        const token = (0, storage_js_1.loadToken)(this.config.threadsAppSecret);
         if (token)
             return token.access_token;
         if (this.config.threadsAccessToken)
             return this.config.threadsAccessToken;
-        throw new AuthError('No access token found — run auth first');
+        throw new errors_js_1.AuthError('No access token found — run auth first');
     }
     async resolveThreadsUserId() {
         if (this.config.threadsUserId && USER_ID_PATTERN.test(this.config.threadsUserId)) {
@@ -50,10 +53,10 @@ export class ThreadsClient {
             return this.resolvedThreadsUserId;
         const profile = await this.getCurrentUserProfile();
         this.resolvedThreadsUserId = profile.id;
-        const token = loadToken(this.config.threadsAppSecret);
+        const token = (0, storage_js_1.loadToken)(this.config.threadsAppSecret);
         if (token && token.user_id !== profile.id) {
-            updateTokenUserId(profile.id);
-            logger.info('Repaired stored Threads user ID', { userId: profile.id });
+            (0, storage_js_1.updateTokenUserId)(profile.id);
+            logger_js_1.logger.info('Repaired stored Threads user ID', { userId: profile.id });
         }
         return profile.id;
     }
@@ -62,9 +65,9 @@ export class ThreadsClient {
             return await request();
         }
         catch (error) {
-            if (!(error instanceof AuthError))
+            if (!(error instanceof errors_js_1.AuthError))
                 throw error;
-            logger.warn('Threads token rejected, attempting refresh');
+            logger_js_1.logger.warn('Threads token rejected, attempting refresh');
             await this.refreshToken();
             return request();
         }
@@ -93,7 +96,7 @@ export class ThreadsClient {
             body: body.toString(),
         });
         const userId = (await this.getCurrentUserProfile(result.access_token)).id;
-        logger.info('Exchanged code for short-lived token', { userId });
+        logger_js_1.logger.info('Exchanged code for short-lived token', { userId });
         return {
             access_token: result.access_token,
             user_id: userId,
@@ -109,8 +112,8 @@ export class ThreadsClient {
         });
         const result = await apiFetch(TOKEN_BASE + '/access_token?' + params.toString(), { method: 'GET' });
         const expiresAt = new Date(Date.now() + result.expires_in * 1000);
-        saveToken(this.config.threadsAppSecret, result.access_token, expiresAt, userId);
-        logger.info('Long-lived token obtained', { expiresAt: expiresAt.toISOString() });
+        (0, storage_js_1.saveToken)(this.config.threadsAppSecret, result.access_token, expiresAt, userId);
+        logger_js_1.logger.info('Long-lived token obtained', { expiresAt: expiresAt.toISOString() });
         return result;
     }
     async refreshToken() {
@@ -121,8 +124,8 @@ export class ThreadsClient {
         });
         const result = await apiFetch(TOKEN_BASE + '/refresh_access_token?' + params.toString(), { method: 'GET' });
         const expiresAt = new Date(Date.now() + result.expires_in * 1000);
-        saveToken(this.config.threadsAppSecret, result.access_token, expiresAt);
-        logger.info('Token refreshed', { expiresAt: expiresAt.toISOString() });
+        (0, storage_js_1.saveToken)(this.config.threadsAppSecret, result.access_token, expiresAt);
+        logger_js_1.logger.info('Token refreshed', { expiresAt: expiresAt.toISOString() });
     }
     async getCurrentUserProfile(accessToken = this.getAccessToken()) {
         const params = new URLSearchParams({ fields: 'id,username,name' });
@@ -131,17 +134,17 @@ export class ThreadsClient {
         });
     }
     async maybeRefreshToken() {
-        const token = loadToken(this.config.threadsAppSecret);
+        const token = (0, storage_js_1.loadToken)(this.config.threadsAppSecret);
         if (!token)
             return;
         const expiresAt = new Date(token.expires_at);
         const daysUntilExpiry = (expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
         if (daysUntilExpiry < 0) {
-            logger.error('Token expired', { expiresAt: token.expires_at });
-            throw new AuthError('Token expired — run auth to re-authenticate');
+            logger_js_1.logger.error('Token expired', { expiresAt: token.expires_at });
+            throw new errors_js_1.AuthError('Token expired — run auth to re-authenticate');
         }
         if (daysUntilExpiry <= 10) {
-            logger.info('Token nearing expiry, refreshing', { daysLeft: Math.round(daysUntilExpiry) });
+            logger_js_1.logger.info('Token nearing expiry, refreshing', { daysLeft: Math.round(daysUntilExpiry) });
             await this.refreshToken();
         }
     }
@@ -150,7 +153,7 @@ export class ThreadsClient {
         const result = await this.withAuthRetry(() => apiFetch(BASE_URL + '/keyword_search?' + params.toString(), {
             headers: { Authorization: 'Bearer ' + this.getAccessToken() },
         }));
-        logger.debug('Keyword search', { query, count: result.data.length });
+        logger_js_1.logger.debug('Keyword search', { query, count: result.data.length });
         return result.data;
     }
     async createMediaContainer(text, imageUrl) {
@@ -171,7 +174,7 @@ export class ThreadsClient {
             },
             body: params.toString(),
         }));
-        logger.debug('Media container created', { containerId: result.id });
+        logger_js_1.logger.debug('Media container created', { containerId: result.id });
         return result.id;
     }
     async publishMediaContainer(containerId) {
@@ -185,8 +188,8 @@ export class ThreadsClient {
             },
             body: params.toString(),
         }));
-        logger.info('Post published', { postId: result.id });
+        logger_js_1.logger.info('Post published', { postId: result.id });
         return result.id;
     }
 }
-//# sourceMappingURL=threads-api.js.map
+exports.ThreadsClient = ThreadsClient;

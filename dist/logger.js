@@ -1,4 +1,7 @@
+"use strict";
 // src/logger.ts — minimal structured logger
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.logger = void 0;
 const LEVELS = {
     debug: 0,
     info: 1,
@@ -24,11 +27,10 @@ function emit(level, message, meta) {
         process.stdout.write(line + '\n');
     }
 }
-export const logger = {
+exports.logger = {
     debug: (message, meta) => emit('debug', message, meta),
     info: (message, meta) => emit('info', message, meta),
     warn: (message, meta) => emit('warn', message, meta),
     error: (message, meta) => emit('error', message, meta),
     critical: (message, meta) => emit('critical', message, meta),
 };
-//# sourceMappingURL=logger.js.map

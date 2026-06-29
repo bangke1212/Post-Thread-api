@@ -1,8 +1,20 @@
+"use strict";
 // src/utils.ts — general-purpose helpers
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.pickRandom = pickRandom;
+exports.dedupeBy = dedupeBy;
+exports.parseTime = parseTime;
+exports.toCronExpr = toCronExpr;
+exports.extractKeyword = extractKeyword;
+exports.extractKeywords = extractKeywords;
+exports.sleep = sleep;
+exports.truncate = truncate;
+exports.stripEmployerSentences = stripEmployerSentences;
+exports.sanitizePost = sanitizePost;
 /**
  * Pick `count` random unique items from an array without mutating it.
  */
-export function pickRandom(arr, count) {
+function pickRandom(arr, count) {
     if (count >= arr.length)
         return [...arr];
     const shuffled = [...arr].sort(() => Math.random() - 0.5);
@@ -11,7 +23,7 @@ export function pickRandom(arr, count) {
 /**
  * Deduplicate an array of objects by a string key.
  */
-export function dedupeBy(items, key) {
+function dedupeBy(items, key) {
     const seen = new Set();
     return items.filter((item) => {
         const k = item[key];
@@ -24,7 +36,7 @@ export function dedupeBy(items, key) {
 /**
  * Parse a "HH:MM" string into { hour, minute } for cron.
  */
-export function parseTime(hhmm) {
+function parseTime(hhmm) {
     const parts = hhmm.split(':');
     const hour = parseInt(parts[0] ?? '0', 10);
     const minute = parseInt(parts[1] ?? '0', 10);
@@ -37,21 +49,21 @@ export function parseTime(hhmm) {
  * Build a cron expression for a given hour/minute.
  * e.g. { hour: 9, minute: 0 } → "0 9 * * *"
  */
-export function toCronExpr(hour, minute) {
+function toCronExpr(hour, minute) {
     return `${minute} ${hour} * * *`;
 }
 /**
  * Extract the first word that looks like a meaningful keyword from text.
  * Used to query Unsplash when no explicit keyword is provided.
  */
-export function extractKeyword(text) {
+function extractKeyword(text) {
     return extractKeywords(text, 1)[0] ?? 'technology';
 }
 /**
  * Extract multiple meaningful keywords from text for better image search variety.
  * Returns up to `count` unique keywords, skipping stopwords and short words.
  */
-export function extractKeywords(text, count = 3) {
+function extractKeywords(text, count = 3) {
     const stopwords = new Set([
         'yang', 'dan', 'di', 'ke', 'dari', 'adalah', 'dengan', 'untuk', 'pada',
         'ini', 'itu', 'the', 'a', 'an', 'in', 'of', 'to', 'and', 'is', 'it',
@@ -70,14 +82,14 @@ export function extractKeywords(text, count = 3) {
 /**
  * Sleep for ms milliseconds.
  */
-export function sleep(ms) {
+function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 /**
  * Truncate at the last sentence boundary within maxLen.
  * Falls back to last word boundary if no sentence fits.
  */
-export function truncate(text, maxLen) {
+function truncate(text, maxLen) {
     if (text.length <= maxLen)
         return text;
     const chunk = text.slice(0, maxLen);
@@ -101,7 +113,7 @@ const EMPLOYER_PATTERN = /kantor\s+(gue|gw|aku|saya)|di\s+kantor|tempat\s+kerja\
  * Splits on sentence boundaries (. ! ? newline), removes matching sentences, rejoins.
  * A partial inline edit would leave broken fragments, so the whole sentence goes.
  */
-export function stripEmployerSentences(text) {
+function stripEmployerSentences(text) {
     const sentences = text.split(/(?<=[.!?])\s+|\n+/);
     const kept = sentences.filter((s) => s.trim() !== '' && !EMPLOYER_PATTERN.test(s));
     return kept.join(' ').trim();
@@ -110,7 +122,7 @@ export function stripEmployerSentences(text) {
  * Strip AI-generated artifacts from post text.
  * Removes em dashes, clause-level colons, employer references, normalizes whitespace.
  */
-export function sanitizePost(text) {
+function sanitizePost(text) {
     return stripEmployerSentences(text)
         .replace(/\u2014/g, ',') // em dash → comma
         .replace(/\u2013/g, '-') // en dash → hyphen
@@ -120,4 +132,3 @@ export function sanitizePost(text) {
         .replace(/ {2,}/g, ' ') // collapse multiple spaces
         .trim();
 }
-//# sourceMappingURL=utils.js.map

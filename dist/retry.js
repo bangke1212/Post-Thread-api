@@ -1,10 +1,13 @@
+"use strict";
 // src/retry.ts — exponential backoff retry with typed error classification
-import { AuthError, RateLimitError, TransientError } from './errors.js';
-import { logger } from './logger.js';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.withRetry = withRetry;
+const errors_js_1 = require("./errors.js");
+const logger_js_1 = require("./logger.js");
 const DEFAULT_OPTS = {
     maxAttempts: 3,
     baseDelayMs: 1_000,
-    noRetry: [AuthError, RateLimitError],
+    noRetry: [errors_js_1.AuthError, errors_js_1.RateLimitError],
 };
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -16,7 +19,7 @@ function isNoRetry(err, noRetry) {
  * Retry fn up to maxAttempts times on TransientError (or any generic Error
  * not in the noRetry list).  AuthError and RateLimitError are never retried.
  */
-export async function withRetry(fn, opts = {}) {
+async function withRetry(fn, opts = {}) {
     const { maxAttempts, baseDelayMs, noRetry = [] } = { ...DEFAULT_OPTS, ...opts };
     const skipList = [...(DEFAULT_OPTS.noRetry ?? []), ...noRetry];
     let lastError;
@@ -30,13 +33,13 @@ export async function withRetry(fn, opts = {}) {
                 throw err;
             }
             // Only retry on TransientError or generic network-ish errors
-            const isTransient = err instanceof TransientError ||
-                (err instanceof Error && !(err instanceof AuthError) && !(err instanceof RateLimitError));
+            const isTransient = err instanceof errors_js_1.TransientError ||
+                (err instanceof Error && !(err instanceof errors_js_1.AuthError) && !(err instanceof errors_js_1.RateLimitError));
             if (!isTransient || attempt === maxAttempts) {
                 throw err;
             }
             const backoff = baseDelayMs * Math.pow(2, attempt - 1);
-            logger.warn('Transient error, retrying', {
+            logger_js_1.logger.warn('Transient error, retrying', {
                 attempt,
                 maxAttempts,
                 backoffMs: backoff,
@@ -47,4 +50,3 @@ export async function withRetry(fn, opts = {}) {
     }
     throw lastError;
 }
-//# sourceMappingURL=retry.js.map

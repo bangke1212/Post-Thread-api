@@ -1,8 +1,11 @@
+"use strict";
 // src/openrouter.ts — OpenRouter API client
-import { TransientError } from './errors.js';
-import { logger } from './logger.js';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.OpenRouterClient = void 0;
+const errors_js_1 = require("./errors.js");
+const logger_js_1 = require("./logger.js");
 const OPENROUTER_BASE = 'https://openrouter.ai/api/v1';
-export class OpenRouterClient {
+class OpenRouterClient {
     config;
     constructor(config) {
         this.config = config;
@@ -27,13 +30,13 @@ export class OpenRouterClient {
             });
         }
         catch (err) {
-            throw new TransientError(`OpenRouter network error: ${err.message}`);
+            throw new errors_js_1.TransientError(`OpenRouter network error: ${err.message}`);
         }
         if (res.status === 429) {
-            throw new TransientError('OpenRouter rate limit hit', 429);
+            throw new errors_js_1.TransientError('OpenRouter rate limit hit', 429);
         }
         if (res.status >= 500) {
-            throw new TransientError(`OpenRouter server error ${res.status}`, res.status);
+            throw new errors_js_1.TransientError(`OpenRouter server error ${res.status}`, res.status);
         }
         if (!res.ok) {
             throw new Error(`OpenRouter API error ${res.status}`);
@@ -46,11 +49,11 @@ export class OpenRouterClient {
         if (!content) {
             throw new Error('OpenRouter returned empty content');
         }
-        logger.debug('OpenRouter response', {
+        logger_js_1.logger.debug('OpenRouter response', {
             model: this.config.openrouterModel,
             tokens: data.usage?.total_tokens,
         });
         return content.trim();
     }
 }
-//# sourceMappingURL=openrouter.js.map
+exports.OpenRouterClient = OpenRouterClient;

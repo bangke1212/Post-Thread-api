@@ -1,9 +1,15 @@
+"use strict";
 // src/config.ts — env loading and validation
-import { ConfigError } from './errors.js';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getAuthConfig = getAuthConfig;
+exports.getConfig = getConfig;
+exports.setConfig = setConfig;
+exports.clearConfig = clearConfig;
+const errors_js_1 = require("./errors.js");
 function requireEnv(key) {
     const val = process.env[key];
     if (!val)
-        throw new ConfigError(`Missing required environment variable: ${key}`);
+        throw new errors_js_1.ConfigError(`Missing required environment variable: ${key}`);
     return val;
 }
 function optionalEnv(key, defaultValue) {
@@ -15,7 +21,7 @@ function parseBool(val) {
 function parsePositiveInt(val, key) {
     const parsed = Number.parseInt(val, 10);
     if (!Number.isInteger(parsed) || parsed < 1) {
-        throw new ConfigError(`${key} must be a positive integer`);
+        throw new errors_js_1.ConfigError(`${key} must be a positive integer`);
     }
     return parsed;
 }
@@ -55,15 +61,15 @@ function parseCategoryQueries(raw) {
         parsed = JSON.parse(raw);
     }
     catch {
-        throw new ConfigError('CATEGORY_QUERIES must be valid JSON, e.g. {"tech":["ngoding"],"bisnis":["startup"]}');
+        throw new errors_js_1.ConfigError('CATEGORY_QUERIES must be valid JSON, e.g. {"tech":["ngoding"],"bisnis":["startup"]}');
     }
     if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-        throw new ConfigError('CATEGORY_QUERIES must be a JSON object mapping bucket names to query arrays');
+        throw new errors_js_1.ConfigError('CATEGORY_QUERIES must be a JSON object mapping bucket names to query arrays');
     }
     const result = {};
     for (const [bucket, value] of Object.entries(parsed)) {
         if (!Array.isArray(value)) {
-            throw new ConfigError(`CATEGORY_QUERIES bucket "${bucket}" must be an array of strings`);
+            throw new errors_js_1.ConfigError(`CATEGORY_QUERIES bucket "${bucket}" must be an array of strings`);
         }
         const queries = value
             .map((q) => (typeof q === 'string' ? q.trim() : ''))
@@ -72,7 +78,7 @@ function parseCategoryQueries(raw) {
             result[bucket] = queries;
     }
     if (Object.keys(result).length === 0) {
-        throw new ConfigError('CATEGORY_QUERIES must contain at least one bucket with at least one query');
+        throw new errors_js_1.ConfigError('CATEGORY_QUERIES must contain at least one bucket with at least one query');
     }
     return result;
 }
@@ -81,7 +87,7 @@ let _authConfig;
 /**
  * Load only the env needed for Threads auth/bootstrap.
  */
-export function getAuthConfig() {
+function getAuthConfig() {
     if (_authConfig)
         return _authConfig;
     _authConfig = {
@@ -98,7 +104,7 @@ export function getAuthConfig() {
  * Load and validate config from environment variables.
  * Cached after first call.
  */
-export function getConfig() {
+function getConfig() {
     if (_config)
         return _config;
     const authConfig = getAuthConfig();
@@ -123,7 +129,7 @@ export function getConfig() {
         dryRun: parseBool(optionalEnv('DRY_RUN', 'false')),
     };
     if (_config.searchQueries.length === 0) {
-        throw new ConfigError('SEARCH_QUERIES must contain at least one term');
+        throw new errors_js_1.ConfigError('SEARCH_QUERIES must contain at least one term');
     }
     const rawCategoryQueries = process.env['CATEGORY_QUERIES'];
     _config.categoryQueries = rawCategoryQueries
@@ -134,7 +140,7 @@ export function getConfig() {
 /**
  * Override config (used in tests).
  */
-export function setConfig(cfg) {
+function setConfig(cfg) {
     _authConfig = {
         threadsAppId: cfg.threadsAppId,
         threadsAppSecret: cfg.threadsAppSecret,
@@ -145,8 +151,7 @@ export function setConfig(cfg) {
     };
     _config = cfg;
 }
-export function clearConfig() {
+function clearConfig() {
     _authConfig = undefined;
     _config = undefined;
 }
-//# sourceMappingURL=config.js.map

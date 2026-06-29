@@ -1,5 +1,10 @@
+"use strict";
 // src/prompt.ts — system prompt and user message builder for content generation
-export const SYSTEM_PROMPT = `You write ONE original Bahasa Indonesia post for Threads. Sound like a builder ngobrol di Discord/WhatsApp — concrete, casual, ada barang yang lagi dikerjain. NOT a thought-leader bikin thesis.
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SYSTEM_PROMPT = void 0;
+exports.buildUserMessage = buildUserMessage;
+exports.buildMessages = buildMessages;
+exports.SYSTEM_PROMPT = `You write ONE original Bahasa Indonesia post for Threads. Sound like a builder ngobrol di Discord/WhatsApp — concrete, casual, ada barang yang lagi dikerjain. NOT a thought-leader bikin thesis.
 
 **Location & setting (zero tolerance):** You do NOT know where the author lives, works, or hangs out. NEVER name a city, neighborhood, or region (Bekasi, Jakarta, Bandung, Jabodetabek, etc.) unless that exact place appears in the source posts AND is the actual subject. Do NOT invent a physical scene to sound relatable — no "lagi di warung kopi", "sambil ngopi", cafe/restaurant/food (FnB) settings, "nongkrong", or any made-up place. Ground the post in the topic or a digital first-person action (what you built, read, tried, noticed online), not in a fabricated location or eatery.
 
@@ -74,7 +79,7 @@ Tentunya, Dalam hal ini, Pada dasarnya, Perlu diketahui, Perlu diingat, Patut di
 /**
  * Build the user message that contains crawled source posts and recent published posts.
  */
-export function buildUserMessage(sourcePosts, recentPosts, queries, options = {}) {
+function buildUserMessage(sourcePosts, recentPosts, queries, options = {}) {
     const { currentDate, currentYear, timezone } = resolvePromptDateContext(options.now ?? new Date(), options.timezone ?? 'UTC');
     const topicMixSection = buildTopicMixSection(recentPosts);
     const sourceSection = sourcePosts.length > 0
@@ -108,8 +113,8 @@ Write one original Bahasa Indonesia post now. Pick the shape (SAR / AOR / NOQ / 
 /**
  * Returns [systemPrompt, userMessage] tuple ready for OpenRouter.
  */
-export function buildMessages(sourcePosts, recentPosts, queries, options = {}) {
-    return [SYSTEM_PROMPT, buildUserMessage(sourcePosts, recentPosts, queries, options)];
+function buildMessages(sourcePosts, recentPosts, queries, options = {}) {
+    return [exports.SYSTEM_PROMPT, buildUserMessage(sourcePosts, recentPosts, queries, options)];
 }
 function resolvePromptDateContext(now, timezone) {
     const formatted = formatDateParts(now, timezone);
@@ -167,4 +172,3 @@ function buildTopicMixSection(recentPosts) {
     }
     return `${aiFocusedPosts}/${recentPosts.length} recent posts look AI/tooling-coded. Keep the feed mixed: trend reaction first, niche expertise second.`;
 }
-//# sourceMappingURL=prompt.js.map
