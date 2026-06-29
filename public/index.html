@@ -375,14 +375,14 @@ ${formatInstruction}`;
   status.style.color = 'var(--text2)';
   
   const toneInstructions = {
-    roast: { id: 'Kamu roasting balik tweet ini dengan PEDAS, SARKAS, tapi TETEP LUCU dan ngena. Bikin orang ngakak sekaligus kena mental. Maks 280 karakter.', en: 'Roast this tweet SAVAGELY but FUNNY. Make it sting but make people laugh. Max 280 chars.' },
-    lucu: { id: 'Kamu bikin reply LUCU, receh, absurd, nge-goblokkin diri sendiri. Orang ketawa guling-guling. Maks 280 karakter.', en: 'Reply with HILARIOUS humor. Silly, self-deprecating, absurd. Make people ROFL. Max 280 chars.' },
-    informatif: { id: 'Kamu reply dengan FAKTA dan data yang nambahin perspektif. Informatif, netral, berbobot. Maks 280 karakter.', en: 'Reply with INFORMATIVE facts adding perspective. Neutral, insightful. Max 280 chars.' },
-    kaget: { id: 'Kamu reply dengan nada KAGET, SHOCK, gak percaya. Bikin orang ikut tercengang. Maks 280 karakter.', en: 'Reply sounding SHOCKED and stunned. Make others feel the disbelief. Max 280 chars.' },
-    dukung: { id: 'Kamu reply dengan DUKUNGAN penuh, semangat, positive vibes. Bikin tweet author merasa diapresiasi. Maks 280 karakter.', en: 'Reply with SUPPORTIVE energy. Positive vibes, make the author feel appreciated. Max 280 chars.' },
-    skeptis: { id: 'Kamu reply dengan SKEPTIS, nanya balik, challenge asumsi. Kritis tapi respectful. Maks 280 karakter.', en: 'Reply SKEPTICALLY. Question assumptions, be critical but respectful. Max 280 chars.' },
-    sedih: { id: 'Kamu reply dengan nada SEDIH, melow, empati mendalam. Bikin orang ikut terharu. Maks 280 karakter.', en: 'Reply with SAD, emotional tone. Deep empathy. Max 280 chars.' },
-    marah: { id: 'Kamu reply dengan MARAH, geregetan, righteous anger. Pedas tapi justified. Maks 280 karakter.', en: 'Reply with ANGRY tone. Righteous fury, biting but justified. Max 280 chars.' }
+    roast: { id: 'Kamu roasting balik tweet ini dengan PEDAS, SARKAS, tapi TETEP LUCU dan ngena. Pakai emoji marah/panas. Bikin orang ngakak sekaligus kena mental.', en: 'Roast this tweet SAVAGELY but FUNNY. Use angry/fire emojis. Make it sting but make people laugh.' },
+    lucu: { id: 'Kamu bikin reply LUCU, receh, absurd, nge-goblokkin diri sendiri. Pakai emoji lucu. Orang ketawa guling-guling.', en: 'Reply with HILARIOUS humor. Use funny emojis. Silly, self-deprecating, absurd. Make people ROFL.' },
+    informatif: { id: 'Kamu reply dengan FAKTA dan data yang nambahin perspektif. Pakai emoji serius/info. Informatif, netral, berbobot.', en: 'Reply with INFORMATIVE facts adding perspective. Use info emojis. Neutral, insightful.' },
+    kaget: { id: 'Kamu reply dengan nada KAGET, SHOCK, gak percaya. Pakai emoji kaget/shock. Bikin orang ikut tercengang.', en: 'Reply sounding SHOCKED and stunned. Use shock emojis. Make others feel the disbelief.' },
+    dukung: { id: 'Kamu reply dengan DUKUNGAN penuh, semangat, positive vibes. Pakai emoji semangat/heart. Bikin tweet author merasa diapresiasi.', en: 'Reply with SUPPORTIVE energy. Use heart/spirit emojis. Positive vibes, make the author feel appreciated.' },
+    skeptis: { id: 'Kamu reply dengan SKEPTIS, nanya balik, challenge asumsi. Pakai emoji skeptis. Kritis tapi respectful.', en: 'Reply SKEPTICALLY. Use skeptical emojis. Question assumptions, be critical but respectful.' },
+    sedih: { id: 'Kamu reply dengan nada SEDIH, melow, empati mendalam. Pakai emoji sedih. Bikin orang ikut terharu.', en: 'Reply with SAD, emotional tone. Use sad emojis. Deep empathy.' },
+    marah: { id: 'Kamu reply dengan MARAH, geregetan, righteous anger. Pakai emoji marah. Pedas tapi justified.', en: 'Reply with ANGRY tone. Use angry emojis. Righteous fury, biting but justified.' }
   };
   
   const toneGuide = toneInstructions[tone] || toneInstructions['kaget'];
@@ -405,7 +405,7 @@ ${formatInstruction}`;
 
 ${tonePrompt}
 ${langPrompt}
-WAJIB: tepat 2 paragraf dipisahkan 1 baris kosong. Tiap paragraf MAKS 135 karakter. Total MAKS 275 karakter. JIKA ADA GAMBAR: reply berdasarkan isi gambar, sebut detail dari gambar. NO hashtag. NO prefix. Output HANYA teks reply jadi.`
+WAJIB: tepat 2 paragraf dipisahkan 1 baris kosong. Total reply MAKSIMAL 280 karakter. Sisipkan 1-2 emoji emosional yang relevan di tiap paragraf. JIKA ADA GAMBAR: reply berdasarkan isi gambar, sebut detail dari gambar. NO hashtag. NO prefix. Output HANYA teks reply jadi.`
         }],
         max_tokens: 200,
         temperature: 0.9
