@@ -25,6 +25,10 @@ export default async (req) => {
     try { const b = JSON.parse(body); return b.tone || ''; } 
     catch { return ''; }
   })();
+  const link = (() => {
+    try { const b = JSON.parse(body); return b.link || ''; } 
+    catch { return ''; }
+  })();
 
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'No API key. Paste your Agnes AI key in the dashboard input above, or set OPENROUTER_API_KEY env var.' }), 
@@ -37,6 +41,7 @@ export default async (req) => {
       openrouterApiKey: apiKey,
       openrouterModel: 'agnes-2.0-flash',
       tone: tone,
+      link: link,
       threadsAppId: process.env.THREADS_APP_ID || 'dashboard',
       threadsAccessToken: process.env.THREADS_ACCESS_TOKEN || '',
       searchQueries: [topic],
