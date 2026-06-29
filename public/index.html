@@ -347,38 +347,20 @@ function setTone(t, btn) {
 // ===== GENERATE =====
 
 function buildPromptContent(tonePrompt, langPrompt, formatInstruction) {
-  // Build multimodal content array if images exist
-  const textPrompt = `Ini tweet yang perlu direply:
+  let imgInfo = '';
+  if (tweetImages.length > 0) {
+    imgInfo = '\n\nGAMBAR DALAM TWEET:\n' + tweetImages.map((url, i) => `Gambar ${i+1}: ${url}`).join('\n');
+    imgInfo += '\n(Lihat dan pahami isi gambar di atas, reply berdasarkan ISI GAMBAR juga, bukan cuma teks caption)';
+  }
 
-"""${tweetContent}"""
+  return `Ini tweet yang perlu direply:
+
+"""${tweetContent}"""${imgInfo}
 
 ${tonePrompt}
 ${langPrompt}
 ${formatInstruction}`;
-
-  if (tweetImages.length === 0) return textPrompt;
-
-  // Agnes AI multimodal format: array of content parts
-  const parts = [];
-  
-  // Add images first
-  tweetImages.forEach(imgUrl => {
-    parts.push({
-      type: 'image_url',
-      image_url: { url: imgUrl }
-    });
-  });
-  
-  // Then add text
-  parts.push({
-    type: 'text',
-    text: textPrompt
-  });
-  
-  return parts;
-}
-
-async function generateReply() {
+}async function generateReply() {
   const key = getApiKey();
   if (!key) { toast('⚠️ Isi API Key dulu!'); return; }
   if (!tweetContent) { toast('⚠️ Baca tweet dulu — paste link & klik Baca'); return; }
@@ -423,7 +405,7 @@ async function generateReply() {
 
 ${tonePrompt}
 ${langPrompt}
-Format WAJIB: 2 paragraf pendek, tiap paragraf MAKS 140 karakter, dipisahkan 1 baris kosong (total < 280 karakter). JIKA ADA GAMBAR: reply juga berdasarkan isi gambar, bukan cuma teks. NO hashtag. NO prefix "Reply:". Output HANYA teks reply jadi.`
+WAJIB: tepat 2 paragraf dipisahkan 1 baris kosong. Tiap paragraf MAKS 135 karakter. Total MAKS 275 karakter. JIKA ADA GAMBAR: reply berdasarkan isi gambar, sebut detail dari gambar. NO hashtag. NO prefix. Output HANYA teks reply jadi.`
         }],
         max_tokens: 200,
         temperature: 0.9
