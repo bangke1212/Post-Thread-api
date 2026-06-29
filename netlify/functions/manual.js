@@ -8,6 +8,8 @@ export default async (req) => {
   }
 
   const url = new URL(req.url);
+  let body = '';
+  try { body = await req.clone().text(); } catch {}
   const dryRun = url.searchParams.get('dry') === 'true';
   
   // Get API key — priority: header > env vars
@@ -15,7 +17,10 @@ export default async (req) => {
                   req.headers.get('x-api-key') ||
                   process.env.OPENROUTER_API_KEY || 
                   process.env.AGNES_API_KEY;
-  const topic = req.headers.get('X-Topic') || req.headers.get('x-topic') || 'trending topic';
+    const topic = (() => {
+    try { const b = JSON.parse(body); return b.topic || 'trending topic'; } 
+    catch { return 'trending topic'; }
+  })();
 
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'No API key. Paste your Agnes AI key in the dashboard input above, or set OPENROUTER_API_KEY env var.' }), 
