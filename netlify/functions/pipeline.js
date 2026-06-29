@@ -24,11 +24,31 @@ export async function runPipeline(config, options = {}) {
   const history = await getPostHistory(dbDir, 5);
   const historyTexts = history.map(h => h.text);
 
+  // If link provided, fetch content first
+  let linkContent = '';
+  if (config.link) {
+    try {
+      logger.info('Fetching link', { url: config.link });
+      const linkRes = await fetch(config.link, { 
+        headers: { 'User-Agent': 'PostBot/1.0' },
+        signal: AbortSignal.timeout(15000)
+      });
+      if (linkRes.ok) {
+        linkContent = await linkRes.text();
+        // Strip HTML tags
+        linkContent = linkContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 3000);
+        logger.info('Link fetched', { length: linkContent.length });
+      }
+    } catch (e) {
+      logger.warn('Link fetch failed', { error: e.message });
+    }
+  }
+
   // Generate
   const keywords = config.searchQueries || ['trending'];
   let text;
   try {
-    text = await withRetry(() => generateText(config, keywords, historyTexts, config.tone || ''));
+    text = await withRetry(() => generateText(config, keywords, historyTexts, config.tone || '', linkContent));
   } catch (err) {
     return { status: 'error', error: 'AI failed: ' + err.message };
   }
