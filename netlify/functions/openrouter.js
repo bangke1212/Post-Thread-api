@@ -1,14 +1,14 @@
 // netlify/functions/openrouter.js — Agnes AI (free, OpenAI-compatible)
 import { logger } from './logger.js';
 
-const API_URL = 'https://apihub.agnes-ai.com/v1/chat/completions';
+const BASE_URL = 'https://apihub.agnes-ai.com/v1';
 
 export async function generateText(config, keywords, history = [], retries = 3) {
   const topic = keywords[0] || 'trending topic';
   const prompt = 'Buat satu postingan Threads viral tentang "' + topic + '". Maks 500 karakter, Bahasa Indonesia natural, hook kuat, 1-2 emoji, akhiri dengan CTA atau diskusi. NO hashtag. Output HANYA teks.';
 
   const body = {
-    model: config.openrouterModel || 'Agnes-2.0-Flash',
+    model: 'agnes-2.0-flash',
     messages: [
       { role: 'system', content: 'Kamu content creator Indonesia jago bikin postingan viral di Threads.' },
       { role: 'user', content: prompt }
@@ -17,9 +17,9 @@ export async function generateText(config, keywords, history = [], retries = 3) 
     temperature: 0.9,
   };
 
-  logger.info('Agnes AI call', { model: body.model, topic });
+  logger.info('Agnes AI', { model: body.model, topic });
 
-  const res = await fetch(API_URL, {
+  const res = await fetch(BASE_URL + '/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
