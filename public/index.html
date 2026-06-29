@@ -591,47 +591,15 @@
       status.style.color = 'var(--warning)';
       
       try {
-        // For X/Twitter: use api.fxtwitter.com (JSON, no JS needed)
-        let fetchUrl = url;
-        let useJsonApi = false;
-        try {
-          const u = new URL(url);
-          if (u.hostname === 'x.com' || u.hostname === 'twitter.com') {
-            // Grab tweet ID from path
-            const parts = u.pathname.split('/').filter(Boolean);
-            const tweetId = parts[parts.indexOf('status') + 1] || parts[0];
-            if (tweetId && /^\d+$/.test(tweetId)) {
-              fetchUrl = 'https://api.fxtwitter.com/status/' + tweetId;
-              useJsonApi = true;
-            }
-          }
-        } catch(e) {}
-        
-        const res = await fetch(fetchUrl);
-        if (res.ok) {
-          if (useJsonApi) {
-            // fxtwitter JSON API — clean, structured
-            const json = await res.json();
-            if (json.tweet && json.tweet.text) {
-              linkContentCache = json.tweet.text;
-            } else if (json.text) {
-              linkContentCache = json.text;
-            }
-          } else {
-            // Non-Twitter links: parse HTML
-            const raw = await res.text();
-            const ogDesc = raw.match(/<meta[^>]*og:description[^>]*content="([^"]*)"/);
-            const ogTitle = raw.match(/<meta[^>]*og:title[^>]*content="([^"]*)"/);
-            if (ogDesc) {
-              linkContentCache = (ogTitle ? ogTitle[1].replace(/ on X$/, '') + ': ' : '') + ogDesc[1];
-              linkContentCache = linkContentCache.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
-            } else {
-              linkContentCache = raw.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
-                .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
-                .replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ')
-                .replace(/\s+/g, ' ').trim().slice(0, 3000);
-            }
-          }
+        // Use proxy (server-side fetch → no CORS issues)
+        const res = await fetch('/.netlify/functions/fetch-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+        if (data.ok && data.content) {
+          linkContentCache = data.content;
           status.textContent = '✅ Link terbaca! (' + linkContentCache.length + ' karakter)';
           status.style.color = 'var(--success)';
           addLog('📖 Link dibaca: ' + url.slice(0, 40) + '...', 'hl');
