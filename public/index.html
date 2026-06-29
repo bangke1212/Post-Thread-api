@@ -7,108 +7,73 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <style>
     :root {
-      --bg: #0a0a0a;
-      --card: #141416;
-      --border: #252529;
-      --text: #e4e4e7;
-      --muted: #71717a;
-      --accent: #6366f1;
-      --accent-glow: #818cf8;
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --error: #ef4444;
-      --radius: 12px;
+      --bg: #0a0a0a; --card: #141416; --border: #252529; --text: #e4e4e7;
+      --muted: #71717a; --accent: #6366f1; --accent-glow: #818cf8;
+      --success: #22c55e; --warning: #f59e0b; --error: #ef4444; --radius: 12px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      background-image: 
-        radial-gradient(ellipse at top, rgba(99,102,241,0.08) 0%, transparent 70%),
-        radial-gradient(ellipse at bottom right, rgba(129,140,248,0.04) 0%, transparent 60%);
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      background-image: radial-gradient(ellipse at top, rgba(99,102,241,0.08) 0%, transparent 70%),
+                        radial-gradient(ellipse at bottom right, rgba(129,140,248,0.04) 0%, transparent 60%); }
     .container { max-width: 720px; margin: 0 auto; padding: 24px 20px; }
-    
-    /* Header */
     .header { text-align: center; padding: 48px 0 32px; }
     .header .icon { font-size: 56px; margin-bottom: 16px; }
-    .header h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; 
+    .header h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.5px;
       background: linear-gradient(135deg, var(--accent-glow), #c084fc, var(--accent-glow));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .header p { color: var(--muted); font-size: 16px; }
-
-    /* Stats */
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; margin-bottom: 24px; }
-    .stat-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 16px 20px; text-align: center;
-    }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; text-align: center; }
     .stat-card .num { font-size: 28px; font-weight: 700; color: var(--accent-glow); }
     .stat-card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
-
-    /* Cards */
-    .card {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 24px; margin-bottom: 16px;
-    }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
     .card h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
     .card h2 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
     .card h2 .dot.off { background: var(--error); }
     .card h2 .dot.idle { background: var(--warning); }
-
-    /* Buttons */
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
       border-radius: 8px; font-size: 14px; font-weight: 600; border: none; cursor: pointer;
-      transition: all 0.2s; text-decoration: none; color: white;
-    }
+      transition: all 0.2s; text-decoration: none; color: white; }
     .btn-primary { background: var(--accent); }
     .btn-primary:hover { background: var(--accent-glow); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,0.3); }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-outline:hover { border-color: var(--accent); color: var(--accent-glow); }
-    .btn-danger { background: var(--error); color: white; }
     .btn-success { background: var(--success); color: white; }
-    
+    .btn-sm { padding: 6px 14px; font-size: 13px; }
     .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-
-    /* Post preview */
-    .post-preview {
-      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
-      padding: 16px; margin-top: 12px; white-space: pre-wrap; font-size: 15px; line-height: 1.6;
-    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     
-    /* Logs */
-    .log-area {
-      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
-      padding: 12px 16px; max-height: 220px; overflow-y: auto; font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 13px; line-height: 1.7;
-    }
-    .log-line { color: var(--muted); }
-    .log-line.success { color: var(--success); }
-    .log-line.error { color: var(--error); }
-    .log-line.info { color: var(--accent-glow); }
-
-    /* Status badge */
-    .badge {
-      display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
-    }
-    .badge-online { background: rgba(34,197,94,0.15); color: var(--success); }
-    .badge-offline { background: rgba(239,68,68,0.15); color: var(--error); }
-
-    /* Responsive */
-    @media (max-width: 500px) {
-      .header { padding: 32px 0 24px; }
-      .header h1 { font-size: 28px; }
-      .btn-group { flex-direction: column; }
-    }
-
-    .loading { opacity: 0.6; pointer-events: none; }
+    /* Input */
+    .input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+    .input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 14px; font-family: 'SF Mono', monospace;
+      outline: none; transition: border-color 0.2s; }
+    .input:focus { border-color: var(--accent); }
+    .input::placeholder { color: var(--muted); }
+    
+    /* Status messages */
     .status-msg { padding: 8px 12px; border-radius: 8px; margin-top: 8px; font-size: 14px; }
     .status-msg.success { background: rgba(34,197,94,0.1); color: var(--success); }
     .status-msg.error { background: rgba(239,68,68,0.1); color: var(--error); }
     .status-msg.info { background: rgba(99,102,241,0.1); color: var(--accent-glow); }
+    .post-preview { background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px; margin-top: 12px; white-space: pre-wrap; font-size: 15px; line-height: 1.6; }
+    .log-area { background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px 16px; max-height: 220px; overflow-y: auto; font-family: 'SF Mono', monospace;
+      font-size: 13px; line-height: 1.7; }
+    .log-line { color: var(--muted); }
+    .log-line.success { color: var(--success); }
+    .log-line.error { color: var(--error); }
+    .log-line.info { color: var(--accent-glow); }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-online { background: rgba(34,197,94,0.15); color: var(--success); }
+    .badge-offline { background: rgba(239,68,68,0.15); color: var(--error); }
+    .badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .provider-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(99,102,241,0.1); border-radius: 6px; font-size: 12px; color: var(--accent-glow); }
+    @media (max-width: 500px) { .header { padding: 32px 0 24px; } .header h1 { font-size: 28px; } .btn-group { flex-direction: column; } }
   </style>
 </head>
 <body>
@@ -116,7 +81,7 @@
     <div class="header">
       <div class="icon">🧵</div>
       <h1>Threads Generator</h1>
-      <p>AI-powered automated content engine for Threads</p>
+      <p>AI-powered content engine — <span class="provider-badge">⚡ Agnes AI</span></p>
     </div>
 
     <div class="stats" id="stats">
@@ -125,10 +90,29 @@
       <div class="stat-card"><div class="num" id="botStatus"><span class="badge badge-offline">offline</span></div><div class="label">Bot Status</div></div>
     </div>
 
-    <!-- Manual Trigger -->
+    <!-- API Key Section -->
+    <div class="card" id="apiKeyCard">
+      <h2>🔑 API Key Setup</h2>
+      <p style="color: var(--muted); font-size: 14px; margin-bottom: 12px;">
+        Dapetin free API key dari <a href="https://agnes-ai.com" target="_blank" style="color: var(--accent-glow);">agnes-ai.com</a>, tempel di sini.
+      </p>
+      <div class="input-row">
+        <input type="password" class="input" id="apiKeyInput" placeholder="sk-... (Agnes AI API Key)" autocomplete="off">
+        <button class="btn btn-primary btn-sm" onclick="saveApiKey()" id="btnSaveKey">💾 Save Key</button>
+      </div>
+      <div id="apiKeyStatus"></div>
+      <div class="hint">Key disimpan di localStorage browser kamu (aman, cuma dipakai buat API call dari dashboard).</div>
+    </div>
+
+    <!-- Post Generator -->
     <div class="card">
       <h2><span class="dot" id="statusDot"></span> Post Generator</h2>
-      <p style="color: var(--muted); margin-bottom: 16px; font-size: 14px;">Generate and post a single piece of content to Threads.</p>
+      <p style="color: var(--muted); margin-bottom: 16px; font-size: 14px;">Generate & post ke Threads langsung dari dashboard.</p>
+      <div class="flex-between" style="margin-bottom: 12px;">
+        <div class="input-row" style="flex:1; margin-bottom:0;">
+          <input class="input" id="topicInput" placeholder="Topic (optional, e.g. AI, bisnis, motivasi)" style="font-family:sans-serif;">
+        </div>
+      </div>
       <div class="btn-group">
         <button class="btn btn-primary" onclick="generatePost(false)" id="btnGenerate">✨ Generate & Post</button>
         <button class="btn btn-outline" onclick="generatePost(true)">🔍 Dry Run</button>
@@ -139,13 +123,10 @@
     <!-- Schedule -->
     <div class="card">
       <h2>⏰ Schedule</h2>
-      <p style="color: var(--muted); margin-bottom: 16px; font-size: 14px;">
-        Cron runs at <strong>12:15</strong> and <strong>19:30 WIB</strong> daily.<br>
-        Netlify scheduled functions handle the timing.
-      </p>
+      <p style="color: var(--muted); margin-bottom: 16px; font-size: 14px;">Cron runs at <strong>12:15</strong> and <strong>19:30 WIB</strong> daily.</p>
       <div class="btn-group">
         <button class="btn btn-outline" onclick="triggerCron()">🔄 Run Cron Now</button>
-        <button class="btn btn-outline" onclick="checkAuth()">🔑 Check Auth</button>
+        <button class="btn btn-outline" onclick="checkDebug()">🩺 Check Status</button>
       </div>
       <div id="scheduleResult"></div>
     </div>
@@ -159,57 +140,122 @@
     </div>
 
     <div style="text-align: center; padding: 40px 0; color: var(--muted); font-size: 13px;">
-      Built with <span style="color: var(--accent-glow);">Netlify Functions</span> + <span style="color: #c084fc;">AI</span>
+      Built with <span style="color: var(--accent-glow);">Netlify Functions</span> + <span style="color: #c084fc;">Agnes AI</span>
     </div>
   </div>
 
   <script>
     const API = '/.netlify/functions';
-    
+
     function addLog(msg, type = '') {
       const logs = document.getElementById('logs');
       const time = new Date().toLocaleTimeString();
-      const className = type ? `log-line ${type}` : 'log-line';
-      logs.innerHTML += `<div class="${className}">[${time}] ${msg}</div>`;
-      if (logs.children.length === 1 && logs.children[0].textContent === 'Waiting for activity...') {
-        logs.innerHTML = '';
-      }
+      const cls = type ? 'log-line ' + type : 'log-line';
+      logs.innerHTML += '<div class="' + cls + '">[' + time + '] ' + msg + '</div>';
+      const first = logs.children[0];
+      if (first && first.textContent === 'Waiting for activity...') logs.innerHTML = '';
       logs.scrollTop = logs.scrollHeight;
     }
 
     function setResult(id, msg, type) {
-      document.getElementById(id).innerHTML = `<div class="status-msg ${type}">${msg}</div>`;
+      document.getElementById(id).innerHTML = '<div class="status-msg ' + type + '">' + msg + '</div>';
     }
 
-    async function generatePost(dryRun) {
-      const btn = document.getElementById('btnGenerate');
-      btn.classList.add('loading');
-      btn.disabled = true;
-      addLog(dryRun ? '🏃 Dry run started...' : '🚀 Generating post...', 'info');
-      
+    // === API Key Management ===
+    function getApiKey() {
+      return localStorage.getItem('agnes_api_key') || '';
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      if (!key) {
+        setResult('apiKeyStatus', '⚠️ Masukkan API key dulu', 'error');
+        return;
+      }
+      localStorage.setItem('agnes_api_key', key);
+      document.getElementById('apiKeyInput').value = '';
+      setResult('apiKeyStatus', '✅ API Key saved! Siap generate.', 'success');
+      updateBotStatus(true);
+      addLog('🔑 API Key saved', 'success');
+    }
+
+    function clearApiKey() {
+      localStorage.removeItem('agnes_api_key');
+      setResult('apiKeyStatus', '🗑️ API Key dihapus', 'info');
+      updateBotStatus(false);
+      addLog('🗑️ API Key dihapus', '');
+    }
+
+    function updateBotStatus(online) {
+      const badge = document.getElementById('botStatus');
+      const dot = document.getElementById('statusDot');
+      if (online) {
+        badge.innerHTML = '<span class="badge badge-online">ready</span>';
+        dot.className = 'dot';
+      } else {
+        badge.innerHTML = '<span class="badge badge-offline">no key</span>';
+        dot.className = 'dot off';
+      }
+    }
+
+    async function checkDebug() {
+      addLog('🔍 Checking status...', 'info');
       try {
-        const url = dryRun ? `${API}/manual?dry=true` : `${API}/manual`;
-        const res = await fetch(url, { method: 'POST' });
+        const r = await fetch(API + '/debug');
+        const data = await r.json();
+        const hasEnvKey = data.hasApiKey || data.hasOpenRouterKey;
+        const hasLocalKey = !!getApiKey();
+        const hasKey = hasEnvKey || hasLocalKey;
+        updateBotStatus(hasKey);
+        addLog('Env: ' + JSON.stringify(data.env || data), hasEnvKey ? 'success' : 'warn');
+        addLog('Local key: ' + (hasLocalKey ? '✅ saved' : '❌ not set'), hasLocalKey ? 'success' : 'warn');
+      } catch(e) {
+        addLog('Check failed: ' + e.message, 'error');
+      }
+    }
+
+    // === Generate Post ===
+    async function generatePost(dryRun) {
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        setResult('resultArea', '⚠️ Set API Key dulu di atas! Dapetin gratis dari agnes-ai.com', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btnGenerate');
+      btn.classList.add('loading-disabled');
+      btn.disabled = true;
+      addLog(dryRun ? '🏃 Dry run...' : '🚀 Generating...', 'info');
+
+      try {
+        const topic = document.getElementById('topicInput').value.trim() || 'trending topic';
+        const url = dryRun ? API + '/manual?dry=true' : API + '/manual';
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Api-Key': apiKey,
+            'X-Topic': topic
+          }
+        });
         const data = await res.json();
-        
+
         if (res.ok && data.status === 'success') {
-          let html = '<div class="post-preview">' + escapeHtml(data.text || data.message) + '</div>';
-          if (data.postId) html += `<p style="margin-top:8px;color:var(--muted)">Post ID: ${data.postId}</p>`;
-          setResult('resultArea', dryRun ? '✅ Preview generated!' : '✅ Posted to Threads!', 'success');
+          const html = '<div class="post-preview">' + escapeHtml(data.generatedText || data.text || '') + '</div>' +
+            (data.postId ? '<p style="margin-top:8px;color:var(--muted)">Post ID: ' + data.postId + '</p>' : '');
           document.getElementById('resultArea').innerHTML += html;
-          addLog(dryRun ? '✅ Dry run complete' : `✅ Posted! ID: ${data.postId}`, 'success');
-          refreshStats();
+          setResult('resultArea', dryRun ? '✅ Preview!' : '✅ Posted!', 'success');
+          addLog(dryRun ? '✅ Dry run OK' : '✅ Posted: ' + data.postId, 'success');
+          document.getElementById('lastPost').textContent = new Date().toLocaleTimeString();
         } else if (data.status === 'no_action') {
-          setResult('resultArea', '⏭️ ' + (data.message || 'No action needed'), 'info');
-          addLog('⏭️ Skipped: ' + (data.message || 'no action needed'), '');
+          setResult('resultArea', '⏭️ ' + (data.message || 'No action'), 'info');
         } else {
-          throw new Error(data.error || 'Unknown error');
+          throw new Error(data.error || 'Unknown');
         }
-      } catch (err) {
+      } catch(err) {
         setResult('resultArea', '❌ ' + err.message, 'error');
-        addLog('❌ Error: ' + err.message, 'error');
+        addLog('❌ ' + err.message, 'error');
       } finally {
-        btn.classList.remove('loading');
         btn.disabled = false;
       }
     }
@@ -217,65 +263,34 @@
     async function triggerCron() {
       addLog('🔄 Running cron...', 'info');
       try {
-        const res = await fetch(`${API}/cron`);
+        const res = await fetch(API + '/cron');
         const data = await res.json();
         if (res.ok) {
-          setResult('scheduleResult', '✅ Cron executed: ' + (data.status || 'ok'), 'success');
-          addLog('✅ Cron complete', 'success');
-          refreshStats();
+          setResult('scheduleResult', '✅ Cron done: ' + (data.status || 'ok'), 'success');
         } else {
-          throw new Error(data.error || 'Cron failed');
+          throw new Error(data.error || 'failed');
         }
-      } catch (err) {
-        setResult('scheduleResult', '❌ ' + err.message, 'error');
-        addLog('❌ ' + err.message, 'error');
-      }
-    }
-
-    async function checkAuth() {
-      addLog('🔑 Checking auth...', 'info');
-      try {
-        const res = await fetch(`${API}/debug`);
-        const data = await res.json();
-        const hasAuth = data.hasAppId && data.hasAppSecret;
-        setResult('scheduleResult', 
-          hasAuth ? '✅ Auth configured!' : '⚠️ Missing credentials. Check env vars.',
-          hasAuth ? 'success' : 'error');
-        updateBotStatus(hasAuth);
-        addLog(hasAuth ? '✅ Auth OK' : '⚠️ Auth missing', hasAuth ? 'success' : 'error');
-      } catch (err) {
+      } catch(err) {
         setResult('scheduleResult', '❌ ' + err.message, 'error');
       }
     }
 
-    function updateBotStatus(online) {
-      const badge = document.getElementById('botStatus');
-      badge.innerHTML = online 
-        ? '<span class="badge badge-online">online</span>'
-        : '<span class="badge badge-offline">offline</span>';
-      document.getElementById('statusDot').className = online ? 'dot' : 'dot off';
-    }
-
-    async function refreshStats() {
-      try {
-        const res = await fetch(`${API}/debug`);
-        const data = await res.json();
-        updateBotStatus(data.hasAppId && data.hasAppSecret);
-        document.getElementById('totalPosts').textContent = data.totalPosts || '—';
-        document.getElementById('lastPost').textContent = data.lastPost || '—';
-      } catch(e) {}
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
+    function escapeHtml(t) {
+      const d = document.createElement('div');
+      d.textContent = t;
+      return d.innerHTML;
     }
 
     // Init
-    refreshStats();
-    checkAuth();
-    addLog('📡 Dashboard ready', 'info');
+    (function init() {
+      const key = getApiKey();
+      if (key) {
+        document.getElementById('apiKeyInput').placeholder = '✅ Key saved (' + key.slice(0,8) + '...)';
+        updateBotStatus(true);
+        addLog('🔑 API Key loaded from storage', 'info');
+      }
+      checkDebug();
+    })();
   </script>
 </body>
 </html>
