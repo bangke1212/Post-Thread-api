@@ -1,5 +1,15 @@
 {
-  "buildCommand": "npm run build",
+  "functions": {
+    "api/auth.js": {
+      "runtime": "nodejs20.x"
+    },
+    "api/cron.js": {
+      "runtime": "nodejs20.x"
+    },
+    "api/manual.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "crons": [
     {
       "path": "/api/cron",
