@@ -234,6 +234,8 @@ let lang = 'id';
 let tweetContent = '';
 let tweetAuthor = '';
 let tweetUrl = '';
+let tweetImages = [];
+let hasMedia = false;
 let generatedReply = '';
 let isLoading = false;
 
@@ -279,6 +281,8 @@ function clearUrl() {
   tweetContent = '';
   tweetAuthor = '';
   tweetUrl = '';
+  tweetImages = [];
+  hasMedia = false;
 }
 
 // ===== READ TWEET =====
@@ -302,9 +306,14 @@ async function readTweet() {
     if (data.ok && data.content) {
       tweetContent = data.content;
       tweetAuthor = data.author || '';
+      tweetImages = data.images || [];
+      hasMedia = data.hasMedia || false;
       
       document.getElementById('linkBar').classList.add('show');
-      document.getElementById('linkLabel').textContent = tweetAuthor ? `@${tweetAuthor} — ${data.content.slice(0,60)}...` : data.content.slice(0,80)+'...';
+      const hasImg = data.images?.length > 0;
+      let preview = tweetAuthor ? `@${tweetAuthor} — ${data.content.slice(0,50)}...` : data.content.slice(0,70)+'...';
+      if (hasImg) preview = '🖼️ ' + preview;
+      document.getElementById('linkLabel').textContent = preview;
       
       if (tweetAuthor) {
         document.getElementById('authorBadge').classList.add('show');
@@ -312,7 +321,7 @@ async function readTweet() {
       }
       
       document.getElementById('tweetPreview').classList.add('show');
-      document.getElementById('tweetPreview').textContent = data.content;
+      document.getElementById('tweetPreview').textContent = data.content + (data.images?.length ? `\n\n🖼️ ${data.images.length} gambar di tweet ini` : '');
       
       status.textContent = '✅ Tweet berhasil dibaca!';
       status.style.color = 'var(--green)';
@@ -336,6 +345,39 @@ function setTone(t, btn) {
 }
 
 // ===== GENERATE =====
+
+function buildPromptContent(tonePrompt, langPrompt, formatInstruction) {
+  // Build multimodal content array if images exist
+  const textPrompt = `Ini tweet yang perlu direply:
+
+"""${tweetContent}"""
+
+${tonePrompt}
+${langPrompt}
+${formatInstruction}`;
+
+  if (tweetImages.length === 0) return textPrompt;
+
+  // Agnes AI multimodal format: array of content parts
+  const parts = [];
+  
+  // Add images first
+  tweetImages.forEach(imgUrl => {
+    parts.push({
+      type: 'image_url',
+      image_url: { url: imgUrl }
+    });
+  });
+  
+  // Then add text
+  parts.push({
+    type: 'text',
+    text: textPrompt
+  });
+  
+  return parts;
+}
+
 async function generateReply() {
   const key = getApiKey();
   if (!key) { toast('⚠️ Isi API Key dulu!'); return; }
@@ -381,7 +423,7 @@ async function generateReply() {
 
 ${tonePrompt}
 ${langPrompt}
-Format WAJIB: 2 paragraf pendek, tiap paragraf MAKS 140 karakter, dipisahkan 1 baris kosong (total < 280 karakter). NO hashtag. NO prefix "Reply:". Output HANYA teks reply jadi.`
+Format WAJIB: 2 paragraf pendek, tiap paragraf MAKS 140 karakter, dipisahkan 1 baris kosong (total < 280 karakter). JIKA ADA GAMBAR: reply juga berdasarkan isi gambar, bukan cuma teks. NO hashtag. NO prefix "Reply:". Output HANYA teks reply jadi.`
         }],
         max_tokens: 200,
         temperature: 0.9
