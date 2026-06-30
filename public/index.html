@@ -518,12 +518,13 @@ ${formatInstruction}`;
     // Paksa max 300 karakter — potong di spasi/titik/koma terdekat
     if (generatedReply.length > 300) {
       var truncated = generatedReply.substring(0, 300);
-      var re = /[ .!,?
-](?=[^ .!,?
-]*$)/;
-      var lastBreak = truncated.search(re);
-      if (lastBreak >= 0 && lastBreak > 250) truncated = truncated.substring(0, lastBreak);
-      if (truncated.length > 300) truncated = truncated.substring(0, 300);
+      var separators = [' ', '.', ',', '!', '?', String.fromCharCode(10)];
+      var bestBreak = -1;
+      for (var si = 0; si < separators.length; si++) {
+        var pos = truncated.lastIndexOf(separators[si]);
+        if (pos > bestBreak) bestBreak = pos;
+      }
+      if (bestBreak > 250) truncated = truncated.substring(0, bestBreak);
       generatedReply = truncated.trim();
     }
     
