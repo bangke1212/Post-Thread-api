@@ -274,15 +274,18 @@ function useManualTweet() {
 }
 
 // ===== INIT =====
-// Bind provider & model selectors dengan addEventListener (lebih reliable)
-document.addEventListener('DOMContentLoaded', function() {
-  var provSel = document.getElementById('providerSelect');
-  if (provSel) provSel.addEventListener('change', function() { setProvider(this.value); });
-  var modelSel = document.getElementById('modelSelect');
-  if (modelSel) modelSel.addEventListener('change', function() { setModel(this.value); });
-  // Init default
-  setProvider(provSel?.value || 'agnes');
-});
+// Bind event listener (script at bottom so DOM exists)
+(function initSelectors() {
+  var ps = document.getElementById('providerSelect');
+  var ms = document.getElementById('modelSelect');
+  if (ps) {
+    ps.addEventListener('change', function() { setProvider(this.value); });
+    setProvider(ps.value);
+  }
+  if (ms) {
+    ms.addEventListener('change', function() { setModel(this.value); });
+  }
+})();
 const savedKey = localStorage.getItem('apikey_agnes');
 if (savedKey) {
   document.getElementById('apiKeyInput').value = savedKey;
