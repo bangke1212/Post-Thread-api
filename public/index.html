@@ -161,7 +161,7 @@
   <div class="card" style="padding:10px 16px">
     <div style="display:flex;gap:8px;align-items:center">
       <span style="font-size:0.78rem;color:var(--text2)">🌐</span>
-      <select id="langSelect" onchange="lang=this.value" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:0.82rem;font-family:var(--font);cursor:pointer">
+      <select id="langSelect" onchange="setLang(this.value)" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:0.82rem;font-family:var(--font);cursor:pointer">
         <option value="id" selected>🇮🇩 Indonesia</option>
         <option value="en">🇬🇧 English</option>
       </select>
@@ -342,6 +342,7 @@ async function readTweet() {
 }
 
 // ===== TONE =====
+function setLang(val) { lang = val; }
 function setTone(t, btn) {
   tone = t;
   document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
