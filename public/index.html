@@ -321,7 +321,11 @@ async function readTweet() {
       }
       
       document.getElementById('tweetPreview').classList.add('show');
-      document.getElementById('tweetPreview').textContent = data.content + (data.images?.length ? `\n\n🖼️ ${data.images.length} gambar di tweet ini` : '');
+      let previewNote = '';
+      if (data.mediaTypes?.videos > 0) previewNote = '\n\n🎬 Tweet berisi video — AI baca thumbnail';
+      else if (data.mediaTypes?.gifs > 0) previewNote = '\n\n🎞️ Tweet berisi GIF';
+      else if (data.images?.length > 0) previewNote = `\n\n🖼️ ${data.images.length} gambar di tweet ini`;
+      document.getElementById('tweetPreview').textContent = data.content + previewNote;
       
       status.textContent = '✅ Tweet berhasil dibaca!';
       status.style.color = 'var(--green)';
