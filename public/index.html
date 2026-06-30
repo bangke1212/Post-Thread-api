@@ -472,16 +472,38 @@ ${formatInstruction}`;
     }
     
     if (!generatedReply) {
-      var err = data.error || data.message;
-      status.textContent = '❌ Error: ' + (typeof err === 'string' ? err : JSON.stringify(err).slice(0,100));
-      status.style.color = 'var(--red)';  } catch(e) {
+      var err = data.error ? (data.error.message || JSON.stringify(data.error)) : (JSON.stringify(data).slice(0,150));
+      generatedReply = 'Gagal generate: ' + err;
+    }
+    
+    // Show preview
+    var previewBox = document.getElementById('previewBox');
+    var previewText = document.getElementById('previewText');
+    var charCount = document.getElementById('charCount');
+    var actionBar = document.getElementById('actionBar');
+    
+    previewBox.classList.add('show');
+    previewText.textContent = generatedReply;
+    
+    var chars = generatedReply.length;
+    charCount.textContent = chars;
+    charCount.className = 'char-count';
+    if (chars <= 250) charCount.classList.add('char-ok');
+    else if (chars <= 280) charCount.classList.add('char-warn');
+    else charCount.classList.add('char-over');
+    
+    actionBar.classList.add('show');
+    status.textContent = '✅ ' + chars + ' karakter — ' + (chars <= 280 ? 'Pas buat X!' : 'Agak panjang');
+    status.style.color = chars <= 280 ? 'var(--green)' : 'var(--warning)';
+    
+  } catch(e) {
     status.textContent = '❌ Error: ' + e.message;
     status.style.color = 'var(--red)';
   }
   
   btn.textContent = '✨ Generate Reply';
   btn.disabled = false;
-  isLoading = false;
+isLoading = false;
 }
 
 // ===== ACTIONS =====
