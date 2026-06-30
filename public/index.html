@@ -223,43 +223,26 @@ async function fetchLinkContent(url){
   document.getElementById('linkStatus').textContent = 'Memuat...';
   tweetUrl = url;
   
-  // Convert ke fxtwitter
-  let fxUrl = url.replace(/x\.com/g,'fxtwitter.com').replace(/twitter\.com/g,'fxtwitter.com');
-  
   try {
-    let r = await fetch(fxUrl, {headers:{'User-Agent':'TelegramBot'}});
-    let text = await r.text();
+    let apiUrl = 'https://postthreadpost.netlify.app/api/fetch-link?url=' + encodeURIComponent(url);
+    let r = await fetch(apiUrl);
+    let d = await r.json();
     
-    // Extract tweet text dari OG meta
-    let match = text.match(/<meta[^>]+property="og:description"[^>]+content="([^"]+)"/i)
-             || text.match(/<meta[^>]+name="description"[^>]+content="([^"]+)"/i);
-    
-    if(match){
-      tweetContent = match[1].replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#x27;/g,"'");
-      document.getElementById('linkStatus').textContent = '✅ Tweet berhasil dibaca';
+    if(d.text){
+      tweetContent = d.text;
+      tweetAuthor = d.author || '';
+      tweetImages = d.images || [];
+      hasMedia = d.hasMedia || false;
+      document.getElementById('linkStatus').textContent = (tweetAuthor?'👤 '+tweetAuthor+' ':'')+'✅ Tweet berhasil dibaca';
     } else {
-      throw new Error('No description meta');
+      throw new Error(d.error || 'No text');
     }
   } catch(e){
-    // Fallback: coba Netlify function
-    try {
-      let apiUrl = 'https://postthreadpost.netlify.app/api/fetch-link?url=' + encodeURIComponent(url);
-      let r = await fetch(apiUrl);
-      let d = await r.json();
-      if(d.text){
-        tweetContent = d.text;
-        document.getElementById('linkStatus').textContent = '✅ Tweet berhasil dibaca (via API)';
-      } else {
-        throw new Error('No text');
-      }
-    } catch(e2){
-      document.getElementById('linkStatus').textContent = '⚠️ Gagal auto-baca — paste teks manual';
-      document.getElementById('manualInputRow').style.display = 'block';
-    }
+    // Fallback: manual input
+    document.getElementById('linkStatus').textContent = '⚠️ Gagal auto-baca — paste teks manual di bawah';
+    document.getElementById('manualInputRow').style.display = 'block';
   }
-}
-
-function clearLink(){
+}function clearLink(){
   document.getElementById('tweetLink').value = '';
   tweetContent = '';
   tweetAuthor = '';
