@@ -343,6 +343,24 @@ async function readTweet() {
 
 // ===== TONE =====
 function setLang(val) { lang = val; }
+function setProvider(val) {
+  provider = val;
+  var ms = document.getElementById('modelSelect');
+  ms.innerHTML = '';
+  if (val === 'agnes') {
+    ms.innerHTML = '<option value="agnes-2.0-flash">Agnes 2.0 Flash</option>';
+    agnesModel = 'agnes-2.0-flash';
+  } else if (val === 'cohere') {
+    ms.innerHTML = '<option value="command-r7b" selected>Command R7B (Cepat)</option><option value="command-r">Command R (Balanced)</option><option value="command-r-plus">Command R+ (Premium)</option><option value="command-a">Command A (256K)</option><option value="command-a-plus">Command A+ (Terkuat)</option>';
+    cohereModel = 'command-r7b';
+  }
+}
+
+function setModel(val) {
+  if (provider === 'agnes') agnesModel = val;
+  else cohereModel = val;
+}
+
 function setTone(t, btn) {
   tone = t;
   document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
@@ -397,12 +415,12 @@ ${formatInstruction}`;
     : 'Natural, engaging English.';
   
   try {
-    const res = await fetch('https://apihub.agnes-ai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${key}`},
-      body: JSON.stringify({
-        model: 'agnes-2.0-flash',
-        messages: [{
+    const promptContent = buildPromptContent(tonePrompt, langPrompt, formatInstruction);
+    var endpoint, reqBody;
+    
+    if (provider === 'agnes') {
+      endpoint = 'https://apihub.agnes-ai.com/v1/chat/completions';
+      reqBody = { model: agnesModel, messages: [{
           role: 'user',
           content: `Ini tweet yang perlu direply:
 
@@ -412,13 +430,17 @@ ${tonePrompt}
 ${langPrompt}
 WAJIB: tepat 2 paragraf dipisahkan 1 baris kosong. Tiap paragraf max 130 karakter. Total reply DI BAWAH 280 karakter. Sisipkan 1-2 emoji emosional di tiap paragraf. NO hashtag. NO prefix. Output HANYA teks reply jadi.`
         }],
-        max_tokens: 200,
-        temperature: 0.9
-      })
-    });
+        max_tokens: 200, temperature: 0.9
+      };
+    } else if (provider === 'cohere') {
+      endpoint = 'https://api.cohere.com/v2/chat';
+      reqBody = { model: cohereModel, messages: [{ role: 'user', content: promptContent }], max_tokens: 200, temperature: 0.9 };
+    }
+    
+    const res = await fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key}, body: JSON.stringify(reqBody) });
     
     const data = await res.json();
-    generatedReply = data.choices?.[0]?.message?.content || 'Gagal generate.';
+    generatedReply = data.choices?.[0]?.message?.content || (data.message && data.message.content && data.message.content[0] && data.message.content[0].text) || 'Gagal generate.';
     
     // Show preview
     const previewBox = document.getElementById('previewBox');
