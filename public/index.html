@@ -224,7 +224,7 @@ async function fetchLinkContent(url){
   tweetUrl = url;
   
   try {
-    let apiUrl = 'https://postthreadpost.netlify.app/api/fetch-link?url=' + encodeURIComponent(url);
+    let apiUrl = '/api/fetch-link?url=' + encodeURIComponent(url);
     let r = await fetch(apiUrl);
     let d = await r.json();
     
@@ -238,7 +238,6 @@ async function fetchLinkContent(url){
       throw new Error(d.error || 'No text');
     }
   } catch(e){
-    // Fallback: manual input
     document.getElementById('linkStatus').textContent = '⚠️ Gagal auto-baca — paste teks manual di bawah';
     document.getElementById('manualInputRow').style.display = 'block';
   }
