@@ -254,6 +254,25 @@ let hasMedia = false;
 let generatedReply = '';
 let isLoading = false;
 
+function toggleManualInput() {
+  var row = document.getElementById('manualInputRow');
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+function useManualTweet() {
+  var text = document.getElementById('manualTweetInput').value.trim();
+  if (!text) { toast('⚠️ Isi teks tweet dulu!'); return; }
+  tweetContent = text;
+  tweetAuthor = '';
+  tweetImages = [];
+  hasMedia = false;
+  document.getElementById('manualInputRow').style.display = 'none';
+  document.getElementById('linkBar').classList.add('show');
+  document.getElementById('linkLabel').textContent = text.slice(0,60) + '...';
+  document.getElementById('readStatus').textContent = '✅ Teks tweet siap!';
+  document.getElementById('readStatus').style.color = 'var(--green)';
+}
+
 // ===== INIT =====
 const savedKey = localStorage.getItem('apikey_agnes');
 if (savedKey) {
@@ -345,8 +364,9 @@ async function readTweet() {
       status.textContent = '✅ Tweet berhasil dibaca!';
       status.style.color = 'var(--green)';
     } else {
-      status.textContent = '⚠️ Gagal membaca tweet: ' + (data.error || 'Unknown');
+      status.innerHTML = `⚠️ ${data.error || 'Gagal baca link'} <a href="#" onclick="toggleManualInput();return false;" style="color:var(--accent);text-decoration:underline">[Pakai teks manual]</a>`;
       status.style.color = 'var(--red)';
+      document.getElementById('manualInputRow').style.display = 'block';
     }
   } catch(e) {
     status.textContent = '❌ Error: ' + e.message;
