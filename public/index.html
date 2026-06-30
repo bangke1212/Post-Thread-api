@@ -194,8 +194,8 @@
   <div class="card" style="padding:12px 16px">
     <div style="font-size:0.75rem;color:var(--text2);margin-bottom:8px;font-weight:600">🤖 PROVIDER AI</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px">
-      <button onclick="switchProvider('agnes')" id="provAgnes" type="button" style="cursor:pointer;background:var(--accent);color:#fff;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:4px;border:none">⚡ Agnes</button>
-      <button onclick="switchProvider('cohere')" id="provCohere" type="button" style="cursor:pointer;background:var(--surface);color:var(--text2);padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:4px;border:none">🅒 Cohere</button>
+      <button onclick="switchProvider('agnes')" id="provAgnes" type="button" style="cursor:pointer;background:#6C5CE7;color:#fff;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:4px;border:none">⚡ Agnes</button>
+      <button onclick="switchProvider('cohere')" id="provCohere" type="button" style="cursor:pointer;background:#1a1a2e;color:#aaa;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:4px;border:none">🅒 Cohere</button>
     </div>
     <div style="font-size:0.65rem;color:var(--text2);margin-bottom:8px">→ Model:</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -391,16 +391,16 @@ function switchProvider(p) {
   ms.innerHTML = '';
   
   if (p === 'cohere') {
-    ag.style.background = 'var(--surface)'; ag.style.color = 'var(--text2)';
-    co.style.background = 'var(--accent)'; co.style.color = '#fff';
+    ag.style.background = '#1a1a2e'; ag.style.color = '#aaa';
+    co.style.background = '#6C5CE7'; co.style.color = '#fff';
     ms.innerHTML = '<option value="command-r7b-12-2024" selected>Command R7B (Cepat)</option><option value="command-r-08-2024">Command R (Balanced)</option><option value="command-r-plus-08-2024">Command R+ (Premium)</option><option value="command-a-03-2025">Command A (256K)</option><option value="command-a-plus-05-2026">Command A+ (Terkuat)</option>';
     cohereModel = 'command-r7b-12-2024';
     ki.placeholder = 'Trial key dari dashboard.cohere.com';
     kh.innerHTML = 'Dapetin trial key gratis dari <a href="https://dashboard.cohere.com/api-keys" target="_blank" style="color:var(--accent)">dashboard.cohere.com</a>';
     kl.textContent = '— Cohere';
   } else {
-    ag.style.background = 'var(--accent)'; ag.style.color = '#fff';
-    co.style.background = 'var(--surface)'; co.style.color = 'var(--text2)';
+    ag.style.background = '#6C5CE7'; ag.style.color = '#fff';
+    co.style.background = '#1a1a2e'; co.style.color = '#aaa';
     ms.innerHTML = '<option value="agnes-2.0-flash" selected>Agnes 2.0 Flash</option>';
     agnesModel = 'agnes-2.0-flash';
     ki.placeholder = 'sk-... dari agnes-ai.com';
