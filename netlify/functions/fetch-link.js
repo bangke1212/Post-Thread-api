@@ -1,59 +1,48 @@
-// Simple tweet reader using fxtwitter with retry
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS'
-};
-
-async function readTweet(url) {
-  // Extract tweet ID
-  let tweetId = '';
-  try {
-    const u = new URL(url);
-    const parts = u.pathname.split('/').filter(Boolean);
-    const idx = parts.indexOf('status');
-    tweetId = idx >= 0 ? parts[idx + 1] : parts[parts.length - 1];
-    tweetId = (tweetId || '').split('?')[0].split('#')[0];
-  } catch(e) {}
-
-  if (!tweetId || !/^\d{15,25}$/.test(tweetId)) {
-    return { ok: false, error: 'Link Twitter tidak valid. Pastikan format: x.com/user/status/123456...' };
+// Fetch-link proxy — pake fxtwitter API (gratis, no auth)
+export default async function handler(req) {
+  const url = req.query.url;
+  if (!url) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Missing url' }) };
   }
 
-  // Try fxtwitter (works for most tweets)
+  // Convert ke fxtwitter API
+  let fxUrl = url
+    .replace(/https?:\/\/(x\.com|twitter\.com)/i, 'https://api.fxtwitter.com')
+    .replace(/https?:\/\/(fx?twitter\.com)/i, 'https://api.fxtwitter.com');
+
   try {
-    const r = await fetch(`https://api.fxtwitter.com/status/${tweetId}`, {
-      headers: { 'User-Agent': 'TelegramBot/1.0' }
+    const r = await fetch(fxUrl, {
+      headers: { 'User-Agent': 'TelegramBot' }
     });
-    if (r.ok) {
-      const d = await r.json();
-      if (d.tweet && d.tweet.text) {
-        const photos = (d.tweet.media?.photos || []).map(p => p.url || '');
-        const videos = (d.tweet.media?.videos || []).map(v => v.thumbnail_url || '');
-        return {
-          ok: true,
-          content: d.tweet.text,
-          author: d.tweet.author?.screen_name || d.tweet.author?.name || '',
-          images: [...photos, ...videos],
-          hasMedia: photos.length > 0 || videos.length > 0,
-        };
-      }
+    
+    if (!r.ok) throw new Error('fxtwitter API returned ' + r.status);
+    
+    const data = await r.json();
+    const tweet = data.tweet;
+    
+    if (!tweet || !tweet.text) {
+      return { statusCode: 404, body: JSON.stringify({ error: 'Tweet not found' }) };
     }
-    console.log('fxtwitter status:', r.status);
-  } catch(e) { console.log('fxtwitter err:', e.message); }
 
-  // If fxtwitter fails, it's usually a nonexistent tweet
-  return { ok: false, error: `Tweet ${tweetId} tidak ditemukan. Mungkin private/delete. Coba paste teks manual.` };
-}
-
-export default async (req, context) => {
-  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
-  try {
-    const { url } = await req.json();
-    if (!url) return new Response(JSON.stringify({ ok: false, error: 'URL kosong' }), { status: 400, headers });
-    const result = await readTweet(url);
-    return new Response(JSON.stringify(result), { status: 200, headers });
+    return {
+      statusCode: 200,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      },
+      body: JSON.stringify({
+        text: tweet.text,
+        author: tweet.author?.screen_name || tweet.author?.name || '',
+        images: (tweet.media?.photos || []).map(p => p.url),
+        hasMedia: !!tweet.media
+      })
+    };
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: e.message }), { status: 500, headers });
+    return { 
+      statusCode: 500, 
+      body: JSON.stringify({ error: e.message }) 
+    };
   }
-};
+}
