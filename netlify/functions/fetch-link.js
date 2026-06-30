@@ -32,9 +32,10 @@ async function readTweet(url) {
         const videos = (d.tweet.media?.videos || []).map(v => v.thumbnail_url || '');
         return {
           ok: true,
-          text: d.tweet.text,
+          content: d.tweet.text,
           author: d.tweet.author?.screen_name || d.tweet.author?.name || '',
           images: [...photos, ...videos],
+          hasMedia: photos.length > 0 || videos.length > 0,
         };
       }
     }
