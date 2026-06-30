@@ -450,53 +450,31 @@ ${formatInstruction}`;
     
   try {
     const promptContent = buildPromptContent(tonePrompt, langPrompt, formatInstruction);
-    console.log('🔧 promptContent length:', promptContent.length);
-    
     var endpoint, reqBody;
     
     if (provider === 'agnes') {
       endpoint = 'https://apihub.agnes-ai.com/v1/chat/completions';
       reqBody = { model: agnesModel, messages: [{ role: 'user', content: promptContent }], max_tokens: 200, temperature: 0.9 };
-    } else if (provider === 'cohere') {
+    } else {
       endpoint = 'https://api.cohere.com/v2/chat';
       reqBody = { model: cohereModel, messages: [{ role: 'user', content: promptContent }], max_tokens: 200, temperature: 0.9 };
     }
     
-    console.log('🚀 Fetch:', endpoint);
-    const res = await fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key}, body: JSON.stringify(reqBody) });
-    console.log('📡 Status:', res.status, res.statusText);
+    var res = await fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key}, body: JSON.stringify(reqBody) });
+    var data = await res.json();
     
-    const data = await res.json();
-    console.log('🔍 Raw response:', JSON.stringify(data).slice(0,500));
-    
-    generatedReply = 'Gagal generate.';
-    if (data.choices && data.choices[0] && data.choices[0].message) {
-      generatedReply = data.choices[0].message.content || 'Gagal generate.';
-    } else if (data.message && data.message.content && data.message.content[0]) {
-      generatedReply = data.message.content[0].text || 'Gagal generate.';
+    generatedReply = '';
+    if (data.choices && data.choices[0] && data.choices[0].message) generatedReply = data.choices[0].message.content;
+    else if (data.message && data.message.content) {
+      var c = data.message.content;
+      if (Array.isArray(c) && c[0] && c[0].text) generatedReply = c[0].text;
+      else if (typeof c === 'string') generatedReply = c;
     }
     
-    // Show preview
-    const previewBox = document.getElementById('previewBox');
-    const previewText = document.getElementById('previewText');
-    const charCount = document.getElementById('charCount');
-    const actionBar = document.getElementById('actionBar');
-    
-    previewBox.classList.add('show');
-    previewText.textContent = generatedReply;
-    
-    const chars = generatedReply.length;
-    charCount.textContent = chars;
-    charCount.className = 'char-count';
-    if (chars <= 250) charCount.classList.add('char-ok');
-    else if (chars <= 280) charCount.classList.add('char-warn');
-    else charCount.classList.add('char-over');
-    
-    actionBar.classList.add('show');
-    status.textContent = `✅ ${chars} karakter — ` + (chars <= 280 ? 'Pas buat X!' : 'Agak panjang');
-    status.style.color = chars <= 280 ? 'var(--green)' : 'var(--warning)';
-    
-  } catch(e) {
+    if (!generatedReply) {
+      var err = data.error || data.message;
+      status.textContent = '❌ Error: ' + (typeof err === 'string' ? err : JSON.stringify(err).slice(0,100));
+      status.style.color = 'var(--red)';  } catch(e) {
     status.textContent = '❌ Error: ' + e.message;
     status.style.color = 'var(--red)';
   }
