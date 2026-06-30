@@ -438,6 +438,9 @@ ${formatInstruction}`;
   const langPrompt = lang === 'id' 
     ? 'Bahasa Indonesia natural dan engaging.'
     : 'Natural, engaging English.';
+  const formatInstruction = lang === 'id'
+    ? 'WAJIB: tepat 2 paragraf dipisahkan 1 baris kosong. Tiap paragraf max 130 karakter. Total reply DI BAWAH 280 karakter. Sisipkan 1-2 emoji emosional di tiap paragraf. NO hashtag. NO prefix. Output HANYA teks reply jadi.'
+    : 'MUST: exactly 2 paragraphs separated by 1 blank line. Each paragraph max 130 chars. Total reply UNDER 280 chars. Include 1-2 emotional emojis per paragraph. NO hashtags. NO prefix. Output ONLY the reply text.';
   
   try {
     const promptContent = buildPromptContent(tonePrompt, langPrompt, formatInstruction);
