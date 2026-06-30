@@ -412,12 +412,14 @@ function switchProvider(p) {
     ki.placeholder = 'Trial key dari dashboard.cohere.com';
     kh.innerHTML = 'Dapetin trial key gratis dari <a href="https://dashboard.cohere.com/api-keys" target="_blank" style="color:var(--accent)">dashboard.cohere.com</a>';
     kl.textContent = '\u2014 Cohere';
+    ki.value = localStorage.getItem('apikey_cohere') || '';
   } else {
     ms.innerHTML = '<option value="agnes-2.0-flash" selected>Agnes 2.0 Flash</option>';
     agnesModel = 'agnes-2.0-flash';
     ki.placeholder = 'sk-... dari agnes-ai.com';
     kh.innerHTML = 'Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent)">agnes-ai.com</a>';
     kl.textContent = '\u2014 Agnes';
+    ki.value = localStorage.getItem('apikey_agnes') || '';
   }
 }
 
@@ -1022,12 +1024,14 @@ function switchProvider(p) {
     ki.placeholder = 'Trial key dari dashboard.cohere.com';
     kh.innerHTML = 'Dapetin trial key gratis dari <a href="https://dashboard.cohere.com/api-keys" target="_blank" style="color:var(--accent)">dashboard.cohere.com</a>';
     kl.textContent = '\u2014 Cohere';
+    ki.value = localStorage.getItem('apikey_cohere') || '';
   } else {
     ms.innerHTML = '<option value="agnes-2.0-flash" selected>Agnes 2.0 Flash</option>';
     agnesModel = 'agnes-2.0-flash';
     ki.placeholder = 'sk-... dari agnes-ai.com';
     kh.innerHTML = 'Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent)">agnes-ai.com</a>';
     kl.textContent = '\u2014 Agnes';
+    ki.value = localStorage.getItem('apikey_agnes') || '';
   }
 }
 
