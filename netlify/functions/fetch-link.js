@@ -1,88 +1,88 @@
-// Proxy for fetching tweet content + images server-side (no CORS)
+// Proxy Multi-Fallback Tweet Reader
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
+async function fetchWithTimeout(url, ms = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+    return res;
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
+  }
+}
+
 async function fetchContent(url) {
-  let fetchUrl = url;
-  let useJsonApi = false;
   let tweetId = '';
   try {
     const u = new URL(url);
     if (u.hostname === 'x.com' || u.hostname === 'twitter.com') {
       const parts = u.pathname.split('/').filter(Boolean);
-      tweetId = parts[parts.indexOf('status') + 1] || parts[0];
-      if (tweetId && /^\d+$/.test(tweetId)) {
-        fetchUrl = `https://api.fxtwitter.com/status/${tweetId}`;
-        useJsonApi = true;
-      }
+      let idx = parts.indexOf('status');
+      tweetId = idx >= 0 ? parts[idx + 1] : parts[0];
+      if (tweetId && tweetId.includes('?')) tweetId = tweetId.split('?')[0];
     }
   } catch(e) {}
+  
+  console.log('Extracted tweetId:', tweetId);
 
-  const res = await fetch(fetchUrl);
-  if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
+  // 1. Try fxtwitter
+  try {
+    if (tweetId) {
+      const fxUrl = 'https://api.fxtwitter.com/status/' + tweetId;
+      const res = await fetchWithTimeout(fxUrl, 8000);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.tweet && data.tweet.text) {
+          const imgs = (data.tweet.media && data.tweet.media.photos || []).map(p => p.url);
+          return { ok: true, text: data.tweet.text, images: imgs, author: (data.tweet.author && data.tweet.author.screen_name) || '', source: 'fxtwitter' };
+        }
+      }
+    }
+  } catch(e) { console.log('fxtwitter err:', e.message); }
 
-  if (useJsonApi) {
-    const json = await res.json();
-    const tweet = json.tweet || json;
-    
-    // Extract media URLs (images + video thumbs)
-    let images = [];
-    if (tweet.media?.photos) {
-      images = tweet.media.photos.map(p => p.url || p.direct_url).filter(Boolean);
+  // 2. Try nitter
+  try {
+    if (tweetId) {
+      const nitterUrl = 'https://nitter.net/_/' + tweetId + '/rss';
+      const res = await fetchWithTimeout(nitterUrl, 8000);
+      if (res.ok) {
+        const text = await res.text();
+        const m = text.match(/<title>(.+?)<\/title>/);
+        if (m) return { ok: true, text: m[1].replace(/^@\w+\s*:\s*/, '').trim(), images: [], source: 'nitter' };
+      }
     }
-    // Also check media.all for videos
-    if (tweet.media?.videos) {
-      tweet.media.videos.forEach(v => {
-        if (v.thumbnail_url) images.push(v.thumbnail_url);
-      });
-    }
-    // Fallback: if tweet has media_extracted
-    if (tweet.media_extended) {
-      tweet.media_extended.forEach(m => {
-        if (m.type === 'photo' && m.url) images.push(m.url);
-        if ((m.type === 'video' || m.type === 'gif') && m.thumbnail_url) images.push(m.thumbnail_url);
-      });
-    }
-    
-    return { 
-      ok: true, 
-      content: tweet.text || json.text || '', 
-      author: tweet.author?.name || '', 
-      source: 'fxtwitter-api',
-      images: images.slice(0, 4), // max 4 images
-      hasMedia: images.length > 0
-    };
-  }
+  } catch(e) { console.log('nitter err:', e.message); }
 
-  const raw = await res.text();
-  const ogDesc = raw.match(/<meta[^>]*og:description[^>]*content="([^"]*)"/);
-  const ogTitle = raw.match(/<meta[^>]*og:title[^>]*content="([^"]*)"/);
-  let content = '';
-  if (ogDesc) {
-    content = (ogTitle ? ogTitle[1].replace(/ on X$/, '') + ': ' : '') + ogDesc[1];
-    content = content.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
-  } else {
-    content = raw.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ').replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 3000);
-  }
-  return { ok: true, content, source: 'html-parse', images: [], hasMedia: false };
+  // 3. Try direct fetch
+  try {
+    const res = await fetchWithTimeout(url, 8000);
+    if (res.ok) {
+      const html = await res.text();
+      const m = html.match(/<title>(.+?)<\/title>/);
+      if (m) return { ok: true, text: m[1], images: [], source: 'direct' };
+      return { ok: true, text: html.slice(0, 1000), images: [], source: 'direct' };
+    }
+  } catch(e) { console.log('direct err:', e.message); }
+
+  return { ok: false, error: 'Semua sumber gagal. Coba paste teks manual atau link lain.' };
 }
 
-exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers, body: '' };
-  }
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers, body: JSON.stringify({ ok: false, error: 'POST only' }) };
-  }
+export default async (req, context) => {
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
+  if (req.method !== 'POST') return new Response('POST only', { status: 405, headers });
   try {
-    const { url } = JSON.parse(event.body || '{}');
-    if (!url) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: 'No URL' }) };
+    const { url } = await req.json();
+    if (!url) return new Response(JSON.stringify({ ok: false, error: 'URL kosong' }), { status: 400, headers });
     const result = await fetchContent(url);
-    return { statusCode: 200, headers, body: JSON.stringify(result) };
-  } catch(e) {
-    return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: e.message }) };
+    return new Response(JSON.stringify(result), { status: 200, headers });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: e.message }), { status: 500, headers });
   }
 };
