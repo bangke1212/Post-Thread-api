@@ -1,10 +1,383 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ReplyAI - Tweet Reply Generator</title>
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;--text2:#8b949e;--accent:#58a6ff;--accent2:#3fb950;--danger:#f85149;--font:'Segoe UI',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;justify-content:center;padding:20px}
+.container{max-width:640px;width:100%;display:flex;flex-direction:column;gap:14px}
+.header{text-align:center;padding:10px 0}
+.header h1{font-size:1.6rem}
+.header p{color:var(--text2);font-size:0.9rem;margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.card-title{font-size:0.85rem;font-weight:600;margin-bottom:10px}
+.api-row{display:flex;gap:8px}
+.input-main{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:0.82rem;font-family:var(--font);outline:none}
+.input-main:focus{border-color:var(--accent)}
+.btn{padding:8px 16px;border:none;border-radius:8px;font-size:0.82rem;font-family:var(--font);cursor:pointer;font-weight:600;transition:all .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{opacity:.85}
+.btn-sm{padding:6px 12px;font-size:0.78rem}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{background:var(--surface)}
+.btn-outline.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-delete{background:var(--danger);color:#fff}
+.btn-delete:hover{opacity:.85}
+.pill-group{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:0.8rem;font-family:var(--font);cursor:pointer;transition:all .2s}
+.pill:hover{background:var(--surface)}
+.pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+select{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:0.82rem;font-family:var(--font);outline:none;width:100%;margin-top:8px}
+.hint{color:var(--text2);font-size:0.72rem;margin-top:6px}
+.hint a{color:var(--accent)}
+.preview{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;min-height:60px;white-space:pre-wrap;font-size:0.9rem;line-height:1.5;color:var(--text)}
+.preview:empty::before{content:'Klik Generate Reply...';color:var(--text2)}
+.char-counter{text-align:right;font-size:0.8rem;color:var(--text2);margin-top:4px}
+.char-counter.over{color:var(--danger);font-weight:700}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;padding:10px 24px;border-radius:20px;font-size:0.85rem;z-index:999;opacity:0;transition:opacity .3s}
+.toast.show{opacity:1}
+.toast.error{background:var(--danger)}
+.status{font-size:0.75rem;color:var(--text2);margin-top:6px}
+#manualInputRow{display:none}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header"><h1>💬 ReplyAI</h1><p>Paste link tweet → AI bikin reply pas</p></div>
+
+<div class="card">
+<div class="card-title">🔑 API Key <span id="apiKeyLabel" style="font-weight:400;color:var(--text2);font-size:0.72rem">- Agnes</span></div>
+<div class="api-row">
+<input class="input-main" id="apiKeyInput" type="password" placeholder="sk-... dari agnes-ai.com" style="font-size:0.82rem">
+<button class="btn btn-primary btn-sm" onclick="saveApiKey()">💾 Save</button>
+</div>
+<div class="hint" id="apiKeyHint">Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent)">agnes-ai.com</a></div>
+</div>
+
+<div class="card" style="padding:10px 16px">
+<div style="display:flex;gap:8px;align-items:center">
+<span style="font-size:0.78rem;color:var(--text2)">🌐</span>
+<select id="langSelect" onchange="setLang(this.value)" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:0.82rem;font-family:var(--font);cursor:pointer">
+<option value="id" selected>🇮🇩 Indonesia</option>
+<option value="en">🇬🇧 English</option>
+</select>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">🔗 Paste Link Tweet</div>
+<div class="api-row">
+<input class="input-main" id="tweetLink" type="text" placeholder="https://x.com/... atau https://threads.net/..." oninput="onLinkInput()">
+<button class="btn btn-outline btn-sm" onclick="clearLink()">✕</button>
+</div>
+<div id="manualInputRow" style="margin-top:10px">
+<textarea id="manualTweetInput" class="input-main" rows="3" placeholder="Paste teks tweet di sini..." style="resize:vertical;width:100%"></textarea>
+<button class="btn btn-primary btn-sm" onclick="useManualTweet()" style="margin-top:6px">👤 Pakai Teks Manual</button>
+</div>
+<div class="status" id="linkStatus"></div>
+</div>
+
+<div class="card">
+<div class="card-title">🤖 PROVIDER AI</div>
+<div class="pill-group" id="providerPills">
+<button class="pill active" onclick="switchProvider('agnes')">⚡ Agnes (Flash)</button>
+<button class="pill" onclick="switchProvider('cohere')">🅒 Cohere (Trial)</button>
+</div>
+<select id="modelSelect" onchange="setModel(this.value)">
+<option value="agnes-2.0-flash" selected>Agnes 2.0 Flash</option>
+</select>
+</div>
+
+<div class="card">
+<div class="card-title">🎭 Gaya Reply</div>
+<div class="pill-group" id="tonePills"></div>
+</div>
+
+<div class="card">
+<button class="btn btn-primary" onclick="generate()" style="width:100%;padding:12px;font-size:0.95rem">✨ Generate Reply</button>
+<div class="preview" id="previewBox"></div>
+<div class="char-counter" id="charCounter">0</div>
+<div class="status" id="genStatus"></div>
+</div>
+
+<div class="btn-row">
+<button class="btn btn-outline btn-sm" onclick="copyReply()">📋 Copy</button>
+<button class="btn btn-outline btn-sm" onclick="retry()">🔄 Retry</button>
+<button class="btn btn-delete btn-sm" onclick="deleteReply()">🗑 Hapus</button>
+<button class="btn btn-primary btn-sm" onclick="openReply()">💬 Reply di X</button>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
 <script>
-// Kill service worker cache
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(regs) { regs.forEach(function(r) { r.unregister(); }); });
+// ===== STATE =====
+let provider = 'agnes';
+let agnesModel = 'agnes-2.0-flash';
+let cohereModel = 'command-r7b-12-2024';
+let tone = 'kaget';
+let lang = 'id';
+let tweetContent = '';
+let tweetAuthor = '';
+let tweetUrl = '';
+let tweetImages = [];
+let hasMedia = false;
+let generatedReply = '';
+let isLoading = false;
+
+const TONES = [
+  {id:'roasting',label:'🔥 Roasting',emoji:'🔥'},
+  {id:'lucu',label:'😂 Lucu',emoji:'😂'},
+  {id:'informatif',label:'🤓 Informatif',emoji:'🤓'},
+  {id:'kaget',label:'😱 Kaget',emoji:'😱'},
+  {id:'dukung',label:'💪 Dukung',emoji:'💪'},
+  {id:'skeptis',label:'🤨 Skeptis',emoji:'🤨'},
+  {id:'sedih',label:'😢 Sedih',emoji:'😢'},
+  {id:'marah',label:'😤 Marah',emoji:'😤'}
+];
+
+// ===== INIT =====
+(function init(){
+  // Load saved API key
+  let key = localStorage.getItem('apikey_agnes');
+  if(key) document.getElementById('apiKeyInput').value = key;
+  
+  // Render tone pills
+  let tp = document.getElementById('tonePills');
+  TONES.forEach(function(t){
+    let b = document.createElement('button');
+    b.className = 'pill' + (t.id===tone?' active':'');
+    b.textContent = t.label;
+    b.onclick = function(){ setTone(t.id); };
+    tp.appendChild(b);
+  });
+  
+  // Update char counter
+  updateCharCounter();
+  
+  console.log('=== REPLYAI v4.0 READY ===');
+})();
+
+// ===== PROVIDER SWITCH =====
+function switchProvider(p){
+  provider = p;
+  let pills = document.querySelectorAll('#providerPills .pill');
+  pills.forEach(function(b){ b.classList.remove('active'); });
+  
+  let ms = document.getElementById('modelSelect');
+  let ki = document.getElementById('apiKeyInput');
+  let kh = document.getElementById('apiKeyHint');
+  let kl = document.getElementById('apiKeyLabel');
+  ms.innerHTML = '';
+  
+  if(p === 'cohere'){
+    document.querySelector('#providerPills .pill:nth-child(2)').classList.add('active');
+    ms.innerHTML = '<option value="command-r7b-12-2024" selected>Command R7B (Cepat)</option><option value="command-r-08-2024">Command R (Balanced)</option><option value="command-r-plus-08-2024">Command R+ (Premium)</option><option value="command-a-03-2025">Command A (256K)</option><option value="command-a-plus-05-2026">Command A+ (Terkuat)</option>';
+    cohereModel = 'command-r7b-12-2024';
+    ki.placeholder = 'Trial key dari dashboard.cohere.com';
+    kh.innerHTML = 'Dapetin trial key gratis dari <a href="https://dashboard.cohere.com/api-keys" target="_blank" style="color:var(--accent)">dashboard.cohere.com</a>';
+    kl.textContent = '- Cohere';
+    ki.value = localStorage.getItem('apikey_cohere') || '';
+  } else {
+    document.querySelector('#providerPills .pill:nth-child(1)').classList.add('active');
+    ms.innerHTML = '<option value="agnes-2.0-flash" selected>Agnes 2.0 Flash</option>';
+    agnesModel = 'agnes-2.0-flash';
+    ki.placeholder = 'sk-... dari agnes-ai.com';
+    kh.innerHTML = 'Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent)">agnes-ai.com</a>';
+    kl.textContent = '- Agnes';
+    ki.value = localStorage.getItem('apikey_agnes') || '';
+  }
 }
-// Debug error
-window.addEventListener('error', function(e) { alert('JS ERROR: ' + e.message + ' at line ' + e.lineno); });
-console.log('=== REPLYAI DASHBOARD v3.0 ===');
+
+function setModel(val){
+  if(provider==='agnes') agnesModel = val;
+  else cohereModel = val;
+}
+
+// ===== TONE =====
+function setTone(t){
+  tone = t;
+  let pills = document.querySelectorAll('#tonePills .pill');
+  pills.forEach(function(b,i){
+    b.classList.toggle('active', TONES[i].id === t);
+  });
+}
+
+// ===== LANGUAGE =====
+function setLang(l){
+  lang = l;
+}
+
+// ===== LINK =====
+function onLinkInput(){
+  let val = document.getElementById('tweetLink').value.trim();
+  if(val && (val.includes('x.com')||val.includes('twitter.com')||val.includes('threads.net'))){
+    fetchLinkContent(val);
+  }
+}
+
+async function fetchLinkContent(url){
+  document.getElementById('linkStatus').textContent = 'Memuat...';
+  tweetUrl = url;
+  try {
+    let apiUrl = 'https://postthreadpost.netlify.app/api/fetch-link?url=' + encodeURIComponent(url);
+    let r = await fetch(apiUrl);
+    let d = await r.json();
+    if(d.text){
+      tweetContent = d.text;
+      tweetAuthor = d.author || '';
+      tweetImages = d.images || [];
+      hasMedia = d.hasMedia || false;
+      document.getElementById('linkStatus').textContent = (tweetAuthor?'👤 '+tweetAuthor+' ':'')+'✅ Tweet berhasil dibaca';
+    } else {
+      document.getElementById('linkStatus').textContent = '⚠️ Gagal membaca tweet - paste teks manual';
+      document.getElementById('manualInputRow').style.display = 'block';
+    }
+  } catch(e){
+    document.getElementById('linkStatus').textContent = '⚠️ Gagal fetch - paste teks manual';
+    document.getElementById('manualInputRow').style.display = 'block';
+  }
+}
+
+function clearLink(){
+  document.getElementById('tweetLink').value = '';
+  tweetContent = '';
+  tweetAuthor = '';
+  tweetUrl = '';
+  tweetImages = [];
+  document.getElementById('linkStatus').textContent = '';
+  document.getElementById('manualInputRow').style.display = 'none';
+}
+
+function useManualTweet(){
+  let text = document.getElementById('manualTweetInput').value.trim();
+  if(text){
+    tweetContent = text;
+    document.getElementById('linkStatus').textContent = '👤 Teks manual siap';
+    document.getElementById('manualInputRow').style.display = 'none';
+  }
+}
+
+// ===== GENERATE =====
+async function generate(){
+  if(isLoading) return;
+  
+  let key = document.getElementById('apiKeyInput').value.trim();
+  if(!key){ showToast('Masukkan API key dulu!','error'); return; }
+  if(!tweetContent){ showToast('Paste link tweet dulu!','error'); return; }
+  
+  isLoading = true;
+  document.getElementById('genStatus').textContent = 'Generating...';
+  document.getElementById('previewBox').textContent = '';
+  
+  let toneMap = {
+    roasting:{id:'Kaget',en:'Roasting'},lucu:{id:'Lucu',en:'Funny'},
+    informatif:{id:'Informatif',en:'Informative'},kaget:{id:'Kaget',en:'Shocked'},
+    dukung:{id:'Dukung',en:'Supportive'},skeptis:{id:'Skeptis',en:'Skeptical'},
+    sedih:{id:'Sedih',en:'Sad'},marah:{id:'Marah',en:'Angry'}
+  };
+  let t = toneMap[tone] || toneMap.kaget;
+  
+  let promptContent = `Buat reply tweet dengan tone: ${t.id} (${t.en}).\n\nTweet: "${tweetContent}"\n\nBikin reply maksimal 2 paragraf pendek. Pakai bahasa ${lang==='id'?'Indonesia':'English'}. JANGAN pake hashtag. Reply aja, tanpa intro.`;
+  
+  try {
+    let endpoint, reqBody;
+    let modelName = provider==='agnes'?agnesModel:cohereModel;
+    
+    if(provider==='agnes'){
+      endpoint = 'https://apihub.agnes-ai.com/v1/chat/completions';
+      reqBody = {model:modelName,messages:[{role:'user',content:promptContent}],max_tokens:120,temperature:0.9};
+    } else {
+      endpoint = 'https://api.cohere.com/v2/chat';
+      reqBody = {model:modelName,messages:[{role:'user',content:promptContent}],max_tokens:120,temperature:0.9};
+    }
+    
+    let res = await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify(reqBody)});
+    let data = await res.json();
+    
+    generatedReply = '';
+    if(data.choices && data.choices[0] && data.choices[0].message) generatedReply = data.choices[0].message.content;
+    else if(data.message && data.message.content){
+      let c = data.message.content;
+      if(Array.isArray(c) && c[0] && c[0].text) generatedReply = c[0].text;
+      else if(typeof c === 'string') generatedReply = c;
+    }
+    
+    if(!generatedReply){
+      let err = data.error?(data.error.message||JSON.stringify(data.error)):(JSON.stringify(data).slice(0,150));
+      generatedReply = 'Gagal generate: ' + err;
+    }
+    
+    // Trim ke 300 karakter
+    if(generatedReply.length > 300){
+      let truncated = generatedReply.substring(0,300);
+      let seps = [' ','.',',','!','?','\n'];
+      let best = -1;
+      seps.forEach(function(s){ let p=truncated.lastIndexOf(s); if(p>best) best=p; });
+      if(best>200) generatedReply = truncated.substring(0,best);
+      else generatedReply = truncated;
+    }
+    
+    document.getElementById('previewBox').textContent = generatedReply;
+    updateCharCounter();
+    document.getElementById('genStatus').textContent = '✅ Selesai!';
+  } catch(e){
+    generatedReply = 'Error: ' + e.message;
+    document.getElementById('previewBox').textContent = generatedReply;
+    document.getElementById('genStatus').textContent = '❌ Gagal';
+  }
+  isLoading = false;
+}
+
+function retry(){ if(!isLoading) generate(); }
+
+function deleteReply(){
+  generatedReply = '';
+  document.getElementById('previewBox').textContent = '';
+  updateCharCounter();
+  showToast('Dihapus');
+}
+
+function copyReply(){
+  if(!generatedReply){ showToast('Generate dulu!','error'); return; }
+  navigator.clipboard.writeText(generatedReply).then(function(){
+    showToast('Tersalin! ✅');
+  });
+}
+
+function openReply(){
+  if(!tweetUrl){ showToast('Paste link dulu!','error'); return; }
+  window.open(tweetUrl,'_blank');
+}
+
+function saveApiKey(){
+  let key = document.getElementById('apiKeyInput').value.trim();
+  let storageKey = provider==='cohere'?'apikey_cohere':'apikey_agnes';
+  localStorage.setItem(storageKey,key);
+  showToast('API key tersimpan! ✅');
+}
+
+function updateCharCounter(){
+  let len = generatedReply.length;
+  let el = document.getElementById('charCounter');
+  el.textContent = len;
+  el.className = 'char-counter' + (len > 300 ? ' over' : '');
+}
+
+function showToast(msg,type){
+  let t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast '+(type||'')+' show';
+  setTimeout(function(){ t.className='toast'; },2000);
+}
+
+// Kill service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(function(r){ r.forEach(function(x){ x.unregister(); }); });
+}
 </script>
->
+</body>
+</html>
