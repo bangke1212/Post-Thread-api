@@ -437,13 +437,7 @@ ${formatInstruction}`;
       endpoint = 'https://apihub.agnes-ai.com/v1/chat/completions';
       reqBody = { model: agnesModel, messages: [{
           role: 'user',
-          content: `Ini tweet yang perlu direply:
-
-"""${tweetContent}"""
-
-${tonePrompt}
-${langPrompt}
-WAJIB: tepat 2 paragraf dipisahkan 1 baris kosong. Tiap paragraf max 130 karakter. Total reply DI BAWAH 280 karakter. Sisipkan 1-2 emoji emosional di tiap paragraf. NO hashtag. NO prefix. Output HANYA teks reply jadi.`
+          content: promptContent
         }],
         max_tokens: 200, temperature: 0.9
       };
