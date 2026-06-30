@@ -2,6 +2,16 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <script>
+  // Kill service worker cache
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) { regs.forEach(function(r) { r.unregister(); }); });
+  }
+  // Debug: pastikan switchProvider jalan
+  window.addEventListener('error', function(e) { alert('JS ERROR: ' + e.message + ' at line ' + e.lineno); });
+  console.log('=== DASHBOARD LOADED v2.1 ===');
+  </script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ReplyAI — Tweet Reply Generator</title>
   <style>
@@ -139,6 +149,7 @@
       .tone-grid { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
 </head>
 <body>
 <div class="container">
