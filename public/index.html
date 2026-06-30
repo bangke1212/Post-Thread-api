@@ -442,33 +442,39 @@ ${formatInstruction}`;
     ? 'WAJIB: tepat 2 paragraf dipisahkan 1 baris kosong. Tiap paragraf max 130 karakter. Total reply DI BAWAH 280 karakter. Sisipkan 1-2 emoji emosional di tiap paragraf. NO hashtag. NO prefix. Output HANYA teks reply jadi.'
     : 'MUST: exactly 2 paragraphs separated by 1 blank line. Each paragraph max 130 chars. Total reply UNDER 280 chars. Include 1-2 emotional emojis per paragraph. NO hashtags. NO prefix. Output ONLY the reply text.';
   
+  // Debug
+    console.log('🔧 Provider:', provider, '| Model:', provider === 'agnes' ? agnesModel : cohereModel);
+    console.log('🔧 tonePrompt:', tonePrompt.slice(0,80));
+    console.log('🔧 langPrompt:', langPrompt);
+    console.log('🔧 formatInstruction:', formatInstruction.slice(0,80));
+    
   try {
     const promptContent = buildPromptContent(tonePrompt, langPrompt, formatInstruction);
+    console.log('🔧 promptContent length:', promptContent.length);
+    
     var endpoint, reqBody;
     
     if (provider === 'agnes') {
       endpoint = 'https://apihub.agnes-ai.com/v1/chat/completions';
-      reqBody = { model: agnesModel, messages: [{
-          role: 'user',
-          content: promptContent
-        }],
-        max_tokens: 200, temperature: 0.9
-      };
+      reqBody = { model: agnesModel, messages: [{ role: 'user', content: promptContent }], max_tokens: 200, temperature: 0.9 };
     } else if (provider === 'cohere') {
       endpoint = 'https://api.cohere.com/v2/chat';
       reqBody = { model: cohereModel, messages: [{ role: 'user', content: promptContent }], max_tokens: 200, temperature: 0.9 };
     }
     
+    console.log('🚀 Fetch:', endpoint);
     const res = await fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key}, body: JSON.stringify(reqBody) });
+    console.log('📡 Status:', res.status, res.statusText);
     
     const data = await res.json();
+    console.log('🔍 Raw response:', JSON.stringify(data).slice(0,500));
+    
     generatedReply = 'Gagal generate.';
     if (data.choices && data.choices[0] && data.choices[0].message) {
       generatedReply = data.choices[0].message.content || 'Gagal generate.';
     } else if (data.message && data.message.content && data.message.content[0]) {
       generatedReply = data.message.content[0].text || 'Gagal generate.';
     }
-    console.log('🔍 Raw response:', JSON.stringify(data).slice(0,300));
     
     // Show preview
     const previewBox = document.getElementById('previewBox');
