@@ -192,15 +192,19 @@
   
   <!-- Provider & Model -->
   <div class="card" style="padding:12px 16px">
-    <div style="font-size:0.75rem;color:var(--text2);margin-bottom:8px;font-weight:600">🤖 PROVIDER AI</div>
+    <div style="font-size:0.75rem;color:var(--text2);margin-bottom:8px;font-weight:600">🤖 AI MODEL</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <select id="providerSelect" onchange="setProvider(this.value)" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:0.82rem;font-family:var(--font);cursor:pointer">
-        <option value="agnes" selected>⚡ Agnes (Flash)</option>
-        <option value="cohere">🅒 Cohere (Trial)</option>
-      </select>
-      <span style="font-size:0.7rem;color:var(--text2)">→ Model:</span>
-      <select id="modelSelect" onchange="setModel(this.value)" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:0.82rem;font-family:var(--font);cursor:pointer">
-        <option value="agnes-2.0-flash" selected>Agnes 2.0 Flash</option>
+      <select id="allModelSelect" onchange="onModelChange(this.value)" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:0.82rem;font-family:var(--font);cursor:pointer;min-width:200px">
+        <optgroup label="⚡ Agnes">
+          <option value="agnes|agnes-2.0-flash" selected>Agnes 2.0 Flash</option>
+        </optgroup>
+        <optgroup label="🅒 Cohere">
+          <option value="cohere|command-r7b-12-2024">Command R7B (Cepat)</option>
+          <option value="cohere|command-r-08-2024">Command R (Balanced)</option>
+          <option value="cohere|command-r-plus-08-2024">Command R+ (Premium)</option>
+          <option value="cohere|command-a-03-2025">Command A (256K)</option>
+          <option value="cohere|command-a-plus-05-2026">Command A+ (Terkuat)</option>
+        </optgroup>
       </select>
     </div>
   </div>
@@ -274,17 +278,10 @@ function useManualTweet() {
 }
 
 // ===== INIT =====
-// Bind event listener (script at bottom so DOM exists)
+// Trigger initial model setup
 (function initSelectors() {
-  var ps = document.getElementById('providerSelect');
-  var ms = document.getElementById('modelSelect');
-  if (ps) {
-    ps.addEventListener('change', function() { setProvider(this.value); });
-    setProvider(ps.value);
-  }
-  if (ms) {
-    ms.addEventListener('change', function() { setModel(this.value); });
-  }
+  var sel = document.getElementById('allModelSelect');
+  if (sel) onModelChange(sel.value);
 })();
 const savedKey = localStorage.getItem('apikey_agnes');
 if (savedKey) {
@@ -388,35 +385,31 @@ async function readTweet() {
   // auto-read — no button
 }
 
-// ===== TONE =====
-function setLang(val) { lang = val; }
-function setProvider(val) {
-  provider = val;
-  var ms = document.getElementById('modelSelect');
-  ms.innerHTML = '';
-  var keyInput = document.getElementById('apiKeyInput');
-  var keyHint = document.getElementById('apiKeyHint');
-  var keyLabel = document.getElementById('apiKeyProvider');
+// ===== AI MODEL SELECT =====
+function onModelChange(val) {
+  var parts = val.split('|');
+  provider = parts[0];
+  var model = parts[1];
+  if (provider === 'agnes') agnesModel = model;
+  else cohereModel = model;
   
-  if (val === 'agnes') {
-    ms.innerHTML = '<option value="agnes-2.0-flash">Agnes 2.0 Flash</option>';
-    agnesModel = 'agnes-2.0-flash';
-    keyInput.placeholder = 'sk-... dari agnes-ai.com';
-    keyHint.innerHTML = 'Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent)">agnes-ai.com</a>';
-    keyLabel.textContent = '— Agnes';
-  } else if (val === 'cohere') {
-    ms.innerHTML = '<option value="command-r7b-12-2024" selected>Command R7B (Cepat)</option><option value="command-r-08-2024">Command R (Balanced)</option><option value="command-r-plus-08-2024">Command R+ (Premium)</option><option value="command-a-03-2025">Command A (256K)</option><option value="command-a-plus-05-2026">Command A+ (Terkuat)</option>';
-    cohereModel = 'command-r7b-12-2024';
-    keyInput.placeholder = 'Trial key dari dashboard.cohere.com';
-    keyHint.innerHTML = 'Dapetin trial key gratis dari <a href="https://dashboard.cohere.com/api-keys" target="_blank" style="color:var(--accent)">dashboard.cohere.com</a>';
-    keyLabel.textContent = '— Cohere';
+  // Update API key UI
+  var ki = document.getElementById('apiKeyInput');
+  var kh = document.getElementById('apiKeyHint');
+  var kl = document.getElementById('apiKeyProvider');
+  if (provider === 'agnes') {
+    ki.placeholder = 'sk-... dari agnes-ai.com';
+    kh.innerHTML = 'Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent)">agnes-ai.com</a>';
+    kl.textContent = '— Agnes';
+  } else {
+    ki.placeholder = 'Trial key dari dashboard.cohere.com';
+    kh.innerHTML = 'Dapetin trial key gratis dari <a href="https://dashboard.cohere.com/api-keys" target="_blank" style="color:var(--accent)">dashboard.cohere.com</a>';
+    kl.textContent = '— Cohere';
   }
 }
 
-function setModel(val) {
-  if (provider === 'agnes') agnesModel = val;
-  else cohereModel = val;
-}
+// ===== TONE =====
+function setLang(val) { lang = val; }
 
 function setTone(t, btn) {
   tone = t;
