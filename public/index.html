@@ -300,13 +300,17 @@ if (savedKey) {
 function saveApiKey() {
   const key = document.getElementById('apiKeyInput').value.trim();
   if (key) {
-    localStorage.setItem('apikey_agnes', key);
-    toast('✅ API Key disimpan!');
+    var storageKey = provider === 'cohere' ? 'apikey_cohere' : 'apikey_agnes';
+    localStorage.setItem(storageKey, key);
+    toast('✅ API Key ' + (provider === 'cohere' ? 'Cohere' : 'Agnes') + ' disimpan!');
   }
 }
 
 function getApiKey() {
-  return document.getElementById('apiKeyInput').value.trim() || localStorage.getItem('apikey_agnes') || '';
+  var inputVal = document.getElementById('apiKeyInput').value.trim();
+  if (inputVal) return inputVal;
+  var storageKey = provider === 'cohere' ? 'apikey_cohere' : 'apikey_agnes';
+  return localStorage.getItem(storageKey) || '';
 }
 
 // ===== URL INPUT =====
