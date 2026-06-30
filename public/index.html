@@ -459,8 +459,8 @@ ${formatInstruction}`;
     ? 'Bahasa Indonesia natural dan engaging.'
     : 'Natural, engaging English.';
   const formatInstruction = lang === 'id'
-    ? 'WAJIB: tepat 2 paragraf dipisahkan 1 baris kosong. Tiap paragraf max 130 karakter. Total reply DI BAWAH 280 karakter. Sisipkan 1-2 emoji emosional di tiap paragraf. NO hashtag. NO prefix. Output HANYA teks reply jadi.'
-    : 'MUST: exactly 2 paragraphs separated by 1 blank line. Each paragraph max 130 chars. Total reply UNDER 280 chars. Include 1-2 emotional emojis per paragraph. NO hashtags. NO prefix. Output ONLY the reply text.';
+    ? 'WAJIB: tepat 2 paragraf dipisahkan 1 baris kosong. Tiap paragraf max 150 karakter. Total reply DI BAWAH 300 karakter. Sisipkan 1-2 emoji emosional di tiap paragraf. NO hashtag. NO prefix. Output HANYA teks reply.'
+    : 'MUST: exactly 2 paragraphs separated by 1 blank line. Each paragraph max 150 chars. Total reply UNDER 300 chars. Include 1-2 emotional emojis per paragraph. NO hashtags. NO prefix. Output ONLY the reply text.';
   
   // Debug
     console.log('🔧 Provider:', provider, '| Model:', provider === 'agnes' ? agnesModel : cohereModel);
@@ -474,10 +474,10 @@ ${formatInstruction}`;
     
     if (provider === 'agnes') {
       endpoint = 'https://apihub.agnes-ai.com/v1/chat/completions';
-      reqBody = { model: agnesModel, messages: [{ role: 'user', content: promptContent }], max_tokens: 200, temperature: 0.9 };
+      reqBody = { model: agnesModel, messages: [{ role: 'user', content: promptContent }], max_tokens: 120, temperature: 0.9 };
     } else {
       endpoint = 'https://api.cohere.com/v2/chat';
-      reqBody = { model: cohereModel, messages: [{ role: 'user', content: promptContent }], max_tokens: 200, temperature: 0.9 };
+      reqBody = { model: cohereModel, messages: [{ role: 'user', content: promptContent }], max_tokens: 120, temperature: 0.9 };
     }
     
     var res = await fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key}, body: JSON.stringify(reqBody) });
@@ -508,12 +508,12 @@ ${formatInstruction}`;
     var chars = generatedReply.length;
     charCount.textContent = chars;
     charCount.className = 'char-count';
-    if (chars <= 250) charCount.classList.add('char-ok');
-    else if (chars <= 280) charCount.classList.add('char-warn');
+    if (chars <= 270) charCount.classList.add('char-ok');
+    else if (chars <= 300) charCount.classList.add('char-warn');
     else charCount.classList.add('char-over');
     
     actionBar.classList.add('show');
-    status.textContent = '✅ ' + chars + ' karakter — ' + (chars <= 280 ? 'Pas buat X!' : 'Agak panjang');
+    status.textContent = '✅ ' + chars + ' karakter — ' + (chars <= 300 ? 'Pas buat X!' : 'Kelebihan!');
     status.style.color = chars <= 280 ? 'var(--green)' : 'var(--warning)';
     
   } catch(e) {
