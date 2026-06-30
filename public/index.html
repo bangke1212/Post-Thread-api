@@ -507,16 +507,12 @@ ${formatInstruction}`;
     // Paksa max 300 karakter — potong di spasi/titik/koma terdekat
     if (generatedReply.length > 300) {
       var truncated = generatedReply.substring(0, 300);
-      var lastBreak = Math.max(
-        truncated.lastIndexOf(' '),
-        truncated.lastIndexOf('.'),
-        truncated.lastIndexOf(','),
-        truncated.lastIndexOf('!'),
-        truncated.lastIndexOf('?'),
-        truncated.lastIndexOf('
-')
-      );
-      if (lastBreak > 250) truncated = truncated.substring(0, lastBreak);
+      var re = /[ .!,?
+](?=[^ .!,?
+]*$)/;
+      var lastBreak = truncated.search(re);
+      if (lastBreak >= 0 && lastBreak > 250) truncated = truncated.substring(0, lastBreak);
+      if (truncated.length > 300) truncated = truncated.substring(0, 300);
       generatedReply = truncated.trim();
     }
     
