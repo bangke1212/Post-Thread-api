@@ -496,6 +496,22 @@ ${formatInstruction}`;
       generatedReply = 'Gagal generate: ' + err;
     }
     
+    // Paksa max 300 karakter — potong di spasi/titik/koma terdekat
+    if (generatedReply.length > 300) {
+      var truncated = generatedReply.substring(0, 300);
+      var lastBreak = Math.max(
+        truncated.lastIndexOf(' '),
+        truncated.lastIndexOf('.'),
+        truncated.lastIndexOf(','),
+        truncated.lastIndexOf('!'),
+        truncated.lastIndexOf('?'),
+        truncated.lastIndexOf('
+')
+      );
+      if (lastBreak > 250) truncated = truncated.substring(0, lastBreak);
+      generatedReply = truncated.trim();
+    }
+    
     // Show preview
     var previewBox = document.getElementById('previewBox');
     var previewText = document.getElementById('previewText');
