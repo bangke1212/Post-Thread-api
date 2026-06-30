@@ -274,6 +274,15 @@ function useManualTweet() {
 }
 
 // ===== INIT =====
+// Bind provider & model selectors dengan addEventListener (lebih reliable)
+document.addEventListener('DOMContentLoaded', function() {
+  var provSel = document.getElementById('providerSelect');
+  if (provSel) provSel.addEventListener('change', function() { setProvider(this.value); });
+  var modelSel = document.getElementById('modelSelect');
+  if (modelSel) modelSel.addEventListener('change', function() { setModel(this.value); });
+  // Init default
+  setProvider(provSel?.value || 'agnes');
+});
 const savedKey = localStorage.getItem('apikey_agnes');
 if (savedKey) {
   document.getElementById('apiKeyInput').value = savedKey;
