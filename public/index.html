@@ -280,7 +280,7 @@ async function generate(){
   };
   let t = toneMap[tone] || toneMap.kaget;
   
-  let promptContent = `Buat reply tweet dengan tone: ${t.id} (${t.en}).\n\nTweet: "${tweetContent}"\n\nBikin reply maksimal 2 paragraf pendek. Pakai bahasa ${lang==='id'?'Indonesia':'English'}. JANGAN pake hashtag. Reply aja, tanpa intro.`;
+  let promptContent = `Buat reply tweet dengan tone: ${t.id} (${t.en}).\n\nTweet: "${tweetContent}"\n\nBikin reply tepat 2 paragraf. Pakai bahasa ${lang==='id'?'Indonesia':'English'}. WAJIB: tiap paragraf harus ada 1-2 emoji yang cocok sama emosi tone-nya. JANGAN pake hashtag. Reply aja, tanpa intro.`;
   
   try {
     let endpoint, reqBody;
