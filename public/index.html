@@ -148,13 +148,13 @@
   </div>
   
   <!-- API Key -->
-  <div class="card">
-    <div class="card-title">🔑 API Key</div>
+  <div class="card" id="apiKeyCard">
+    <div class="card-title">🔑 API Key <span id="apiKeyProvider" style="font-weight:400;color:var(--text2);font-size:0.7rem">— Agnes</span></div>
     <div class="api-row">
       <input class="input-main" id="apiKeyInput" type="password" placeholder="sk-... dari agnes-ai.com" style="font-size:0.82rem">
       <button class="btn btn-primary btn-sm" onclick="saveApiKey()">💾 Save</button>
     </div>
-    <div style="font-size:0.7rem;color:var(--text2);margin-top:6px">Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent)">agnes-ai.com</a></div>
+    <div style="font-size:0.7rem;color:var(--text2);margin-top:6px" id="apiKeyHint">Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent)">agnes-ai.com</a></div>
   </div>
   
   <!-- Language -->
@@ -362,12 +362,22 @@ function setProvider(val) {
   provider = val;
   var ms = document.getElementById('modelSelect');
   ms.innerHTML = '';
+  var keyInput = document.getElementById('apiKeyInput');
+  var keyHint = document.getElementById('apiKeyHint');
+  var keyLabel = document.getElementById('apiKeyProvider');
+  
   if (val === 'agnes') {
     ms.innerHTML = '<option value="agnes-2.0-flash">Agnes 2.0 Flash</option>';
     agnesModel = 'agnes-2.0-flash';
+    keyInput.placeholder = 'sk-... dari agnes-ai.com';
+    keyHint.innerHTML = 'Dapetin free key dari <a href="https://agnes-ai.com" target="_blank" style="color:var(--accent)">agnes-ai.com</a>';
+    keyLabel.textContent = '— Agnes';
   } else if (val === 'cohere') {
     ms.innerHTML = '<option value="command-r7b" selected>Command R7B (Cepat)</option><option value="command-r">Command R (Balanced)</option><option value="command-r-plus">Command R+ (Premium)</option><option value="command-a">Command A (256K)</option><option value="command-a-plus">Command A+ (Terkuat)</option>';
     cohereModel = 'command-r7b';
+    keyInput.placeholder = 'Trial key dari dashboard.cohere.com';
+    keyHint.innerHTML = 'Dapetin trial key gratis dari <a href="https://dashboard.cohere.com/api-keys" target="_blank" style="color:var(--accent)">dashboard.cohere.com</a>';
+    keyLabel.textContent = '— Cohere';
   }
 }
 
