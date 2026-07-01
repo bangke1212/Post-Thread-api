@@ -62,8 +62,14 @@ select{background:var(--bg);border:1px solid var(--border);border-radius:8px;pad
 <div style="display:flex;gap:8px;align-items:center">
 <span style="font-size:0.78rem;color:var(--text2)">🌐</span>
 <select id="langSelect" onchange="setLang(this.value)" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:0.82rem;font-family:var(--font);cursor:pointer">
-<option value="id" selected>🇮🇩 Indonesia</option>
+<option value="id">🇮🇩 Indonesia</option>
 <option value="en">🇬🇧 English</option>
+<option value="zh">🇨🇳 中文 (Mandarin)</option>
+<option value="ko">🇰🇷 한국어 (Korea)</option>
+<option value="ja">🇯🇵 日本語 (Jepang)</option>
+<option value="ru">🇷🇺 Русский (Rusia)</option>
+<option value="nl">🇳🇱 Nederlands (Belanda)</option>
+<option value="ms">🇲🇾 Bahasa Melayu</option>
 </select>
 </div>
 </div>
@@ -119,7 +125,7 @@ let provider = 'agnes';
 let agnesModel = 'agnes-2.0-flash';
 let cohereModel = 'command-r7b-12-2024';
 let tone = 'kaget';
-let lang = 'id';
+let lang = localStorage.getItem('replyai_lang') || 'id';
 let tweetContent = '';
 let tweetAuthor = '';
 let tweetUrl = '';
@@ -145,6 +151,12 @@ const TONES = [
   let key = localStorage.getItem('apikey_agnes');
   if(key) document.getElementById('apiKeyInput').value = key;
   
+  // Restore saved language
+  let savedLang = localStorage.getItem('replyai_lang') || 'id';
+  lang = savedLang;
+  let langSel = document.getElementById('langSelect');
+  if(langSel) langSel.value = savedLang;
+
   // Render tone pills
   let tp = document.getElementById('tonePills');
   TONES.forEach(function(t){
@@ -209,6 +221,7 @@ function setTone(t){
 // ===== LANGUAGE =====
 function setLang(l){
   lang = l;
+  localStorage.setItem('replyai_lang', l);
 }
 
 // ===== LINK =====
@@ -280,7 +293,19 @@ async function generate(){
   };
   let t = toneMap[tone] || toneMap.kaget;
   
-  let promptContent = `Buat reply tweet dengan tone: ${t.id} (${t.en}).\n\nTweet: "${tweetContent}"\n\nBikin reply tepat 2 paragraf. Pakai bahasa ${lang==='id'?'Indonesia':'English'}. WAJIB: tiap paragraf harus ada 1-2 emoji yang cocok sama emosi tone-nya. JANGAN pake hashtag. Reply aja, tanpa intro.`;
+  const LANG_NAMES = {id:'Indonesia',en:'English',zh:'Mandarin',ko:'Korea',ja:'Jepang',ru:'Rusia',nl:'Belanda',ms:'Melayu'};
+  const LANG_PROMPTS = {
+    id: (t)=>`Buat reply tweet dengan tone: ${t.id} (${t.en}).\n\nTweet: "${tweetContent}"\n\nBikin reply tepat 2 paragraf. Pakai bahasa Indonesia. WAJIB: tiap paragraf harus ada 1-2 emoji yang cocok sama emosi tone-nya. JANGAN pake hashtag. Reply aja, tanpa intro.`,
+    en: (t)=>`Create a tweet reply with tone: ${t.en}.\n\nTweet: "${tweetContent}"\n\nWrite exactly 2 paragraphs in English. MUST: each paragraph has 1-2 emojis matching the tone. NO hashtags. Just the reply, no intro.`,
+    zh: (t)=>`用${t.id}的语气回复推文。\n\n推文: "${tweetContent}"\n\n用中文写正好2段。必须：每段包含1-2个匹配情绪的emoji。不要加话题标签。只要回复，不要介绍。`,
+    ko: (t)=>`트윗에 ${t.id} 톤으로 답글을 작성하세요.\n\n트윗: "${tweetContent}"\n\n한국어로 정확히 2문단 작성. 필수: 각 문단에 톤에 맞는 이모지 1-2개 포함. 해시태그 금지. 답글만 출력, 소개 없이.`,
+    ja: (t)=>`${t.id}のトーンでリプライを作成。\n\nツイート: "${tweetContent}"\n\n日本語でちょうど2段落。必須: 各段落にトーンに合った絵文字を1-2個入れる。ハッシュタグ禁止。リプライのみ、前置きなし。`,
+    ru: (t)=>`Напиши ответ на твит в тоне: ${t.id}.\n\nТвит: "${tweetContent}"\n\nНапиши ровно 2 абзаца на русском. ОБЯЗАТЕЛЬНО: в каждом абзаце 1-2 эмодзи под тон. БЕЗ хештегов. Только ответ, без вступления.`,
+    nl: (t)=>`Schrijf een tweet-reply met toon: ${t.id}.\n\nTweet: "${tweetContent}"\n\nSchrijf precies 2 alinea's in het Nederlands. MOET: elke alinea 1-2 emoji's die bij de toon passen. GEEN hashtags. Alleen de reply, geen intro.`,
+    ms: (t)=>`Buat balasan tweet dengan tone: ${t.id}.\n\nTweet: "${tweetContent}"\n\nTulis tepat 2 perenggan dalam Bahasa Melayu. WAJIB: setiap perenggan ada 1-2 emoji yang sesuai tone. TIADA hashtag. Balasan sahaja, tanpa intro.`
+  };
+  let promptFn = LANG_PROMPTS[lang] || LANG_PROMPTS['id'];
+  let promptContent = promptFn(t);
   
   try {
     let endpoint, reqBody;
