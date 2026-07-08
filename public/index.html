@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>ReplyAI — Smart Reply Generator</title>
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;--text2:#8b949e;--accent:#58a6ff;--accent2:#3fb950;--danger:#f85149;--font:'Segoe UI',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;justify-content:center;padding:20px}
+.container{max-width:660px;width:100%;display:flex;flex-direction:column;gap:14px}
+.header{text-align:center;padding:10px 0}
+.header h1{font-size:1.6rem}
+.header p{color:var(--text2);font-size:0.9rem;margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.card-title{font-size:0.85rem;font-weight:600;margin-bottom:10px}
+.api-row{display:flex;gap:8px}
+.input-main{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:0.82rem;font-family:var(--font);outline:none}
+.input-main:focus{border-color:var(--accent)}
+.btn{padding:8px 16px;border:none;border-radius:8px;font-size:0.82rem;font-family:var(--font);cursor:pointer;font-weight:600;transition:all .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{opacity:.85}
+.btn-sm{padding:6px 12px;font-size:0.78rem}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{background:var(--surface)}
+.btn-outline.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-delete{background:var(--danger);color:#fff}
+.btn-delete:hover{opacity:.85}
+.pill-group{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:0.8rem;font-family:var(--font);cursor:pointer;transition:all .2s}
+.pill:hover{background:var(--surface)}
+.pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+select{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:0.82rem;font-family:var(--font);outline:none;width:100%;margin-top:8px}
+.hint{color:var(--text2);font-size:0.72rem;margin-top:6px}
+.hint a{color:var(--accent)}
+.preview{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;min-height:60px;white-space:pre-wrap;font-size:0.9rem;line-height:1.5;color:var(--text)}
+.preview:empty::before{content:'Klik Generate Reply...';color:var(--text2)}
+.char-counter{text-align:right;font-size:0.8rem;color:var(--text2);margin-top:4px}
+.char-counter.over{color:var(--danger);font-weight:700}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;padding:10px 24px;border-radius:20px;font-size:0.85rem;z-index:999;opacity:0;transition:opacity .3s}
+.toast.show{opacity:1}
+.toast.error{background:var(--danger)}
+.status{font-size:0.75rem;color:var(--text2);margin-top:6px}
+#manualInputRow{display:none}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header"><h1>💬 ReplyAI v6</h1><p>Multi-provider · Quality reply · 10 bahasa</p></div>
+
+<div class="card">
+<div class="card-title">🤖 PROVIDER AI</div>
+<div class="pill-group" id="providerPills">
+<button class="pill active" onclick="switchProvider('agnes')">🌟 Agnes AI</button>
+<button class="pill" onclick="switchProvider('mistral')">🌀 Mistral AI</button>
+<button class="pill" onclick="switchProvider('iamhc')">🏯 IAMHC</button>
+<button class="pill" onclick="switchProvider('cohere')">🅒 Cohere</button>
+</div>
+<select id="modelSelect" onchange="setModel(this.value)"></select>
+</div>
+
+<div class="card">
+<div class="card-title">🔑 API Key <span id="apiKeyLabel" style="font-weight:400;color:var(--text2);font-size:0.72rem"></span></div>
+<div class="api-row">
+<input class="input-main" id="apiKeyInput" type="password" placeholder="sk-...">
+<button class="btn btn-primary btn-sm" onclick="saveApiKey()">💾 Save</button>
+</div>
+<div class="hint" id="apiKeyHint"></div>
+</div>
+
+<div class="card" style="padding:10px 16px">
+<div style="display:flex;gap:8px;align-items:center">
+<span style="font-size:0.78rem;color:var(--text2)">🌐</span>
+<select id="langSelect" onchange="setLang(this.value)" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:0.82rem;font-family:var(--font);cursor:pointer">
+<option value="id">🇮🇩 Indonesia</option>
+<option value="en">🇬🇧 English</option>
+<option value="zh">🇨🇳 中文</option>
+<option value="ko">🇰🇷 한국어</option>
+<option value="ja">🇯🇵 日本語</option>
+<option value="ru">🇷🇺 Русский</option>
+<option value="nl">🇳🇱 Nederlands</option>
+<option value="ms">🇲🇾 Melayu</option>
+<option value="su">🏔️ Sunda</option>
+<option value="jv">🎭 Jawa</option>
+</select>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">🔗 Link Tweet</div>
+<div class="api-row">
+<input class="input-main" id="tweetLink" type="text" placeholder="https://x.com/... atau paste teks" oninput="onLinkInput()">
+<button class="btn btn-outline btn-sm" onclick="clearLink()">✕</button>
+</div>
+<div id="manualInputRow" style="margin-top:10px">
+<textarea id="manualTweetInput" class="input-main" rows="3" placeholder="Paste teks tweet..." style="resize:vertical;width:100%"></textarea>
+<button class="btn btn-primary btn-sm" onclick="useManualTweet()" style="margin-top:6px">👤 Pakai Teks Manual</button>
+</div>
+<div class="status" id="linkStatus"></div>
+</div>
+
+<div class="card">
+<div class="card-title">🎭 Gaya Reply</div>
+<div class="pill-group" id="tonePills"></div>
+</div>
+
+<div class="card">
+<button class="btn btn-primary" onclick="generate()" style="width:100%;padding:12px;font-size:0.95rem">✨ Generate Reply</button>
+<div class="preview" id="previewBox"></div>
+<div class="char-counter" id="charCounter">0</div>
+<div class="status" id="genStatus"></div>
+</div>
+
+<div class="btn-row">
+<button class="btn btn-outline btn-sm" onclick="copyReply()">📋 Copy</button>
+<button class="btn btn-outline btn-sm" onclick="retry()">🔄 Retry</button>
+<button class="btn btn-delete btn-sm" onclick="deleteReply()">🗑 Hapus</button>
+<button class="btn btn-primary btn-sm" onclick="openReply()">💬 Reply di X</button>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STATE =====
+let provider = 'agnes';
+let model = 'agnes-2.0-flash';
+let mistralModel = 'mistral-small-latest';
+let iamhcModel = 'auto';
+let cohereModel = 'command-r7b-12-2024';
+let tone = 'roasting';
+let lang = localStorage.getItem('replyai_lang') || 'id';
+let tweetContent = '', tweetAuthor = '', tweetUrl = '', generatedReply = '', isLoading = false;
+
+const TONES = [
+  {id:'roasting',label:'🔥 Roasting'},{id:'lucu',label:'😂 Lucu'},
+  {id:'informatif',label:'🧠 Informatif'},{id:'kaget',label:'😱 Kaget'},
+  {id:'dukung',label:'💪 Dukung'},{id:'skeptis',label:'🤔 Skeptis'},
+  {id:'sedih',label:'😢 Sedih'},{id:'marah',label:'😤 Marah'}
+];
+
+const PROVIDERS = {
+  agnes: { name:'Agnes AI', endpoint:'https://apihub.agnes-ai.com/v1/chat/completions', models:[{id:'agnes-2.0-flash',name:'Agnes 2.0 Flash ⭐'},{id:'agnes-2.0-pro',name:'Agnes 2.0 Pro'},{id:'agnes-1.5-flash',name:'Agnes 1.5 Flash'}], hint:'Free: <a href="https://platform.agnes-ai.com" target="_blank" style="color:var(--accent)">platform.agnes-ai.com</a>', keyLabel:'- Agnes', placeholder:'sk-... platform.agnes-ai.com', storageKey:'apikey_agnes' },
+  mistral: { name:'Mistral AI', endpoint:'https://api.mistral.ai/v1/chat/completions', models:[{id:'mistral-small-latest',name:'Mistral Small ⭐'},{id:'ministral-8b-latest',name:'Ministral 8B'},{id:'ministral-3b-latest',name:'Ministral 3B'}], hint:'Free: <a href="https://console.mistral.ai" target="_blank" style="color:var(--accent)">console.mistral.ai</a>', keyLabel:'- Mistral', placeholder:'sk-... console.mistral.ai', storageKey:'apikey_mistral' },
+  iamhc: { name:'IAMHC (幻城网安)', endpoint:'https://api.iamhc.cn/v1/chat/completions', models:[{id:'auto',name:'Auto Route ⭐'},{id:'Qwen3.5-397B-A17B',name:'Qwen 3.5 397B ⭐'},{id:'glm-4.7',name:'GLM 4.7'}], hint:'Free: <a href="https://api.iamhc.cn" target="_blank" style="color:var(--accent)">api.iamhc.cn</a>', keyLabel:'- IAMHC', placeholder:'sk-... api.iamhc.cn', storageKey:'apikey_iamhc' },
+  cohere: { name:'Cohere', endpoint:'https://api.cohere.com/v2/chat', models:[{id:'command-r7b-12-2024',name:'Command R7B'},{id:'command-r-08-2024',name:'Command R'},{id:'command-r-plus-08-2024',name:'Command R+'},{id:'command-a-03-2025',name:'Command A'},{id:'command-a-plus-05-2026',name:'Command A+'}], hint:'Trial: <a href="https://dashboard.cohere.com" target="_blank" style="color:var(--accent)">dashboard.cohere.com</a>', keyLabel:'- Cohere', placeholder:'Trial key dashboard.cohere.com', storageKey:'apikey_cohere' },
+};
+
+const TONE_DATA = {
+  roasting: { emoji: ['🔥','😏','💀','🗣️','😮‍💨'], p_id:'Roaster profesional — tajam, lucu, ngena. Bukan benci.', p_en:'Professional roaster — sharp, funny, on point.', s_id:'Amplify absurdity — tunjukin kontradiksi. Bikin ketawa getir.', s_en:'Amplify absurdity — point out the contradiction.', bait_id:'Ngaku deh... 👇', bait_en:'Be honest... 👇', no_id:'"Wah","Buset","Njir"', no_en:'"Wow","Bro","Damn"' },
+  lucu: { emoji: ['😂','😭','🤣','💀','😆'], p_id:'Komedian natural — lucu tanpa maksa.', p_en:'Natural comedian — funny, effortless.', s_id:'Relatable twist — putar ke joke yg semua relate.', s_en:'Relatable twist — spin into joke everyone gets.', bait_id:'Parah sih 😭👇', bait_en:'Can\'t make this up 😭👇', no_id:'"Wkwk","Haha","Wah"', no_en:'"Lol","Haha","Omg"' },
+  informatif: { emoji: ['📌','🧠','💡','🔍','📊'], p_id:'Analis cerdas — kasih value, insight baru.', p_en:'Smart analyst — add value, fresh insight.', s_id:'Add missing context — kasih perspektif/data baru.', s_en:'Add missing context — new perspective/data.', bait_id:'Ada data lain? 🔍', bait_en:'Any other data? 🔍', no_id:'"Menurut saya","Fakta:"', no_en:'"In my opinion","Fact:"' },
+  kaget: { emoji: ['😱','🤯','💀','👀','😳'], p_id:'Genuine shock — reaksi authentic.', p_en:'Genuinely shocked — authentic.', s_id:'Visceral reaction — ungkapin kenapa shocking.', s_en:'Visceral reaction — express why shocking.', bait_id:'Kaget juga? 😱', bait_en:'Anyone else speechless? 😱', no_id:'"Waduh","Astaga","Wih"', no_en:'"Holy","What the","No way"' },
+  dukung: { emoji: ['💪','✨','🥰','🤝','🌟'], p_id:'Support system — hangat, genuine.', p_en:'Support system — warm, genuine.', s_id:'Validate + elevate — akui + tambahin kenapa keren.', s_en:'Validate + elevate — acknowledge + add.', bait_id:'Keren banget 🥰', bait_en:'This is so good 🥰', no_id:'"Setuju","Betul","Nice"', no_en:'"Agreed","True","Nice"' },
+  skeptis: { emoji: ['🤔','🧐','🗿','🙃','😐'], p_id:'Critical thinker — skeptis cerdas.', p_en:'Critical thinker — smart skeptic.', s_id:'Poke holes — tunjukin celah logika dgn curious.', s_en:'Poke holes — question with curiosity.', bait_id:'Gimana menurut lo? 🤔', bait_en:'What do you think? 🤔', no_id:'"Ragu","Tapi","Hmm"', no_en:'"Doubt","But","Hmm"' },
+  sedih: { emoji: ['😢','💔','🥀','😔','🫂'], p_id:'Empathetic soul — menyentuh, vulnerable.', p_en:'Empathetic soul — touching, vulnerable.', s_id:'Connect emotionally — share perasaan relate.', s_en:'Connect emotionally — share relatable feelings.', bait_id:'Peluk jauh 🫂', bait_en:'Sending hugs 🫂', no_id:'"Sedih banget","Kasihan"', no_en:'"So sad","Poor thing"' },
+  marah: { emoji: ['😤','🤬','💢','😡','🔥'], p_id:'Righteous anger — marah justified.', p_en:'Righteous anger — justified, not toxic.', s_id:'Channel frustration — arahin ke masalah.', s_en:'Channel frustration — target the issue.', bait_id:'Sama keselnya? 😤', bait_en:'Anyone else pissed? 😤', no_id:'"Anjir","Gila","Goblok"', no_en:'"Wtf","Crazy","Stupid"' },
+};
+
+const ANTI_GENERIC = ['menarik untuk dicermati','patut kita apresiasi','semoga bermanfaat','terima kasih telah membaca','salam sukses','best regards','in conclusion','furthermore','it is important to note','saya setuju','setuju banget','nice info','thanks for sharing','good point','well said','interesting take'];
+function stripGeneric(t){ ANTI_GENERIC.forEach(p=>{t=t.replace(new RegExp(p,'gi'),'');}); return t.replace(/  +/g,' ').replace(/^[,\s]+|[,\s]+$/g,'').trim(); }
+
+function buildPrompt(lang,toneId,tweet){
+  var td=TONE_DATA[toneId]||TONE_DATA.roasting, e=td.emoji.join(' ');
+  var P={
+    id:`KAMU ${td.p_id}\n\nTWEET: "${tweet}"\n\n🎯 ${td.s_id}\n🎨 ${e}\n💬 ${td.bait_id}\n\n✍️ 2 paragraf, 60-150 karakter. Karakter PERTAMA=emoji. 2-3 emoji natural. "gue/aku". NO: ${td.no_id}\nNO GENERIC: "Setuju","Nice","Menarik"\n\nOUTPUT HANYA REPLY:`,
+    en:`YOU: ${td.p_en}\n\nTWEET: "${tweet}"\n\n🎯 ${td.s_en}\n🎨 ${e}\n💬 ${td.bait_en}\n\n✍️ 2 paragraphs, 60-150 chars. FIRST char=emoji. 2-3 emojis natural. "I". NO: ${td.no_en}\nNO GENERIC: "Well said","Great take","Interesting"\n\nOUTPUT ONLY REPLY:`,
+    zh:`${td.p_en}\n推文:"${tweet}"\n${td.s_en}\n${e}\n\n2段。首字符=表情。只回复。`,
+    ko:`${td.p_en}\n원본:"${tweet}"\n${td.s_en}\n${e}\n\n2문단。첫글자=이모지。답글만。`,
+    ja:`${td.p_en}\n元:"${tweet}"\n${td.s_en}\n${e}\n\n2段落。先頭=絵文字。返信のみ。`,
+    ru:`${td.p_en}\n"${tweet}"\n${td.s_en}\n${e}\n\n2 абзаца。Первый=эмодзи。Ответ。`,
+    nl:`${td.p_en}\n"${tweet}"\n${td.s_en}\n${e}\n\n2 alinea。Eerste=emoji。Reply。`,
+    ms:`${td.p_id}\n"${tweet}"\n${td.s_id}\n${e}\n\n2 perenggan。Aksara pertama=emoji。Balasan sahaja。`,
+    su:`${td.p_id}\n"${tweet}"\n${td.s_id}\n${e}\n\n2 paragraf。Karakter kahiji=emoji。Reply wungkul。`,
+    jv:`${td.p_id}\n"${tweet}"\n${td.s_id}\n${e}\n\n2 paragraf。Karakter pisanan=emoji。Reply waé。`,
+  };
+  return P[lang]||P.id;
+}
+
+(function init(){
+  switchProvider('agnes');
+  document.getElementById('langSelect').value=lang;
+  var tp=document.getElementById('tonePills');
+  TONES.forEach(function(t,i){
+    var b=document.createElement('button');
+    b.className='pill'+(t.id===tone?' active':'');
+    b.textContent=t.label;
+    b.onclick=function(){setTone(t.id);};
+    tp.appendChild(b);
+  });
+  updateCharCounter();
+})();
+
+function switchProvider(p){
+  provider=p;
+  document.querySelectorAll('#providerPills .pill').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('#providerPills .pill').forEach(function(b){if(b.textContent.indexOf(PROVIDERS[p].name)>=0)b.classList.add('active');});
+  var ms=document.getElementById('modelSelect');
+  ms.innerHTML=PROVIDERS[p].models.map(function(m,i){return '<option value="'+m.id+'"'+(i===0?' selected':'')+'>'+m.name+'</option>';}).join('');
+  if(p==='mistral')mistralModel=PROVIDERS[p].models[0].id;
+  else if(p==='iamhc')iamhcModel=PROVIDERS[p].models[0].id;
+  else if(p==='cohere')cohereModel=PROVIDERS[p].models[0].id;
+  else model=PROVIDERS[p].models[0].id;
+  document.getElementById('apiKeyHint').innerHTML=PROVIDERS[p].hint;
+  document.getElementById('apiKeyLabel').textContent=PROVIDERS[p].keyLabel;
+  document.getElementById('apiKeyInput').placeholder=PROVIDERS[p].placeholder;
+  document.getElementById('apiKeyInput').value=localStorage.getItem(PROVIDERS[p].storageKey)||'';
+}
+function setModel(v){
+  if(provider==='mistral')mistralModel=v; else if(provider==='iamhc')iamhcModel=v; else if(provider==='cohere')cohereModel=v; else model=v;
+}
+function getActiveModel(){
+  if(provider==='mistral')return mistralModel; if(provider==='iamhc')return iamhcModel; if(provider==='cohere')return cohereModel; return model;
+}
+function setTone(t){tone=t;document.querySelectorAll('#tonePills .pill').forEach(function(b,i){b.classList.toggle('active',TONES[i].id===t);});}
+function setLang(l){lang=l;localStorage.setItem('replyai_lang',l);}
+
+function onLinkInput(){var v=document.getElementById('tweetLink').value.trim();if(v&&(v.indexOf('x.com')>=0||v.indexOf('twitter.com')>=0))fetchLinkContent(v);}
+async function fetchLinkContent(url){
+  document.getElementById('linkStatus').textContent='Memuat...';tweetUrl=url;
+  try{
+    var r=await fetch('/api/fetch-link?url='+encodeURIComponent(url)),d=await r.json();
+    if(d.text){tweetContent=d.text;tweetAuthor=d.author||'';document.getElementById('linkStatus').textContent=(tweetAuthor?'👤 '+tweetAuthor+' ':'')+'✅';}
+    else throw new Error('No text');
+  }catch(e){document.getElementById('linkStatus').textContent='⚠️ Gagal — paste manual';document.getElementById('manualInputRow').style.display='block';}
+}
+function clearLink(){
+  document.getElementById('tweetLink').value='';tweetContent='';tweetAuthor='';tweetUrl='';
+  document.getElementById('linkStatus').textContent='';document.getElementById('manualInputRow').style.display='none';
+}
+function useManualTweet(){
+  var t=document.getElementById('manualTweetInput').value.trim();
+  if(t){tweetContent=t;document.getElementById('linkStatus').textContent='👤 Ready';document.getElementById('manualInputRow').style.display='none';}
+}
+
+async function generate(){
+  if(isLoading)return;
+  var key=document.getElementById('apiKeyInput').value.trim();
+  if(!key){showToast('API key kosong!','error');return;}
+  if(!tweetContent){showToast('Paste link tweet!','error');return;}
+  isLoading=true;
+  document.getElementById('genStatus').textContent='Generating...';
+  document.getElementById('previewBox').textContent='';
+  var am=getActiveModel(),pc=buildPrompt(lang,tone,tweetContent),cfg=PROVIDERS[provider],ep=cfg.endpoint;
+  try{
+    var body={model:am,messages:[{role:'user',content:pc}],max_tokens:180,temperature:0.85};
+    var res=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify(body)});
+    var data=await res.json();
+    if(data.error&&data.error.message&&data.error.message.indexOf('No available channel')>=0){
+      var fbBody={model:provider==='iamhc'?'auto':am,messages:[{role:'user',content:pc}],max_tokens:180,temperature:0.85};
+      var fbRes=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify(fbBody)});
+      data=await fbRes.json();
+    }
+    if(data.choices&&data.choices[0]&&data.choices[0].message)generatedReply=data.choices[0].message.content||'';
+    else if(data.message&&data.message.content){var c=data.message.content;generatedReply=Array.isArray(c)&&c[0]&&c[0].text?c[0].text:(typeof c==='string'?c:'');}
+    if(!generatedReply){var er=data.error?(data.error.message||JSON.stringify(data.error).slice(0,100)):'Unknown';generatedReply='Gagal: '+er;}
+    generatedReply=stripGeneric(generatedReply);
+    generatedReply=generatedReply.replace(/^["']|["']$/g,'').trim();
+    generatedReply=generatedReply.replace(/^(Wah,|Wah |Buset|Njir|Waduh|Anjir|Wow,|Damn,|Bro,)/i,'').trim();
+    generatedReply=generatedReply.replace(/^(Reply:|Balasan:|Berikut|Ini dia|Here is)/i,'').trim();
+    if(generatedReply.length>300){var tr=generatedReply.substring(0,300),best=Math.max(tr.lastIndexOf(' '),tr.lastIndexOf('.'),tr.lastIndexOf('!'),tr.lastIndexOf('?'));generatedReply=best>200?tr.substring(0,best):tr;}
+    document.getElementById('previewBox').textContent=generatedReply;
+    updateCharCounter();
+    document.getElementById('genStatus').textContent='✅ '+cfg.name+' · '+am;
+  }catch(e){generatedReply='Error: '+e.message;document.getElementById('previewBox').textContent=generatedReply;document.getElementById('genStatus').textContent='❌ Gagal';}
+  isLoading=false;
+}
+
+function retry(){if(!isLoading)generate();}
+function deleteReply(){generatedReply='';document.getElementById('previewBox').textContent='';updateCharCounter();showToast('Dihapus');}
+function copyReply(){if(!generatedReply){showToast('Generate dulu!','error');return;}navigator.clipboard.writeText(generatedReply).then(function(){showToast('Tersalin! ✅');});}
+function openReply(){if(!tweetUrl){showToast('Paste link dulu!','error');return;}window.open(tweetUrl,'_blank');}
+function saveApiKey(){var k=document.getElementById('apiKeyInput').value.trim();localStorage.setItem(PROVIDERS[provider].storageKey,k);showToast('Saved! ✅');}
+function updateCharCounter(){var l=generatedReply.length,el=document.getElementById('charCounter');el.textContent=l;el.className='char-counter'+(l>300?' over':'');}
+function showToast(m,t){var el=document.getElementById('toast');el.textContent=m;el.className='toast '+(t||'')+' show';setTimeout(function(){el.className='toast';},2000);}
+if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister();});});}
+</script>
+</body>
+</html>
