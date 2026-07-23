@@ -63,7 +63,7 @@ async function fetchTweetsX(userId, h, max) {
   max = max || 5;
   var url = 'https://api.x.com/2/users/' + userId +
     '/tweets?max_results=' + max +
-    '&tweet.fields=created_at&exclude=retweets,replies';
+    '&tweet.fields=created_at';
   var r = await xFetch(url, h);
   if (!r.ok) return [];
   var d = await r.json();
