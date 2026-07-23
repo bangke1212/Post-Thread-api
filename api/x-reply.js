@@ -1,5 +1,6 @@
 // api/x-reply.js — X Auto-Reply Agent (Vercel + VPS)
-// Monitor @bov4l, generate AI reply via Agnes, post to X
+// Monitor @target, generate AI reply via Agnes, post to X
+// Uses FREE FxTwitter API for tweet fetching (no X API credits needed)
 import crypto from 'node:crypto';
 
 // === CONFIG (env or headers) ===
@@ -7,19 +8,22 @@ const TARGET = process.env.X_TARGET_USER || 'bov4l';
 
 function getHeaders(req) {
   return {
+    // Free tweet reading: no auth needed via FxTwitter
+    // X API fallback (optional)
     bearer: req.headers['x-bearer-token'] || process.env.X_BEARER_TOKEN || '',
     agnes: req.headers['x-agnes-key'] || process.env.AGNES_API_KEY || process.env.OPENROUTER_API_KEY || '',
-    apiKey: req.headers['x-bearer-token'] || process.env.X_API_KEY || '',
-    apiSecret: req.headers['x-api-secret'] || process.env.X_API_SECRET || '',
-    accessToken: req.headers['x-access-token'] || process.env.X_ACCESS_TOKEN || '',
-    accessSecret: req.headers['x-access-secret'] || process.env.X_ACCESS_SECRET || '',
+    // For posting replies (OAuth 1.0a — only if you want to actually post)
+    apiKey: process.env.X_API_KEY || '',
+    apiSecret: process.env.X_API_SECRET || '',
+    accessToken: process.env.X_ACCESS_TOKEN || '',
+    accessSecret: process.env.X_ACCESS_SECRET || '',
   };
 }
 
 const AGNES_BASE = 'https://apihub.agnes-ai.com/v1';
 const AGNES_MODEL = 'agnes-2.0-flash';
 
-// === OAuth 1.0a Signer (for X API v2 posting) ===
+// === OAuth 1.0a Signer (for X API v2 posting only) ===
 function oauthHeader(method, url, params, h) {
   const oauth = {
     oauth_consumer_key: h.apiKey,
@@ -38,8 +42,26 @@ function oauthHeader(method, url, params, h) {
   return 'OAuth ' + sorted.map(k => `${k}="${encodeURIComponent(oauth[k])}"`).join(', ');
 }
 
-// === Fetch latest tweet by username ===
-async function fetchLatestTweet(username, h) {
+// === Fetch latest tweet via FREE FxTwitter API (no auth needed!) ===
+async function fetchLatestTweetFree(username) {
+  // FxTwitter — free, no API key needed
+  const url = `https://api.fxtwitter.com/${username}/tweets`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`FxTwitter error ${resp.status}`);
+  const data = await resp.json();
+  if (!data.tweets || data.tweets.length === 0) return null;
+  // Return latest tweet
+  const latest = data.tweets[0];
+  return {
+    id: latest.id,
+    text: latest.text || '',
+    created_at: latest.created_at || new Date().toISOString(),
+    url: latest.url || `https://x.com/${username}/status/${latest.id}`,
+  };
+}
+
+// === Fetch via X API v2 (fallback — costs credits) ===
+async function fetchLatestTweetAPI(username, h) {
   const url = `https://api.x.com/2/tweets/search/recent?query=from:${username}&max_results=5&tweet.fields=created_at,public_metrics`;
   const headers = {};
   if (h.bearer) {
@@ -47,24 +69,56 @@ async function fetchLatestTweet(username, h) {
   } else if (h.apiKey && h.accessToken) {
     headers['Authorization'] = oauthHeader('GET', url, {}, h);
   } else {
-    throw new Error('Need X Bearer Token. Set in dashboard Config API or env X_BEARER_TOKEN');
+    throw new Error('Need credentials for X API');
   }
   const resp = await fetch(url, { headers });
   if (!resp.ok) {
     const err = await resp.text();
+    // If credits depleted, return null (caller will use free method)
+    if (resp.status === 402 || resp.status === 429) return null;
     throw new Error(`X API error ${resp.status}: ${err.slice(0,500)}`);
   }
   const data = await resp.json();
   const tweets = (data.data || []).sort((a, b) => 
     new Date(b.created_at) - new Date(a.created_at)
   );
-  return tweets[0] || null;
+  const t = tweets[0];
+  if (!t) return null;
+  return {
+    id: t.id,
+    text: t.text || '',
+    created_at: t.created_at,
+    url: `https://x.com/${username}/status/${t.id}`,
+  };
+}
+
+// === Fetch latest tweet — try FREE first, X API as backup ===
+async function fetchLatestTweet(username, h) {
+  // 1. ALWAYS try FREE FxTwitter first (no credits needed!)
+  try {
+    const tweet = await fetchLatestTweetFree(username);
+    if (tweet) return tweet;
+  } catch (e) {
+    console.log(`FxTwitter failed for @${username}: ${e.message}`);
+  }
+  
+  // 2. Fallback: X API (only if bearer token present)
+  if (h.bearer || (h.apiKey && h.accessToken)) {
+    try {
+      const tweet = await fetchLatestTweetAPI(username, h);
+      if (tweet) return tweet;
+    } catch (e) {
+      console.log(`X API failed for @${username}: ${e.message}`);
+    }
+  }
+  
+  return null;
 }
 
 // === Generate AI reply via Agnes ===
 async function generateReply(tweetText, authorName, agnesKey) {
   if (!agnesKey) {
-    return `Nice post @${authorName}! 馃憠`;
+    return `Nice post @${authorName}! `;
   }
   const prompt = [
     { role: 'system', content: `Kamu adalah social media assistant. Balas tweet dari @${authorName} dengan reply yang engaging, singkat (max 250 char), dan natural seperti manusia. Gunakan Bahasa Indonesia casual (gaul tapi sopan). JANGAN gunakan hashtag. JANGAN mention user lain kecuali author. Reply harus relate dengan isi tweet.` },
@@ -76,10 +130,10 @@ async function generateReply(tweetText, authorName, agnesKey) {
     body: JSON.stringify({ model: AGNES_MODEL, messages: prompt, temperature: 0.85, max_tokens: 150 }),
   });
   const data = await resp.json();
-  return (data.choices?.[0]?.message?.content || 'Setuju! 馃憤').trim().replace(/^"|"$/g, '').replace(`@${authorName}`, '').trim();
+  return (data.choices?.[0]?.message?.content || 'Setuju! ').trim().replace(/^"|"$/g, '').replace(`@${authorName}`, '').trim();
 }
 
-// === Post reply via X API v2 ===
+// === Post reply via X API v2 (needs OAuth — only for actual posting) ===
 async function postReply(tweetId, text, h) {
   const url = 'https://api.x.com/2/tweets';
   const body = JSON.stringify({ text, reply: { in_reply_to_tweet_id: tweetId } });
@@ -122,17 +176,20 @@ export default async function handler(req, res) {
         status: 'dry_run',
         tweet: { id: tweet.id, text: tweet.text.slice(0,200), created_at: tweet.created_at },
         reply: replyText,
-        message: 'Dry run — no post made',
+        message: 'Dry run — no post made (FREE FxTwitter used for tweet fetch)',
+        source: 'fxtwitter',
       });
     }
     
+    // Only try to post if OAuth credentials available
     if (!h.apiKey || !h.accessToken) {
       return res.json({
         status: 'dry_run',
         tweet: { id: tweet.id, text: tweet.text.slice(0,200), created_at: tweet.created_at },
         reply: replyText,
-        message: 'AI reply generated. To post, set X OAuth credentials (API Key + Access Token) in env or dashboard.',
-        note: 'Bearer token read-only — need OAuth 1.0a to post',
+        message: 'AI reply generated. To post, add X OAuth creds in env vars.',
+        note: 'Tweet fetched via FREE FxTwitter — no X API credits used!',
+        source: 'fxtwitter',
       });
     }
     
