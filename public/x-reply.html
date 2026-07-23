@@ -6,7 +6,7 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Inter',-apple-system,sans-serif;background:#08080f;color:#e0e0e0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
-    .card{background:#0f0f1a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;max-width:600px;width:100%;margin-bottom:16px}
+    .card{background:#0f0f1a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;max-width:640px;width:100%;margin-bottom:16px}
     h1{font-size:24px;font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:8px}
     h1 span{background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     .sub{color:#666;font-size:13px;margin-bottom:20px}
@@ -20,6 +20,10 @@
     .btn-dry:hover{background:rgba(255,255,255,0.1)}
     .btn-debug{background:rgba(234,179,8,0.1);color:#eab308;border:1px solid rgba(234,179,8,0.2);margin-top:8px}
     .btn-debug:hover{background:rgba(234,179,8,0.2)}
+    .btn-save{background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2)}
+    .btn-save:hover{background:rgba(16,185,129,0.2)}
+    .btn-toggle{background:rgba(255,255,255,0.04);color:#888;border:1px solid rgba(255,255,255,0.08);font-size:12px;padding:8px 16px;margin-bottom:12px}
+    .btn-toggle:hover{background:rgba(255,255,255,0.08);color:#ccc}
     pre{background:#06060c;border-radius:10px;padding:16px;overflow:auto;font-size:12px;line-height:1.6;margin:12px 0;border:1px solid rgba(255,255,255,0.05);color:#a0a0b0}
     .status{font-size:12px;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:6px}
     .status-ok{background:rgba(16,185,129,0.1);color:#10b981}
@@ -27,6 +31,22 @@
     .status-warn{background:rgba(234,179,8,0.1);color:#eab308}
     .status-idle{background:rgba(255,255,255,0.05);color:#888}
     a{color:#818cf8;text-decoration:none}
+
+    /* Form Styles */
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:12px;color:#888;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+    .form-group .required{color:#ef4444}
+    .form-group input{width:100%;padding:10px 14px;background:#06060c;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#e0e0e0;font-size:13px;font-family:monospace;outline:none;transition:border .2s}
+    .form-group input:focus{border-color:#6366f1}
+    .form-group input::placeholder{color:#444}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .cred-section{margin-bottom:8px}
+    .cred-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .cred-header h3{font-size:16px;color:#ccc}
+    .badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+    .badge-saved{background:rgba(16,185,129,0.15);color:#10b981}
+    .badge-empty{background:rgba(239,68,68,0.1);color:#ef4444}
+
     #result{margin-top:16px;display:none}
     #result.show{display:block}
     .result-tweet{background:#06060c;border-radius:8px;padding:12px;margin-bottom:8px;font-size:13px;border-left:3px solid #6366f1}
@@ -34,23 +54,69 @@
     .result-err{background:rgba(239,68,68,0.05);border-radius:8px;padding:12px;font-size:13px;border-left:3px solid #ef4444}
     #debugInfo{display:none;margin-top:12px}
     #debugInfo.show{display:block}
+
+    /* Toast */
+    .toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;animation:slideUp 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+    .toast-ok{background:#10b981;color:#fff}
+    .toast-err{background:#ef4444;color:#fff}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
 <body>
   <div class="card">
     <h1>🤖 X Auto-Reply <span>Bot v2.1</span></h1>
-    <div class="sub">Monitor akun target & auto-reply pakai AI — debug + v1.1 fallback</div>
+    <div class="sub">Monitor akun target & auto-reply pakai AI — isi kredensial langsung dari sini</div>
     
-    <div class="target">
+    <div class="target" style="margin-bottom:8px">
       <span class="label">Target:</span>
       <span class="at" id="targetUser">@bov4l</span>
       <span class="status status-ok" id="botStatus">🟢 Bot Active</span>
     </div>
     
-    <div>
+    <!-- ══════════ FORM KREDENSIAL ══════════ -->
+    <div class="cred-section">
+      <div class="cred-header">
+        <h3>🔑 Kredensial X API</h3>
+        <button class="btn-toggle" onclick="toggleCredForm()" id="btnToggle">▼ Tampilkan Form</button>
+      </div>
+      
+      <div id="credForm" style="display:none">
+        <div class="form-row">
+          <div class="form-group">
+            <label><span class="required">*</span> X API Key (Consumer Key)</label>
+            <input type="text" id="apiKey" placeholder="Dari X Dev Portal → Consumer Key" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label><span class="required">*</span> X API Secret (Consumer Secret)</label>
+            <input type="password" id="apiSecret" placeholder="Dari X Dev Portal → Consumer Secret" autocomplete="off">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label><span class="required">*</span> X Access Token</label>
+            <input type="text" id="accessToken" placeholder="OAuth 1.0a Access Token" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label><span class="required">*</span> X Access Token Secret</label>
+            <input type="password" id="accessSecret" placeholder="OAuth 1.0a Token Secret" autocomplete="off">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Agnes AI Key (untuk auto-reply)</label>
+          <input type="password" id="agnesKey" placeholder="sk-xxxx dari platform.agnes-ai.com" autocomplete="off">
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <button class="btn-save" onclick="saveCreds()">💾 Simpan Kredensial</button>
+          <button class="btn-debug" onclick="checkDebug()">🩺 Cek Status</button>
+          <span style="font-size:11px;color:#666;margin-left:8px">Disimpan di localStorage browser</span>
+        </div>
+      </div>
+    </div>
+    <!-- ══════════ END FORM ══════════ -->
+    
+    <div style="margin-top:16px">
       <button class="btn-reply" onclick="triggerReply(false)">💬 Reply Now</button>
       <button class="btn-dry" onclick="triggerReply(true)">🔍 Dry Run</button>
-      <button class="btn-debug" onclick="checkDebug()">🩺 Cek Kredensial</button>
     </div>
     
     <div id="result">
@@ -65,45 +131,117 @@
   
   <div class="card">
     <h3 style="margin-bottom:12px">⚙️ Setup & Troubleshooting</h3>
-    <pre># 1. Pastikan env vars di Vercel sudah terisi:
-#    X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET, AGNES_API_KEY
+    <pre># 1. Isi kredensial X API di form di atas → klik 💾 Simpan
 
-# 2. Pastikan X App ter-attach ke PROJECT di:
+# 2. Dapatkan kredensial dari:
 #    https://developer.x.com/en/portal/projects
+#    Tab "Keys and Tokens" → OAuth 1.0a
+#    - Consumer Key = X API Key
+#    - Consumer Secret = X API Secret  
+#    - Access Token + Secret = X Access Token + Secret
+#    Permission: Read and Write
 
-# 3. Permission X App harus "Read and Write"
+# 3. Dapatkan Agnes AI key (GRATIS) dari:
+#    https://platform.agnes-ai.com
 
-# 4. Test kredensial:
-#    Klik tombol "🩺 Cek Kredensial" di atas
+# 4. Klik 🩺 Cek Status untuk verifikasi
+#    Lalu 💬 Reply Now untuk posting!
 
-# 5. VPS Bot:
+# ——— VPS Bot (alternatif) ———
 curl -fsSL https://raw.githubusercontent.com/xdevplatform/xurl/main/install.sh | bash
 xurl auth apps add my-app --client-id XXX --client-secret XXX
 xurl auth oauth2 --app my-app
 export AGNES_API_KEY=sk-xxxx
 python3 bot/x-reply.py
 
-# PM2 24/7:
 pm2 start bot/x-reply.py --name x-reply --interpreter python3
 pm2 save</pre>
   </div>
 
+  <div id="toastContainer"></div>
+
   <script>
     const API = '/api/x-reply';
+    const STORAGE_KEY = 'xreply_creds';
 
+    // ── Load saved creds on page load ──
+    function loadCreds() {
+      try {
+        var saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved) {
+          document.getElementById('apiKey').value = saved.ak || '';
+          document.getElementById('apiSecret').value = saved.as || '';
+          document.getElementById('accessToken').value = saved.at || '';
+          document.getElementById('accessSecret').value = saved.ats || '';
+          document.getElementById('agnesKey').value = saved.ag || '';
+          return true;
+        }
+      } catch(e) {}
+      return false;
+    }
+
+    // ── Save creds to localStorage ──
+    function saveCreds() {
+      var creds = {
+        ak: document.getElementById('apiKey').value.trim(),
+        as: document.getElementById('apiSecret').value.trim(),
+        at: document.getElementById('accessToken').value.trim(),
+        ats: document.getElementById('accessSecret').value.trim(),
+        ag: document.getElementById('agnesKey').value.trim()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(creds));
+      showToast('✅ Kredensial disimpan!', 'ok');
+      checkDebug(); // re-check status
+    }
+
+    // ── Get current creds (from form → headers) ──
+    function getCredHeaders() {
+      return {
+        'X-Api-Key': document.getElementById('apiKey').value.trim(),
+        'X-Api-Secret': document.getElementById('apiSecret').value.trim(),
+        'X-Access-Token': document.getElementById('accessToken').value.trim(),
+        'X-Access-Secret': document.getElementById('accessSecret').value.trim(),
+        'X-Agnes-Key': document.getElementById('agnesKey').value.trim()
+      };
+    }
+
+    // ── Toggle form visibility ──
+    function toggleCredForm() {
+      var form = document.getElementById('credForm');
+      var btn = document.getElementById('btnToggle');
+      if (form.style.display === 'none') {
+        form.style.display = 'block';
+        btn.textContent = '▲ Sembunyikan Form';
+      } else {
+        form.style.display = 'none';
+        btn.textContent = '▼ Tampilkan Form';
+      }
+    }
+
+    // ── Toast notification ──
+    function showToast(msg, type) {
+      var c = document.getElementById('toastContainer');
+      var t = document.createElement('div');
+      t.className = 'toast toast-' + (type === 'ok' ? 'ok' : 'err');
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(function() { t.remove(); }, 3000);
+    }
+
+    // ── Check credentials via debug endpoint ──
     async function checkDebug() {
-      const di = document.getElementById('debugInfo');
-      const dd = document.getElementById('debugData');
+      var di = document.getElementById('debugInfo');
+      var dd = document.getElementById('debugData');
       di.className = 'show';
       dd.textContent = '⏳ Mengecek kredensial...';
 
       try {
-        const resp = await fetch(API + '?debug=true');
-        const data = await resp.json();
+        var headers = getCredHeaders();
+        var resp = await fetch(API + '?debug=true', { headers: headers });
+        var data = await resp.json();
         dd.textContent = JSON.stringify(data, null, 2);
 
-        // Update status indikator
-        const bs = document.getElementById('botStatus');
+        var bs = document.getElementById('botStatus');
         if (data.can_post) {
           bs.className = 'status status-ok';
           bs.textContent = '✅ Credentials OK';
@@ -116,56 +254,70 @@ pm2 save</pre>
       }
     }
 
+    // ── Trigger reply ──
     async function triggerReply(dry) {
-      const result = document.getElementById('result');
+      var result = document.getElementById('result');
       result.className = 'show';
       document.getElementById('tweetInfo').innerHTML = '⏳ Fetching...';
       document.getElementById('replyInfo').innerHTML = '';
+      document.getElementById('tweetInfo').className = 'result-tweet';
+      document.getElementById('replyInfo').className = 'result-reply';
       
       try {
-        const resp = await fetch(`${API}?dry=${dry}&target=bov4l`);
-        const data = await resp.json();
+        var headers = getCredHeaders();
+        var resp = await fetch(API + '?dry=' + dry + '&target=bov4l', { headers: headers });
+        var data = await resp.json();
         
         if (data.status === 'idle') {
-          document.getElementById('tweetInfo').className = 'result-tweet';
-          document.getElementById('tweetInfo').innerHTML = `📭 ${data.message}`;
+          document.getElementById('tweetInfo').innerHTML = '📭 ' + escapeHtml(data.message);
           document.getElementById('replyInfo').innerHTML = '';
         } else if (data.status === 'dry_run') {
-          document.getElementById('tweetInfo').className = 'result-tweet';
-          document.getElementById('tweetInfo').innerHTML = `🔍 <b>DRY RUN</b><br>📝 <b>Tweet:</b> ${escapeHtml(data.tweet.text)}<br>🕐 ${data.tweet.created_at}<br>📍 Source: ${data.source}`;
-          document.getElementById('replyInfo').className = 'result-reply';
-          document.getElementById('replyInfo').innerHTML = `🤖 <b>AI Reply (simulated):</b><br>"${escapeHtml(data.reply)}"`;
+          document.getElementById('tweetInfo').innerHTML = '🔍 <b>DRY RUN</b><br>📝 <b>Tweet:</b> ' + escapeHtml(data.tweet.text) + '<br>🕐 ' + data.tweet.created_at + '<br>📍 Source: ' + (data.source || '');
+          document.getElementById('replyInfo').innerHTML = '🤖 <b>AI Reply (simulated):</b><br>"' + escapeHtml(data.reply) + '"';
         } else if (data.status === 'no_credentials') {
-          document.getElementById('tweetInfo').className = 'result-tweet';
-          document.getElementById('tweetInfo').innerHTML = `⚠️ <b>NO CREDENTIALS</b><br>📝 <b>Tweet:</b> ${escapeHtml(data.tweet.text)}<br>🕐 ${data.tweet.created_at}`;
+          document.getElementById('tweetInfo').innerHTML = '⚠️ <b>NO CREDENTIALS</b><br>📝 <b>Tweet:</b> ' + escapeHtml(data.tweet.text) + '<br>🕐 ' + data.tweet.created_at;
           document.getElementById('replyInfo').className = 'result-err';
-          document.getElementById('replyInfo').innerHTML = `🤖 <b>AI Reply:</b> "${escapeHtml(data.reply)}"<br><br>⚠️ ${escapeHtml(data.message)}`;
+          document.getElementById('replyInfo').innerHTML = '🤖 <b>AI Reply:</b> "' + escapeHtml(data.reply) + '"<br><br>⚠️ ' + escapeHtml(data.message);
         } else if (data.status === 'replied') {
-          document.getElementById('tweetInfo').className = 'result-tweet';
-          document.getElementById('tweetInfo').innerHTML = `✅ <b>REPLIED!</b><br>📝 <b>Tweet:</b> ${escapeHtml(data.tweet.text)}<br>🕐 ${data.tweet.created_at}<br>📍 Source: ${data.source}`;
-          document.getElementById('replyInfo').className = 'result-reply';
-          document.getElementById('replyInfo').innerHTML = `🤖 <b>Reply:</b> "${escapeHtml(data.reply)}"<br>🔗 <a href="${data.url}" target="_blank">Lihat di X →</a>`;
+          document.getElementById('tweetInfo').innerHTML = '✅ <b>REPLIED!</b><br>📝 <b>Tweet:</b> ' + escapeHtml(data.tweet.text) + '<br>🕐 ' + data.tweet.created_at + '<br>📍 Source: ' + (data.source || '');
+          document.getElementById('replyInfo').innerHTML = '🤖 <b>Reply:</b> "' + escapeHtml(data.reply) + '"<br>🔗 <a href="' + data.url + '" target="_blank">Lihat di X →</a>';
         } else if (data.status === 'error') {
           document.getElementById('tweetInfo').className = 'result-err';
-          document.getElementById('tweetInfo').innerHTML = `❌ <b>Error:</b> ${escapeHtml(data.error)}`;
+          document.getElementById('tweetInfo').innerHTML = '❌ <b>Error:</b> ' + escapeHtml(data.error);
           document.getElementById('replyInfo').className = 'result-err';
-          document.getElementById('replyInfo').innerHTML = `💡 <b>Hint:</b> ${escapeHtml(data.hint || 'Coba klik 🩺 Cek Kredensial')}`;
+          document.getElementById('replyInfo').innerHTML = '💡 <b>Hint:</b> ' + escapeHtml(data.hint || 'Coba klik 🩺 Cek Kredensial');
         } else {
-          document.getElementById('tweetInfo').className = 'result-tweet';
-          document.getElementById('tweetInfo').innerHTML = `📋 ${escapeHtml(JSON.stringify(data, null, 2))}`;
+          document.getElementById('tweetInfo').innerHTML = '📋 <pre style="font-size:11px">' + escapeHtml(JSON.stringify(data, null, 2)) + '</pre>';
         }
       } catch(e) {
         document.getElementById('tweetInfo').className = 'result-err';
-        document.getElementById('tweetInfo').innerHTML = `❌ ${e.message}`;
+        document.getElementById('tweetInfo').innerHTML = '❌ ' + escapeHtml(e.message);
       }
     }
-    function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-    // Auto-check credentials on load
+    function escapeHtml(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Init ──
     window.addEventListener('DOMContentLoaded', function() {
-      setTimeout(checkDebug, 500);
+      var hasSaved = loadCreds();
+      if (hasSaved) {
+        // Auto-show form briefly then check
+        var form = document.getElementById('credForm');
+        form.style.display = 'block';
+        document.getElementById('btnToggle').textContent = '▲ Sembunyikan Form';
+        showToast('📋 Kredensial dimuat dari penyimpanan', 'ok');
+        setTimeout(checkDebug, 600);
+      } else {
+        // Show form automatically for first-time users
+        document.getElementById('credForm').style.display = 'block';
+        document.getElementById('btnToggle').textContent = '▲ Sembunyikan Form';
+        showToast('👋 Isi kredensial X API kamu dulu ya', 'err');
+      }
     });
   </script>
 </body>
 </html>
-<!-- deploy: 1784817522 -->
+<!-- deploy: 1784817523 -->
