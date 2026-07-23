@@ -46,19 +46,18 @@ select{background:var(--bg);border:1px solid var(--border);border-radius:8px;pad
 .toast.error{background:var(--danger)}
 .status{font-size:0.75rem;color:var(--text2);margin-top:6px}
 #manualInputRow{display:none}
+.free-badge{display:inline-block;background:rgba(63,185,80,0.15);color:#3fb950;font-size:0.65rem;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:700}
 </style>
 </head>
 <body>
 <div class="container">
-<div class="header"><h1>💬 ReplyAI v6</h1><p>Multi-provider · Quality reply · 10 bahasa</p></div>
+<div class="header"><h1>💬 ReplyAI v6 <span class="free-badge">FREE</span></h1><p>Multi-provider gratis · Quality reply · 10 bahasa</p></div>
 
 <div class="card">
-<div class="card-title">🤖 PROVIDER AI</div>
+<div class="card-title">🤖 PROVIDER AI <span class="free-badge">ALL FREE</span></div>
 <div class="pill-group" id="providerPills">
 <button class="pill active" onclick="switchProvider('agnes')">🌟 Agnes AI</button>
-<button class="pill" onclick="switchProvider('mistral')">🌀 Mistral AI</button>
 <button class="pill" onclick="switchProvider('iamhc')">🏯 IAMHC</button>
-<button class="pill" onclick="switchProvider('cohere')">🅒 Cohere</button>
 </div>
 <select id="modelSelect" onchange="setModel(this.value)"></select>
 </div>
@@ -128,9 +127,7 @@ select{background:var(--bg);border:1px solid var(--border);border-radius:8px;pad
 // ===== STATE =====
 let provider = 'agnes';
 let model = 'agnes-2.0-flash';
-let mistralModel = 'mistral-small-latest';
 let iamhcModel = 'auto';
-let cohereModel = 'command-r7b-12-2024';
 let tone = 'roasting';
 let lang = localStorage.getItem('replyai_lang') || 'id';
 let tweetContent = '', tweetAuthor = '', tweetUrl = '', generatedReply = '', isLoading = false;
@@ -143,15 +140,13 @@ const TONES = [
 ];
 
 const PROVIDERS = {
-  agnes: { name:'Agnes AI', endpoint:'https://apihub.agnes-ai.com/v1/chat/completions', models:[{id:'agnes-2.0-flash',name:'Agnes 2.0 Flash ⭐'},{id:'agnes-2.0-pro',name:'Agnes 2.0 Pro'},{id:'agnes-1.5-flash',name:'Agnes 1.5 Flash'}], hint:'Free: <a href="https://platform.agnes-ai.com" target="_blank" style="color:var(--accent)">platform.agnes-ai.com</a>', keyLabel:'- Agnes', placeholder:'sk-... platform.agnes-ai.com', storageKey:'apikey_agnes' },
-  mistral: { name:'Mistral AI', endpoint:'https://api.mistral.ai/v1/chat/completions', models:[{id:'mistral-small-latest',name:'Mistral Small ⭐'},{id:'ministral-8b-latest',name:'Ministral 8B'},{id:'ministral-3b-latest',name:'Ministral 3B'}], hint:'Free: <a href="https://console.mistral.ai" target="_blank" style="color:var(--accent)">console.mistral.ai</a>', keyLabel:'- Mistral', placeholder:'sk-... console.mistral.ai', storageKey:'apikey_mistral' },
-  iamhc: { name:'IAMHC (幻城网安)', endpoint:'https://api.iamhc.cn/v1/chat/completions', models:[{id:'auto',name:'🆓 Auto Route ⭐'},{id:'Qwen3.5-397B-A17B',name:'🆓 Qwen 3.5 397B ⭐'},{id:'glm-4.7',name:'🆓 GLM 4.7'}], hint:'Free: <a href="https://api.iamhc.cn" target="_blank" style="color:var(--accent)">api.iamhc.cn</a>', keyLabel:'- IAMHC', placeholder:'sk-... api.iamhc.cn', storageKey:'apikey_iamhc' },
-  cohere: { name:'Cohere', endpoint:'https://api.cohere.com/v2/chat', models:[{id:'command-r7b-12-2024',name:'Command R7B'},{id:'command-r-08-2024',name:'Command R'},{id:'command-r-plus-08-2024',name:'Command R+'},{id:'command-a-03-2025',name:'Command A'},{id:'command-a-plus-05-2026',name:'Command A+'}], hint:'Trial: <a href="https://dashboard.cohere.com" target="_blank" style="color:var(--accent)">dashboard.cohere.com</a>', keyLabel:'- Cohere', placeholder:'Trial key dashboard.cohere.com', storageKey:'apikey_cohere' },
+  agnes: { name:'Agnes AI', endpoint:'https://apihub.agnes-ai.com/v1/chat/completions', models:[{id:'agnes-2.0-flash',name:'Agnes 2.0 Flash ⭐'},{id:'agnes-2.0-pro',name:'Agnes 2.0 Pro'},{id:'agnes-1.5-flash',name:'Agnes 1.5 Flash'}], hint:'🆓 Free: <a href="https://platform.agnes-ai.com" target="_blank" style="color:var(--accent)">platform.agnes-ai.com</a>', keyLabel:'- Agnes', placeholder:'sk-... platform.agnes-ai.com', storageKey:'apikey_agnes' },
+  iamhc: { name:'IAMHC (幻城网安)', endpoint:'https://api.iamhc.cn/v1/chat/completions', models:[{id:'auto',name:'🆓 Auto Route ⭐'},{id:'Qwen3.5-397B-A17B',name:'🆓 Qwen 3.5 397B ⭐'},{id:'glm-4.7',name:'🆓 GLM 4.7'}], hint:'🆓 Free: <a href="https://api.iamhc.cn" target="_blank" style="color:var(--accent)">api.iamhc.cn</a>', keyLabel:'- IAMHC', placeholder:'sk-... api.iamhc.cn', storageKey:'apikey_iamhc' },
 };
 
 const TONE_DATA = {
   roasting: { emoji: ['🔥','😏','💀','🗣️','😮‍💨'], p_id:'Roaster profesional — tajam, lucu, ngena. Bukan benci.', p_en:'Professional roaster — sharp, funny, on point.', s_id:'Amplify absurdity — tunjukin kontradiksi. Bikin ketawa getir.', s_en:'Amplify absurdity — point out the contradiction.', bait_id:'Ngaku deh... 👇', bait_en:'Be honest... 👇', no_id:'"Wah","Buset","Njir"', no_en:'"Wow","Bro","Damn"' },
-  lucu: { emoji: ['😂','😭','🤣','💀','😆'], p_id:'Komedian natural — lucu tanpa maksa.', p_en:'Natural comedian — funny, effortless.', s_id:'Relatable twist — putar ke joke yg semua relate.', s_en:'Relatable twist — spin into joke everyone gets.', bait_id:'Parah sih 😭👇', bait_en:'Can\'t make this up 😭👇', no_id:'"Wkwk","Haha","Wah"', no_en:'"Lol","Haha","Omg"' },
+  lucu: { emoji: ['😂','😭','🤣','💀','😆'], p_id:'Komedian natural — lucu tanpa maksa.', p_en:'Natural comedian — funny, effortless.', s_id:'Relatable twist — putar ke joke yg semua relate.', s_en:'Relatable twist — spin into joke everyone gets.', bait_id:'Parah sih 😭👇', bait_en:'Can't make this up 😭👇', no_id:'"Wkwk","Haha","Wah"', no_en:'"Lol","Haha","Omg"' },
   informatif: { emoji: ['📌','🧠','💡','🔍','📊'], p_id:'Analis cerdas — kasih value, insight baru.', p_en:'Smart analyst — add value, fresh insight.', s_id:'Add missing context — kasih perspektif/data baru.', s_en:'Add missing context — new perspective/data.', bait_id:'Ada data lain? 🔍', bait_en:'Any other data? 🔍', no_id:'"Menurut saya","Fakta:"', no_en:'"In my opinion","Fact:"' },
   kaget: { emoji: ['😱','🤯','💀','👀','😳'], p_id:'Genuine shock — reaksi authentic.', p_en:'Genuinely shocked — authentic.', s_id:'Visceral reaction — ungkapin kenapa shocking.', s_en:'Visceral reaction — express why shocking.', bait_id:'Kaget juga? 😱', bait_en:'Anyone else speechless? 😱', no_id:'"Waduh","Astaga","Wih"', no_en:'"Holy","What the","No way"' },
   dukung: { emoji: ['💪','✨','🥰','🤝','🌟'], p_id:'Support system — hangat, genuine.', p_en:'Support system — warm, genuine.', s_id:'Validate + elevate — akui + tambahin kenapa keren.', s_en:'Validate + elevate — acknowledge + add.', bait_id:'Keren banget 🥰', bait_en:'This is so good 🥰', no_id:'"Setuju","Betul","Nice"', no_en:'"Agreed","True","Nice"' },
@@ -166,16 +161,78 @@ function stripGeneric(t){ ANTI_GENERIC.forEach(p=>{t=t.replace(new RegExp(p,'gi'
 function buildPrompt(lang,toneId,tweet){
   var td=TONE_DATA[toneId]||TONE_DATA.roasting, e=td.emoji.join(' ');
   var P={
-    id:`KAMU ${td.p_id}\n\nTWEET: "${tweet}"\n\n🎯 ${td.s_id}\n🎨 ${e}\n💬 ${td.bait_id}\n\n✍️ 2 paragraf, 60-150 karakter. Karakter PERTAMA=emoji. 2-3 emoji natural. "gue/aku". NO: ${td.no_id}\nNO GENERIC: "Setuju","Nice","Menarik"\n\nOUTPUT HANYA REPLY:`,
-    en:`YOU: ${td.p_en}\n\nTWEET: "${tweet}"\n\n🎯 ${td.s_en}\n🎨 ${e}\n💬 ${td.bait_en}\n\n✍️ 2 paragraphs, 60-150 chars. FIRST char=emoji. 2-3 emojis natural. "I". NO: ${td.no_en}\nNO GENERIC: "Well said","Great take","Interesting"\n\nOUTPUT ONLY REPLY:`,
-    zh:`${td.p_en}\n推文:"${tweet}"\n${td.s_en}\n${e}\n\n2段。首字符=表情。只回复。`,
-    ko:`${td.p_en}\n원본:"${tweet}"\n${td.s_en}\n${e}\n\n2문단。첫글자=이모지。답글만。`,
-    ja:`${td.p_en}\n元:"${tweet}"\n${td.s_en}\n${e}\n\n2段落。先頭=絵文字。返信のみ。`,
-    ru:`${td.p_en}\n"${tweet}"\n${td.s_en}\n${e}\n\n2 абзаца。Первый=эмодзи。Ответ。`,
-    nl:`${td.p_en}\n"${tweet}"\n${td.s_en}\n${e}\n\n2 alinea。Eerste=emoji。Reply。`,
-    ms:`${td.p_id}\n"${tweet}"\n${td.s_id}\n${e}\n\n2 perenggan。Aksara pertama=emoji。Balasan sahaja。`,
-    su:`${td.p_id}\n"${tweet}"\n${td.s_id}\n${e}\n\n2 paragraf。Karakter kahiji=emoji。Reply wungkul。`,
-    jv:`${td.p_id}\n"${tweet}"\n${td.s_id}\n${e}\n\n2 paragraf。Karakter pisanan=emoji。Reply waé。`,
+    id:`KAMU ${td.p_id}
+
+TWEET: "${tweet}"
+
+🎯 ${td.s_id}
+🎨 ${e}
+💬 ${td.bait_id}
+
+✍️ 2 paragraf, 60-150 karakter. Karakter PERTAMA=emoji. 2-3 emoji natural. "gue/aku". NO: ${td.no_id}
+NO GENERIC: "Setuju","Nice","Menarik"
+
+OUTPUT HANYA REPLY:`,
+    en:`YOU: ${td.p_en}
+
+TWEET: "${tweet}"
+
+🎯 ${td.s_en}
+🎨 ${e}
+💬 ${td.bait_en}
+
+✍️ 2 paragraphs, 60-150 chars. FIRST char=emoji. 2-3 emojis natural. "I". NO: ${td.no_en}
+NO GENERIC: "Well said","Great take","Interesting"
+
+OUTPUT ONLY REPLY:`,
+    zh:`${td.p_en}
+推文:"${tweet}"
+${td.s_en}
+${e}
+
+2段。首字符=表情。只回复。`,
+    ko:`${td.p_en}
+원본:"${tweet}"
+${td.s_en}
+${e}
+
+2문단。첫글자=이모지。답글만。`,
+    ja:`${td.p_en}
+元:"${tweet}"
+${td.s_en}
+${e}
+
+2段落。先頭=絵文字。返信まみ。`,
+    ru:`${td.p_en}
+"${tweet}"
+${td.s_en}
+${e}
+
+2 абзаца。Первый=эмодзи。Ответ。`,
+    nl:`${td.p_en}
+"${tweet}"
+${td.s_en}
+${e}
+
+2 alinea。Eerste=emoji。Reply。`,
+    ms:`${td.p_id}
+"${tweet}"
+${td.s_id}
+${e}
+
+2 perenggan。Aksara pertama=emoji。Balasan sahaja。`,
+    su:`${td.p_id}
+"${tweet}"
+${td.s_id}
+${e}
+
+2 paragraf。Karakter kahiji=emoji。Reply wungkul。`,
+    jv:`${td.p_id}
+"${tweet}"
+${td.s_id}
+${e}
+
+2 paragraf。Karakter pisanan=emoji。Reply waé。`,
   };
   return P[lang]||P.id;
 }
@@ -200,9 +257,7 @@ function switchProvider(p){
   document.querySelectorAll('#providerPills .pill').forEach(function(b){if(b.textContent.indexOf(PROVIDERS[p].name)>=0)b.classList.add('active');});
   var ms=document.getElementById('modelSelect');
   ms.innerHTML=PROVIDERS[p].models.map(function(m,i){return '<option value="'+m.id+'"'+(i===0?' selected':'')+'>'+m.name+'</option>';}).join('');
-  if(p==='mistral')mistralModel=PROVIDERS[p].models[0].id;
-  else if(p==='iamhc')iamhcModel=PROVIDERS[p].models[0].id;
-  else if(p==='cohere')cohereModel=PROVIDERS[p].models[0].id;
+  if(p==='iamhc')iamhcModel=PROVIDERS[p].models[0].id;
   else model=PROVIDERS[p].models[0].id;
   document.getElementById('apiKeyHint').innerHTML=PROVIDERS[p].hint;
   document.getElementById('apiKeyLabel').textContent=PROVIDERS[p].keyLabel;
@@ -210,10 +265,10 @@ function switchProvider(p){
   document.getElementById('apiKeyInput').value=localStorage.getItem(PROVIDERS[p].storageKey)||'';
 }
 function setModel(v){
-  if(provider==='mistral')mistralModel=v; else if(provider==='iamhc')iamhcModel=v; else if(provider==='cohere')cohereModel=v; else model=v;
+  if(provider==='iamhc')iamhcModel=v; else model=v;
 }
 function getActiveModel(){
-  if(provider==='mistral')return mistralModel; if(provider==='iamhc')return iamhcModel; if(provider==='cohere')return cohereModel; return model;
+  if(provider==='iamhc')return iamhcModel; return model;
 }
 function setTone(t){tone=t;document.querySelectorAll('#tonePills .pill').forEach(function(b,i){b.classList.toggle('active',TONES[i].id===t);});}
 function setLang(l){lang=l;localStorage.setItem('replyai_lang',l);}
