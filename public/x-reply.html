@@ -92,7 +92,7 @@
 </head>
 <body>
   <div class="card">
-    <h1>🤖 X Auto-Reply <span>Bot v2.2</span></h1>
+    <h1>🤖 X Auto-Reply <span>Bot v2.4</span></h1>
     <div class="sub">Multi-target auto-reply — isi @username manual, maks 100 akun</div>
     
     <!-- ══════════ MULTI-TARGET ══════════ -->
@@ -140,6 +140,10 @@
           </div>
         </div>
         <div class="form-group">
+          <label>X Bearer Token (OAuth 2.0) <span style="color:#10b981;font-size:10px;font-weight:700">RECOMMENDED</span></label>
+          <input type="password" id="bearerToken" placeholder="AAAAAAAAAAAAAAAAAAAA... dari X Dev Portal → Bearer Token" autocomplete="off">
+        </div>
+        <div class="form-group">
           <label>Agnes AI Key</label>
           <input type="password" id="agnesKey" placeholder="sk-xxxx dari platform.agnes-ai.com" autocomplete="off">
         </div>
@@ -177,6 +181,7 @@
 # Consumer Key    = X API Key
 # Consumer Secret = X API Secret
 # Access Token + Secret (Read and Write)
+# Bearer Token   = App-Only Auth → untuk fetch tweet (RELIABLE!)
 
 # Agnes AI (GRATIS): https://platform.agnes-ai.com
 
@@ -256,6 +261,7 @@ python3 bot/x-reply.py</pre>
           document.getElementById('apiSecret').value = saved.as || '';
           document.getElementById('accessToken').value = saved.at || '';
           document.getElementById('accessSecret').value = saved.ats || '';
+          document.getElementById('bearerToken').value = saved.bt || '';
           document.getElementById('agnesKey').value = saved.ag || '';
           return true;
         }
@@ -269,6 +275,7 @@ python3 bot/x-reply.py</pre>
         as: document.getElementById('apiSecret').value.trim(),
         at: document.getElementById('accessToken').value.trim(),
         ats: document.getElementById('accessSecret').value.trim(),
+        bt: document.getElementById('bearerToken').value.trim(),
         ag: document.getElementById('agnesKey').value.trim()
       }));
       showToast('✅ Kredensial disimpan!', 'ok');
@@ -281,6 +288,7 @@ python3 bot/x-reply.py</pre>
         'X-Api-Secret': document.getElementById('apiSecret').value.trim(),
         'X-Access-Token': document.getElementById('accessToken').value.trim(),
         'X-Access-Secret': document.getElementById('accessSecret').value.trim(),
+        'X-Bearer-Token': document.getElementById('bearerToken').value.trim(),
         'X-Agnes-Key': document.getElementById('agnesKey').value.trim()
       };
     }
@@ -423,4 +431,4 @@ python3 bot/x-reply.py</pre>
   </script>
 </body>
 </html>
-<!-- deploy: 1784817524 - multi-target v2.2 -->
+<!-- deploy: 1784817524 - v2.4 Bearer Token support -->
