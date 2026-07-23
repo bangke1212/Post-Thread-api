@@ -2,130 +2,148 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>X Auto-Reply Bot - Dashboard</title>
+<title>X Auto-Reply Bot</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',-apple-system,sans-serif;background:#08080f;color:#e0e0e0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
-.card{background:#0f0f1a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;max-width:640px;width:100%;margin-bottom:16px}
-h1{font-size:22px;font-weight:700;margin-bottom:4px}
-h1 .green{background:linear-gradient(135deg,#3fb950,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+body{font-family:system-ui,-apple-system,sans-serif;background:#08080f;color:#e0e0e0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px}
+.card{background:#0f0f1a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;max-width:620px;width:100%;margin-bottom:14px}
+h1{font-size:20px;font-weight:700;margin-bottom:4px}
+.green{color:#10b981}
 .sub{color:#666;font-size:12px;margin-bottom:12px}
-.free-badge{display:inline-block;background:rgba(63,185,80,0.15);color:#3fb950;font-size:9px;padding:2px 5px;border-radius:3px;font-weight:700;margin-left:6px;vertical-align:middle}
-button{padding:12px 20px;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-right:8px;margin-bottom:8px}
-.btn-reply{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
-.btn-reply:hover{box-shadow:0 0 20px rgba(99,102,241,0.3)}
+.badge{display:inline-block;background:rgba(16,185,129,0.15);color:#10b981;font-size:9px;padding:2px 6px;border-radius:3px;font-weight:700;margin-left:6px;vertical-align:middle}
+button{padding:10px 16px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;margin-right:6px;margin-bottom:6px}
+.btn-go{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+.btn-go:hover{box-shadow:0 0 16px rgba(99,102,241,0.3)}
 .btn-dry{background:rgba(255,255,255,0.06);color:#aaa;border:1px solid rgba(255,255,255,0.1)}
 .btn-dry:hover{background:rgba(255,255,255,0.1)}
-.btn-save{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);padding:8px 16px;font-size:13px}
+.btn-save{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3)}
 .btn-save:hover{background:rgba(16,185,129,0.25)}
-.btn-direct{background:linear-gradient(135deg,#f59e0b,#eb4228);color:#fff;white-space:nowrap;padding:10px 14px;font-size:13px}
-.btn-direct:hover{box-shadow:0 0 15px rgba(245,158,11,0.3)}
-textarea{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;color:#e0e0e0;font-size:13px;width:100%;min-height:70px;resize:vertical;outline:none;font-family:monospace;line-height:1.6}
-textarea:focus{border-color:#3fb950}
+.btn-orange{background:linear-gradient(135deg,#f59e0b,#eb4228);color:#fff}
+.btn-orange:hover{box-shadow:0 0 14px rgba(245,158,11,0.3)}
+input[type=text]{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-size:13px;width:100%;margin-bottom:8px;outline:none}
+input:focus{border-color:#10b981}
+input::placeholder{color:#444}
+textarea{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;color:#e0e0e0;font-size:13px;width:100%;min-height:60px;resize:vertical;outline:none;font-family:monospace;line-height:1.6;margin-bottom:8px}
+textarea:focus{border-color:#10b981}
 textarea::placeholder{color:#444}
-input[type=text],input[type=password]{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-size:13px;width:100%;margin-bottom:8px;outline:none}
-input:focus{border-color:#3fb950}
-input::placeholder{color:#555}
-.tag{display:inline-flex;align-items:center;gap:4px;background:rgba(63,185,80,0.15);border:1px solid rgba(63,185,80,0.3);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;color:#3fb950;margin:2px 4px 2px 0}
-.tag .remove{cursor:pointer;margin-left:2px;opacity:0.6;font-size:14px}
-.tag .remove:hover{opacity:1;color:#ef4444}
-.tags-wrap{display:flex;flex-wrap:wrap;margin-top:8px;min-height:24px}
-.config-grid-4{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.config-label{color:#888;font-size:11px;margin-bottom:4px;display:block}
-.target-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.target-count{font-size:12px;color:#888}
-.target-count .num{color:#3fb950;font-weight:700}
-a{color:#3fb950;text-decoration:none}
-#result{margin-top:16px;display:none}
-#result.show{display:block;max-height:500px;overflow-y:auto}
-.result-item{background:#06060c;border-radius:8px;padding:12px;margin-bottom:8px;font-size:13px;border-left:3px solid #6366f1}
-.result-item.success{border-left-color:#10b981}
-.result-item.error{border-left-color:#ef4444}
-.result-item .user{color:#3fb950;font-weight:700;margin-bottom:4px}
-.result-item .reply-text{color:#a0a0b0;margin-top:4px}
-.info-banner{background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.15);border-radius:10px;padding:10px 14px;font-size:11px;color:#888;line-height:1.6;margin-bottom:14px}
-.info-banner b{color:#3fb950}
-.tweet-url-wrap{display:flex;gap:8px;margin-bottom:12px;align-items:flex-end}
-.tweet-url-wrap input{flex:1;margin-bottom:0}
-hr.divider{border:none;border-top:1px solid rgba(255,255,255,0.08);margin:14px 0}
-details{margin-top:8px}summary{cursor:pointer;color:#666;font-size:12px}
-details table{width:100%;font-size:11px;margin-top:8px;border-collapse:collapse}
-details td{padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)}
-details td:first-child{color:#3fb950;white-space:nowrap}
+.tag{display:inline-flex;align-items:center;gap:4px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:#10b981;margin:2px 4px 2px 0}
+.tag .x{cursor:pointer;margin-left:3px;opacity:0.5;font-size:13px}
+.tag .x:hover{opacity:1;color:#ef4444}
+.tags{display:flex;flex-wrap:wrap;margin-top:6px;min-height:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.label{color:#777;font-size:10px;margin-bottom:4px;display:block}
+.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.count{font-size:11px;color:#777}
+.count b{color:#10b981}
+a{color:#10b981;text-decoration:none}
+#result{margin-top:14px;display:none}
+#result.on{display:block;max-height:460px;overflow-y:auto}
+.item{background:#06060c;border-radius:8px;padding:10px;margin-bottom:6px;font-size:12px;border-left:3px solid #6366f1}
+.item.ok{border-left-color:#10b981}
+.item.err{border-left-color:#ef4444}
+.item .who{color:#10b981;font-weight:700;margin-bottom:3px}
+.item .txt{color:#999;margin-top:3px}
+.banner{background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.1);border-radius:8px;padding:8px 12px;font-size:10px;color:#777;line-height:1.6;margin-bottom:12px}
+.banner b{color:#10b981}
+.flex{display:flex;gap:8px;align-items:flex-end;margin-bottom:10px}
+.flex input{flex:1;margin-bottom:0}
+hr{border:none;border-top:1px solid rgba(255,255,255,0.06);margin:12px 0}
+details{margin-top:6px}summary{cursor:pointer;color:#555;font-size:11px}
+details table{width:100%;font-size:10px;margin-top:6px;border-collapse:collapse}
+details td{padding:3px 6px;border-bottom:1px solid rgba(255,255,255,0.04)}
+details td:first-child{color:#10b981;white-space:nowrap}
 </style>
 </head>
 <body>
 <div class="card">
-<h1>[BOT] X Auto-Reply <span class="green">Bot</span> <span class="free-badge">100% FREE</span></h1>
-<div class="sub">Paste tweet URL or @username - AI auto-reply</div>
+<h1>X Auto-Reply <span class="green">Bot</span> <span class="badge">100% FREE</span></h1>
+<div class="sub">Paste tweet URL or @username - AI auto-reply to X</div>
 
-<div class="config-label">[1] Reply to Specific Tweet (paste URL)</div>
-<div class="tweet-url-wrap">
-<input type="text" id="tweetUrlInput" placeholder="https://x.com/USER/status/123456789 or x.com/i/status/123456789" oninput="saveConfig()">
-<button class="btn-direct" onclick="replyTweetUrl(false)">[>>] Reply</button>
-<button class="btn-dry" style="padding:10px 14px;font-size:13px" onclick="replyTweetUrl(true)">[*] Dry</button>
+<div class="label">[1] Reply to Specific Tweet</div>
+<div class="flex">
+<input type="text" id="tweetUrl" placeholder="https://x.com/user/status/123 or x.com/i/status/123">
+<button class="btn-orange" onclick="replyUrl(0)">Reply</button>
+<button class="btn-dry" style="padding:10px 12px;font-size:12px" onclick="replyUrl(1)">Dry</button>
 </div>
 
-<div class="info-banner" style="margin-bottom:0;margin-top:12px">
-<b>100% FREE Architecture:</b> FxTwitter (detect via URL) -> Agnes AI (generate) -> X API FREE (post)
+<div class="banner"><b>Free:</b> FxTwitter (read) -> Agnes AI (generate) -> X API Free (post)</div>
+
+<hr>
+
+<div class="row">
+<div class="label" style="font-size:11px;margin-bottom:0">[2] Multi Target @username</div>
+<div class="count"><b id="tCount">0</b>/100</div>
 </div>
+<textarea id="targets" placeholder="@user1, @user2&#10;or one per line"></textarea>
+<div class="tags" id="tagsDiv"></div>
 
-<hr class="divider">
-
-<div class="target-header">
-<span class="config-label" style="font-size:12px;margin-bottom:0">[2] Multi Target @username (max 100)</span>
-<span class="target-count"><span class="num" id="targetCount">0</span>/100</span>
+<div style="margin-top:12px">
+<button class="btn-go" onclick="replyAll(0)">Reply All</button>
+<button class="btn-dry" onclick="replyAll(1)">Dry Run</button>
 </div>
-<textarea id="targetInput" placeholder="@bov4l, @elonmusk, @other_user&#10;or separate by line/enter&#10;@ auto-detected" oninput="updateTags()"></textarea>
-<div class="tags-wrap" id="tagsContainer"></div>
-
-<div style="margin-top:16px">
-<button class="btn-reply" onclick="triggerReply(false)" id="btnReply">[>>] Reply All</button>
-<button class="btn-dry" onclick="triggerReply(true)" id="btnDry">[*] Dry Run</button>
-</div>
-
 <div id="result"></div>
 </div>
 
 <div class="card">
-<h3 style="margin-bottom:12px;color:#6366f1">AI Reply Generator <span class="free-badge">FREE</span></h3>
-<div><span class="config-label">Agnes API Key</span><input type="password" id="agnesKey" placeholder="sk-xxxx" oninput="saveConfig()"></div>
-<div style="color:#666;font-size:11px;margin-top:4px">Get free key at <a href="https://platform.agnes-ai.com" target="_blank">platform.agnes-ai.com</a></div>
+<h1 style="font-size:16px;color:#6366f1">Agnes AI Key <span class="badge">FREE</span></h1>
+<div class="label">Agnes API Key</div>
+<input type="text" id="agnesKey" placeholder="sk-xxxx">
+<div style="color:#555;font-size:10px;margin-top:3px">Get key: <a href="https://platform.agnes-ai.com" target="_blank">platform.agnes-ai.com</a></div>
 </div>
 
 <div class="card">
-<h3 style="margin-bottom:12px;color:#f59e0b">X API Free - OAuth 1.0a <span class="free-badge">FREE</span></h3>
-<div class="config-grid-4">
-<div><span class="config-label">API Key / Consumer Key</span><input type="password" id="xApiKey" placeholder="xxxx" oninput="saveConfig()"></div>
-<div><span class="config-label">API Secret / Consumer Secret</span><input type="password" id="xApiSecret" placeholder="xxxx" oninput="saveConfig()"></div>
-<div><span class="config-label">Access Token</span><input type="password" id="xAccessToken" placeholder="xxxx" oninput="saveConfig()"></div>
-<div><span class="config-label">Token Secret</span><input type="password" id="xAccessSecret" placeholder="xxxx" oninput="saveConfig()"></div>
+<h1 style="font-size:16px;color:#f59e0b">X API OAuth 1.0a <span class="badge">FREE</span></h1>
+<div class="grid2">
+<div><div class="label">API Key / Consumer Key</div><input type="text" id="apiKey" placeholder="xxxx"></div>
+<div><div class="label">API Secret / Consumer Secret</div><input type="text" id="apiSecret" placeholder="xxxx"></div>
+<div><div class="label">Access Token</div><input type="text" id="accessToken" placeholder="xxxx"></div>
+<div><div class="label">Access Token Secret</div><input type="text" id="accessSecret" placeholder="xxxx"></div>
 </div>
-<details><summary>How to get OAuth credentials (FREE)</summary>
+<details><summary>How to get credentials (FREE)</summary>
 <table>
 <tr><td>1.</td><td>Open <a href="https://developer.x.com" target="_blank">developer.x.com</a></td></tr>
 <tr><td>2.</td><td>Create Project -> App (FREE tier)</td></tr>
 <tr><td>3.</td><td>OAuth 1.0a -> ON -> generate keys</td></tr>
-<tr><td>4.</td><td>Set permissions to "Read and Write"</td></tr>
-<tr><td>5.</td><td>DO NOT upgrade (Basic/Premium = PAID!)</td></tr>
+<tr><td>4.</td><td>Permissions = "Read and Write"</td></tr>
+<tr><td>5.</td><td>DO NOT upgrade!</td></tr>
 </table>
 </details>
-<button class="btn-save" onclick="saveConfig()" style="margin-top:12px">Save Config</button>
-<span id="savedStatus" style="font-size:11px;color:#10b981;margin-left:8px"></span>
+<button class="btn-save" onclick="save()" style="margin-top:10px">Save Config</button>
+<span id="saveOk" style="font-size:10px;color:#10b981;margin-left:8px"></span>
 </div>
 
 <script>
 var API='/api/x-reply',MAX=100;
-function PT(t){var m=t.match(/@([a-zA-Z0-9_]+)/g)||[];return[...new Set(m.map(function(x){return x.replace('@','').toLowerCase();}))].slice(0,MAX);}
-function UT(){var u=PT(document.getElementById('targetInput').value);document.getElementById('targetCount').textContent=u.length;document.getElementById('tagsContainer').innerHTML=u.map(function(x){return '<span class="tag">@'+x+' <span class="remove" onclick="RT(''+x+'')">x</span></span>';}).join('');saveConfig();}
-function RT(u){document.getElementById('targetInput').value=document.getElementById('targetInput').value.replace(new RegExp('@'+u.replace(/[.*+?^${}()|[\]\]/g,'\$&'),'gi'),'').replace(/\s+/g,' ').trim();UT();}
-function loadConfig(){document.getElementById('tweetUrlInput').value=localStorage.getItem('tweet_url')||'';document.getElementById('xApiKey').value=localStorage.getItem('x-api-key')||'';document.getElementById('xApiSecret').value=localStorage.getItem('x-api-secret')||'';document.getElementById('xAccessToken').value=localStorage.getItem('x-access-token')||'';document.getElementById('xAccessSecret').value=localStorage.getItem('x-access-secret')||'';document.getElementById('agnesKey').value=localStorage.getItem('agnes-key')||'';document.getElementById('targetInput').value=localStorage.getItem('targets')||'@bov4l';UT();}
-function saveConfig(){localStorage.setItem('tweet_url',document.getElementById('tweetUrlInput').value);localStorage.setItem('x-api-key',document.getElementById('xApiKey').value);localStorage.setItem('x-api-secret',document.getElementById('xApiSecret').value);localStorage.setItem('x-access-token',document.getElementById('xAccessToken').value);localStorage.setItem('x-access-secret',document.getElementById('xAccessSecret').value);localStorage.setItem('agnes-key',document.getElementById('agnesKey').value);localStorage.setItem('targets',document.getElementById('targetInput').value);document.getElementById('savedStatus').textContent='Saved!';setTimeout(function(){document.getElementById('savedStatus').textContent='';},1500);}
-function EH(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-loadConfig();
-function getHeaders(){return{'X-Api-Key':document.getElementById('xApiKey').value,'X-Api-Secret':document.getElementById('xApiSecret').value,'X-Access-Token':document.getElementById('xAccessToken').value,'X-Access-Secret':document.getElementById('xAccessSecret').value,'X-Agnes-Key':document.getElementById('agnesKey').value};}
-async function replyTweetUrl(dry){var tu=document.getElementById('tweetUrlInput').value.trim();if(!tu){alert('Paste tweet URL!');return;}var R=document.getElementById('result');R.className='show';R.innerHTML='<div class="result-item">Fetching tweet...</div>';try{var r=await fetch(API+'?dry='+dry+'&tweet_url='+encodeURIComponent(tu),{headers:getHeaders()});var d=await r.json();if(d.status==='dry_run'||d.status==='replied'){R.innerHTML='<div class="result-item success"><div class="user">[OK] '+(d.status==='replied'?'REPLIED!':'DRY RUN')+'</div><div style="color:#888;font-size:12px">Tweet: '+EH((d.tweet?d.tweet.text:'').slice(0,150))+'...</div><div class="reply-text">Reply: "'+EH(d.reply||'')+'"</div>'+(d.url?'<a href="'+d.url+'" target="_blank">View on X</a> ':'')+(d.source?'<div style="font-size:10px;color:#666">Source: '+d.source+'</div>':'')+'</div>';}else{R.innerHTML='<div class="result-item error">[X] '+EH(d.message||d.error||'Unknown')+'</div>';}}catch(e){R.innerHTML='<div class="result-item error">[X] '+e.message+'</div>';}}
-async function triggerReply(dry){var T=PT(document.getElementById('targetInput').value);if(!T.length){alert('Input at least 1 @username!');return;}var R=document.getElementById('result');R.className='show';R.innerHTML='<div class="result-item">Processing '+T.length+' target(s)...</div>';var h=getHeaders();var html='',ok=0,fail=0;for(var t of T){try{var r=await fetch(API+'?dry='+dry+'&target='+t,{headers:h});var d=await r.json();if(d.status==='dry_run'||d.status==='replied'){ok++;html+='<div class="result-item success"><div class="user">[OK] @'+t+' - '+(d.status==='replied'?'REPLIED':'DRY RUN')+'</div><div style="color:#888;font-size:12px">Tweet: '+EH((d.tweet?d.tweet.text:'').slice(0,100))+'...</div><div class="reply-text">Reply: "'+EH(d.reply||'')+'"</div>'+(d.url?'<a href="'+d.url+'" target="_blank">View on X</a>':'')+'</div>';}else if(d.status==='idle'){html+='<div class="result-item"><div class="user">[-] @'+t+' - '+d.message+'</div></div>';}else{fail++;html+='<div class="result-item error"><div class="user">[X] @'+t+' - '+EH(d.error||'Unknown')+'</div></div>';}}catch(e){fail++;html+='<div class="result-item error"><div class="user">[X] @'+t+' - '+e.message+'</div></div>';}R.innerHTML='<div style="font-size:12px;color:#888;margin-bottom:8px">'+(dry?'[*] DRY RUN':'[>>] REPLYING')+' - '+(ok+fail)+'/'+T.length+'</div>'+html;}R.innerHTML='<div style="font-size:12px;color:#888;margin-bottom:8px">Done: '+ok+' ok, '+fail+' errors from '+T.length+' targets</div>'+html;}
+
+function PT(v){var m=v.match(/@([a-zA-Z0-9_]+)/g)||[];return[...new Set(m.map(function(x){return x.replace('@','').toLowerCase()}))].slice(0,MAX)}
+
+function tags(){var u=PT($('targets').value);$('tCount').textContent=u.length;$('tagsDiv').innerHTML=u.map(function(x){return '<span class="tag">@'+x+' <span class="x" onclick="rm(\''+x+'\')">x</span></span>'}).join('');save()}
+
+function rm(u){$('targets').value=$('targets').value.replace(new RegExp('@'+u.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'').replace(/\\s+/g,' ').trim();tags()}
+
+function $(id){return document.getElementById(id)}
+
+function EH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function getHeaders(){return{'X-Api-Key':$('apiKey').value,'X-Api-Secret':$('apiSecret').value,'X-Access-Token':$('accessToken').value,'X-Access-Secret':$('accessSecret').value,'X-Agnes-Key':$('agnesKey').value}}
+
+function save(){var s=function(k,v){try{localStorage.setItem(k,v)}catch(e){}};s('tweet_url',$('tweetUrl').value);s('api-key',$('apiKey').value);s('api-secret',$('apiSecret').value);s('access-token',$('accessToken').value);s('access-secret',$('accessSecret').value);s('agnes-key',$('agnesKey').value);s('targets',$('targets').value);$('saveOk').textContent='Saved!';clearTimeout(save._t);save._t=setTimeout(function(){$('saveOk').textContent=''},1500)}
+
+function load(){var g=function(k){try{return localStorage.getItem(k)||''}catch(e){return''}};$('tweetUrl').value=g('tweet_url');$('apiKey').value=g('api-key');$('apiSecret').value=g('api-secret');$('accessToken').value=g('access-token');$('accessSecret').value=g('access-secret');$('agnesKey').value=g('agnes-key');$('targets').value=g('targets')||'@bov4l';tags()}
+
+function R(m){var r=$('result');r.className='on';r.innerHTML=m}
+function RI(m){var r=$('result');r.className='on';r.innerHTML=m}
+function RA(m){var r=$('result');r.className='on';r.innerHTML+=m}
+
+async function replyUrl(dry){var u=$('tweetUrl').value.trim();if(!u){alert('Paste tweet URL first!');return}RI('<div class="item">Loading tweet...</div>');try{var r=await fetch(API+'?dry='+dry+'&tweet_url='+encodeURIComponent(u),{headers:getHeaders()});var d=await r.json();if(d.status==='dry_run'||d.status==='replied'){R('<div class="item ok"><div class="who">'+(d.status==='replied'?'REPLIED!':'DRY RUN')+'</div><div style="color:#888;font-size:11px">Tweet: '+EH((d.tweet?d.tweet.text:'').slice(0,140))+'...</div><div class="txt">Reply: '+EH(d.reply||'')+'</div>'+(d.url?'<a href="'+d.url+'" target="_blank">View</a> ':'')+(d.source?'<span style="font-size:10px;color:#555">via '+d.source+'</span>':'')+'</div>')}else{R('<div class="item err"><div class="who">Error</div>'+EH(d.message||d.error||'Unknown')+'</div>')}}catch(e){R('<div class="item err">'+e.message+'</div>')}}
+
+async function replyAll(dry){var T=PT($('targets').value);if(!T.length){alert('At least 1 @username required!');return}RI('<div class="item">Processing '+T.length+' targets...</div>');var h=getHeaders(),html='',ok=0,err=0;for(var t of T){try{var r=await fetch(API+'?dry='+dry+'&target='+t,{headers:h});var d=await r.json();if(d.status==='dry_run'||d.status==='replied'){ok++;html+='<div class="item ok"><div class="who">@'+t+' - '+(d.status==='replied'?'REPLIED':'DRY RUN')+'</div><div style="color:#888;font-size:11px">Tweet: '+EH((d.tweet?d.tweet.text:'').slice(0,100))+'...</div><div class="txt">Reply: '+EH(d.reply||'')+'</div>'+(d.url?'<a href="'+d.url+'" target="_blank">View</a>':'')+'</div>'}else if(d.status==='idle'){html+='<div class="item"><div class="who">@'+t+' - Idle</div>'+d.message+'</div>'}else{err++;html+='<div class="item err"><div class="who">@'+t+' - Error</div>'+EH(d.error||'')+'</div>'}}catch(e){err++;html+='<div class="item err"><div class="who">@'+t+' - Error</div>'+e.message+'</div>'}RA('<div style="font-size:11px;color:#777;margin-bottom:6px">'+(dry?'DRY RUN':'REPLYING')+' - '+(ok+err)+'/'+T.length+'</div>'+html)}R('<div style="font-size:11px;color:#777;margin-bottom:6px">Done: '+ok+' ok, '+err+' err from '+T.length+'</div>'+html)}
+
+// auto-save on input
+var inputs=document.querySelectorAll('input[type=text],textarea');
+for(var i=0;i<inputs.length;i++){inputs[i].addEventListener('input',save)}
+
+load();
 </script>
 </body>
 </html>
