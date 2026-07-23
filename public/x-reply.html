@@ -18,17 +18,23 @@
     .btn-reply:hover{box-shadow:0 0 20px rgba(99,102,241,0.3)}
     .btn-dry{background:rgba(255,255,255,0.06);color:#aaa;border:1px solid rgba(255,255,255,0.1)}
     .btn-dry:hover{background:rgba(255,255,255,0.1)}
-    .btn-setup{background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2)}
+    .btn-save{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3)}
+    .btn-save:hover{background:rgba(16,185,129,0.25)}
     pre{background:#06060c;border-radius:10px;padding:16px;overflow:auto;font-size:12px;line-height:1.6;margin:12px 0;border:1px solid rgba(255,255,255,0.05);color:#a0a0b0}
     .status{font-size:12px;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:6px}
     .status-ok{background:rgba(16,185,129,0.1);color:#10b981}
     .status-err{background:rgba(239,68,68,0.1);color:#ef4444}
     .status-idle{background:rgba(255,255,255,0.05);color:#888}
+    input[type=text],input[type=password]{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-size:13px;width:100%;margin-bottom:8px;outline:none}
+    input:focus{border-color:#6366f1}
+    input::placeholder{color:#555}
+    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .config-label{color:#888;font-size:11px;margin-bottom:4px;display:block}
     a{color:#818cf8;text-decoration:none}
     #result{margin-top:16px;display:none}
     #result.show{display:block}
     .result-tweet{background:#06060c;border-radius:8px;padding:12px;margin-bottom:8px;font-size:13px;border-left:3px solid #6366f1}
-    .result-reply{background:rgba(16,185,129,0.05);border-radius:8px;padding:12px;font-size:13px;border-left:3px solid #10b981}
+    .result-reply{background:rgba(16,185,129,0.05);border-radius:8px;padding:12px;padding-top:12px;border-left:3px solid #10b981}
   </style>
 </head>
 <body>
@@ -39,11 +45,11 @@
     <div class="target">
       <span class="label">Target:</span>
       <span class="at" id="targetUser">@bov4l</span>
-      <span class="status status-ok" id="botStatus">🟢 Bot Active</span>
+      <span class="status status-ok" id="botStatus">📟 Bot Active</span>
     </div>
     
     <div>
-      <button class="btn-reply" onclick="triggerReply(false)">💬 Reply Now</button>
+      <button class="btn-reply" onclick="triggerReply(false)">💮 Reply Now</button>
       <button class="btn-dry" onclick="triggerReply(true)">🔍 Dry Run</button>
     </div>
     
@@ -52,9 +58,25 @@
       <div class="result-reply" id="replyInfo"></div>
     </div>
   </div>
-  
+
   <div class="card">
-    <h3 style="margin-bottom:12px">🚀 VPS Setup</h3>
+    <h3 style="margin-bottom:12px;color:#f97216">🔑 Config API</h3>
+    <div class="config-grid">
+      <div>
+        <span class="config-label">X Bearer Token</span>
+        <input type="password" id="xToken" placeholder="AAAAAAAAAAAAAAAAAAAAAA" oninput="saveConfig()">
+      </div>
+      <div>
+        <span class="config-label">Agnes API Key</span>
+        <input type="password" id="agnesKey" placeholder="sk-xxxx" oninput="saveConfig()">
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveConfig()">💽 Save Config</button>
+    <span id="savedStatus" style="font-size:11px;color:#10b981;margin-left:8px"></span>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom:12px">🖼 VPS Setup</h3>
     <pre># 1. Install xurl
 curl -fsSL https://raw.githubusercontent.com/xdevplatform/xurl/main/install.sh | bash
 
@@ -75,22 +97,48 @@ pm2 save</pre>
 
   <script>
     const API = '/api/x-reply';
+    
+    // Load saved config
+    function loadConfig() {
+      const xToken = localStorage.getItem('x-token') || '';
+      const agnesKey = localStorage.getItem('agnes-key') || '';
+      document.getElementById('xToken').value = xToken;
+      document.getElementById('agnesKey').value = agnesKey;
+    }
+    
+    function saveConfig() {
+      localStorage.setItem('x-token', document.getElementById('xToken').value);
+      localStorage.setItem('agnes-key', document.getElementById('agnesKey').value);
+      document.getElementById('savedStatus').textContent = '✅ Saved!';
+      setTimeout(() => document.getElementById('savedStatus').textContent = '', 2000);
+    }
+    
+    loadConfig();
+
     async function triggerReply(dry) {
       const result = document.getElementById('result');
       result.className = 'show';
-      document.getElementById('tweetInfo').innerHTML = '⏳ Fetching...';
+      document.getElementById('tweetInfo').innerHTML = '�Fetching...';
       document.getElementById('replyInfo').innerHTML = '';
       
       try {
-        const resp = await fetch(`${API}?dry=${dry}&target=bov4l`);
+        const xToken = document.getElementById('xToken').value;
+        const agnesKey = document.getElementById('agnesKey').value;
+        
+        const resp = await fetch(`${API}?dry=${dry}&target=bov4l`, {
+          headers: {
+            'X-Bearer-Token': xToken,
+            'X-Agnes-Key': agnesKey
+          }
+        });
         const data = await resp.json();
         
         if (data.status === 'idle') {
-          document.getElementById('tweetInfo').innerHTML = `📭 ${data.message}`;
+          document.getElementById('tweetInfo').innerHTML = `📭 {data.message}`;
           document.getElementById('replyInfo').innerHTML = '';
         } else if (data.status === 'dry_run') {
           document.getElementById('tweetInfo').innerHTML = `🔍 <b>DRY RUN</b><br>📝 <b>Tweet:</b> ${escapeHtml(data.tweet.text)}<br>🕐 ${data.tweet.created_at}`;
-          document.getElementById('replyInfo').innerHTML = `🤖 <b>AI Reply (simulated):</b><br>"${escapeHtml(data.reply)}"`;
+          document.getElementById('replyInfo').innerHTML = `㶖 <b>AI Reply (simulated):</b><br>"${escapeHtml(data.reply)}"`;
         } else if (data.status === 'replied') {
           document.getElementById('tweetInfo').innerHTML = `✅ <b>REPLIED!</b><br>📝 <b>Tweet:</b> ${escapeHtml(data.tweet.text)}<br>🕐 ${data.tweet.created_at}`;
           document.getElementById('replyInfo').innerHTML = `🤖 <b>Reply:</b> "${escapeHtml(data.reply)}"<br>🔗 <a href="${data.url}" target="_blank">${data.url}</a>`;
@@ -105,4 +153,3 @@ pm2 save</pre>
   </script>
 </body>
 </html>
-<!-- deploy: 1784817521 -->
