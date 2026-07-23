@@ -6,13 +6,10 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Inter',-apple-system,sans-serif;background:#08080f;color:#e0e0e0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
-    .card{background:#0f0f1a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;max-width:600px;width:100%;margin-bottom:16px}
+    .card{background:#0f0f1a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;max-width:640px;width:100%;margin-bottom:16px}
     h1{font-size:24px;font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:8px}
     h1 span{background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     .sub{color:#666;font-size:13px;margin-bottom:20px}
-    .target{background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-    .target .at{color:#818cf8;font-weight:700;font-size:18px}
-    .target .label{color:#666;font-size:11px}
     button{padding:12px 24px;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-right:8px;margin-bottom:8px}
     .btn-reply{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
     .btn-reply:hover{box-shadow:0 0 20px rgba(99,102,241,0.3)}
@@ -20,47 +17,60 @@
     .btn-dry:hover{background:rgba(255,255,255,0.1)}
     .btn-save{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3)}
     .btn-save:hover{background:rgba(16,185,129,0.25)}
+    .btn-reply-all{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}
+    .btn-reply-all:hover{box-shadow:0 0 20px rgba(245,158,11,0.3)}
+    textarea{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;color:#e0e0e0;font-size:13px;width:100%;min-height:80px;resize:vertical;outline:none;font-family:monospace;line-height:1.6}
+    textarea:focus{border-color:#6366f1}
+    textarea::placeholder{color:#444}
     pre{background:#06060c;border-radius:10px;padding:16px;overflow:auto;font-size:12px;line-height:1.6;margin:12px 0;border:1px solid rgba(255,255,255,0.05);color:#a0a0b0}
     .status{font-size:12px;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:6px}
     .status-ok{background:rgba(16,185,129,0.1);color:#10b981}
     .status-err{background:rgba(239,68,68,0.1);color:#ef4444}
-    .status-idle{background:rgba(255,255,255,0.05);color:#888}
+    .status-warn{background:rgba(245,158,11,0.1);color:#f59e0b}
+    .tag{display:inline-flex;align-items:center;gap:4px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;color:#818cf8;margin:2px 4px 2px 0}
+    .tag .remove{cursor:pointer;margin-left:2px;opacity:0.6;font-size:14px}
+    .tag .remove:hover{opacity:1;color:#ef4444}
+    .tags-wrap{display:flex;flex-wrap:wrap;margin-top:8px;min-height:24px}
     input[type=text],input[type=password]{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-size:13px;width:100%;margin-bottom:8px;outline:none}
     input:focus{border-color:#6366f1}
     input::placeholder{color:#555}
     .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .config-label{color:#888;font-size:11px;margin-bottom:4px;display:block}
+    .target-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .target-count{font-size:12px;color:#888}
+    .target-count .num{color:#818cf8;font-weight:700}
     a{color:#818cf8;text-decoration:none}
     #result{margin-top:16px;display:none}
-    #result.show{display:block}
-    .result-tweet{background:#06060c;border-radius:8px;padding:12px;margin-bottom:8px;font-size:13px;border-left:3px solid #6366f1}
-    .result-reply{background:rgba(16,185,129,0.05);border-radius:8px;padding:12px;padding-top:12px;border-left:3px solid #10b981}
+    #result.show{display:block;max-height:500px;overflow-y:auto}
+    .result-item{background:#06060c;border-radius:8px;padding:12px;margin-bottom:8px;font-size:13px;border-left:3px solid #6366f1}
+    .result-item.success{border-left-color:#10b981}
+    .result-item.error{border-left-color:#ef4444}
+    .result-item .user{color:#818cf8;font-weight:700;margin-bottom:4px}
+    .result-item .reply-text{color:#a0a0b0;margin-top:4px}
   </style>
 </head>
 <body>
   <div class="card">
     <h1>🤖 X Auto-Reply <span>Bot</span></h1>
-    <div class="sub">Monitor akun target & auto-reply pakai AI</div>
+    <div class="sub">Input target @username — AI auto-reply ke semua akun sekaligus</div>
     
-    <div class="target">
-      <span class="label">Target:</span>
-      <span class="at" id="targetUser">@bov4l</span>
-      <span class="status status-ok" id="botStatus">📟 Bot Active</span>
+    <div class="target-header">
+      <span class="config-label" style="font-size:12px;margin-bottom:0">🎯 Target Users (max 100, pisah koma/enter/spasi)</span>
+      <span class="target-count"><span class="num" id="targetCount">0</span>/100</span>
+    </div>
+    <textarea id="targetInput" placeholder="@bov4l, @elonmusk, @other_user&#10;atau pisah baris/enter&#10;@ otomatis terdeteksi" oninput="updateTags()"></textarea>
+    <div class="tags-wrap" id="tagsContainer"></div>
+    
+    <div style="margin-top:16px">
+      <button class="btn-reply" onclick="triggerReply(false)" id="btnReply">💬 Reply All</button>
+      <button class="btn-dry" onclick="triggerReply(true)" id="btnDry">🔍 Dry Run</button>
     </div>
     
-    <div>
-      <button class="btn-reply" onclick="triggerReply(false)">💮 Reply Now</button>
-      <button class="btn-dry" onclick="triggerReply(true)">🔍 Dry Run</button>
-    </div>
-    
-    <div id="result">
-      <div class="result-tweet" id="tweetInfo"></div>
-      <div class="result-reply" id="replyInfo"></div>
-    </div>
+    <div id="result"></div>
   </div>
 
   <div class="card">
-    <h3 style="margin-bottom:12px;color:#f97216">🔑 Config API</h3>
+    <h3 style="margin-bottom:12px;color:#f59e0b">🔑 Config API</h3>
     <div class="config-grid">
       <div>
         <span class="config-label">X Bearer Token</span>
@@ -71,12 +81,12 @@
         <input type="password" id="agnesKey" placeholder="sk-xxxx" oninput="saveConfig()">
       </div>
     </div>
-    <button class="btn-save" onclick="saveConfig()">💽 Save Config</button>
+    <button class="btn-save" onclick="saveConfig()">💾 Save Config</button>
     <span id="savedStatus" style="font-size:11px;color:#10b981;margin-left:8px"></span>
   </div>
 
   <div class="card">
-    <h3 style="margin-bottom:12px">🖼 VPS Setup</h3>
+    <h3 style="margin-bottom:12px">🚀 VPS Setup</h3>
     <pre># 1. Install xurl
 curl -fsSL https://raw.githubusercontent.com/xdevplatform/xurl/main/install.sh | bash
 
@@ -97,58 +107,105 @@ pm2 save</pre>
 
   <script>
     const API = '/api/x-reply';
+    const MAX_TARGETS = 100;
     
-    // Load saved config
+    // Parse @usernames from text input
+    function parseTargets(text) {
+      const matches = text.match(/@([a-zA-Z0-9_]+)/g) || [];
+      const unique = [...new Set(matches.map(m => m.replace('@','').toLowerCase()))];
+      return unique.slice(0, MAX_TARGETS);
+    }
+    
+    function updateTags() {
+      const input = document.getElementById('targetInput').value;
+      const users = parseTargets(input);
+      document.getElementById('targetCount').textContent = users.length;
+      
+      const container = document.getElementById('tagsContainer');
+      container.innerHTML = users.map(u => 
+        `<span class="tag">@${u} <span class="remove" onclick="removeTag('${u}')">&times;</span></span>`
+      ).join('');
+      
+      saveConfig();
+    }
+    
+    function removeTag(user) {
+      const input = document.getElementById('targetInput');
+      input.value = input.value.replace(new RegExp('@'+user, 'gi'), '').replace(/\s+/g,' ').trim();
+      updateTags();
+    }
+    
     function loadConfig() {
-      const xToken = localStorage.getItem('x-token') || '';
-      const agnesKey = localStorage.getItem('agnes-key') || '';
-      document.getElementById('xToken').value = xToken;
-      document.getElementById('agnesKey').value = agnesKey;
+      document.getElementById('xToken').value = localStorage.getItem('x-token') || '';
+      document.getElementById('agnesKey').value = localStorage.getItem('agnes-key') || '';
+      document.getElementById('targetInput').value = localStorage.getItem('targets') || '@bov4l';
+      updateTags();
     }
     
     function saveConfig() {
       localStorage.setItem('x-token', document.getElementById('xToken').value);
       localStorage.setItem('agnes-key', document.getElementById('agnesKey').value);
+      localStorage.setItem('targets', document.getElementById('targetInput').value);
       document.getElementById('savedStatus').textContent = '✅ Saved!';
       setTimeout(() => document.getElementById('savedStatus').textContent = '', 2000);
+    }
+    
+    function getTargets() {
+      return parseTargets(document.getElementById('targetInput').value);
     }
     
     loadConfig();
 
     async function triggerReply(dry) {
+      const targets = getTargets();
+      if (targets.length === 0) {
+        alert('Input minimal 1 target @username!');
+        return;
+      }
+      
       const result = document.getElementById('result');
       result.className = 'show';
-      document.getElementById('tweetInfo').innerHTML = '�Fetching...';
-      document.getElementById('replyInfo').innerHTML = '';
+      result.innerHTML = `<div class="result-item">⏳ Processing ${targets.length} target(s): ${targets.map(t=>'@'+t).join(', ')}...</div>`;
       
-      try {
-        const xToken = document.getElementById('xToken').value;
-        const agnesKey = document.getElementById('agnesKey').value;
-        
-        const resp = await fetch(`${API}?dry=${dry}&target=bov4l`, {
-          headers: {
-            'X-Bearer-Token': xToken,
-            'X-Agnes-Key': agnesKey
+      const xToken = document.getElementById('xToken').value;
+      const agnesKey = document.getElementById('agnesKey').value;
+      
+      // Process targets sequentially
+      let html = '';
+      let ok = 0, fail = 0;
+      
+      for (const target of targets) {
+        try {
+          const resp = await fetch(`${API}?dry=${dry}&target=${target}`, {
+            headers: { 'X-Bearer-Token': xToken, 'X-Agnes-Key': agnesKey }
+          });
+          const data = await resp.json();
+          
+          if (data.status === 'dry_run' || data.status === 'replied') {
+            ok++;
+            html += `<div class="result-item success">
+              <div class="user">✅ @${target} — ${data.status === 'replied' ? 'REPLIED' : 'DRY RUN'}</div>
+              <div style="color:#888;font-size:12px">Tweet: ${escapeHtml((data.tweet?.text||'').slice(0,100))}...</div>
+              <div class="reply-text">🤖 Reply: "${escapeHtml(data.reply||'')}"</div>
+              ${data.url ? `<a href="${data.url}" target="_blank">Lihat di X ↗</a>` : ''}
+            </div>`;
+          } else if (data.status === 'idle') {
+            html += `<div class="result-item"><div class="user">📭 @${target} — ${data.message}</div></div>`;
+          } else {
+            fail++;
+            html += `<div class="result-item error"><div class="user">❌ @${target} — ${escapeHtml(data.error||'Unknown')}</div></div>`;
           }
-        });
-        const data = await resp.json();
-        
-        if (data.status === 'idle') {
-          document.getElementById('tweetInfo').innerHTML = `📭 {data.message}`;
-          document.getElementById('replyInfo').innerHTML = '';
-        } else if (data.status === 'dry_run') {
-          document.getElementById('tweetInfo').innerHTML = `🔍 <b>DRY RUN</b><br>📝 <b>Tweet:</b> ${escapeHtml(data.tweet.text)}<br>🕐 ${data.tweet.created_at}`;
-          document.getElementById('replyInfo').innerHTML = `㶖 <b>AI Reply (simulated):</b><br>"${escapeHtml(data.reply)}"`;
-        } else if (data.status === 'replied') {
-          document.getElementById('tweetInfo').innerHTML = `✅ <b>REPLIED!</b><br>📝 <b>Tweet:</b> ${escapeHtml(data.tweet.text)}<br>🕐 ${data.tweet.created_at}`;
-          document.getElementById('replyInfo').innerHTML = `🤖 <b>Reply:</b> "${escapeHtml(data.reply)}"<br>🔗 <a href="${data.url}" target="_blank">${data.url}</a>`;
-        } else {
-          document.getElementById('tweetInfo').innerHTML = `❌ Error: ${escapeHtml(data.error || JSON.stringify(data))}`;
+        } catch(e) {
+          fail++;
+          html += `<div class="result-item error"><div class="user">❌ @${target} — ${e.message}</div></div>`;
         }
-      } catch(e) {
-        document.getElementById('tweetInfo').innerHTML = `❌ ${e.message}`;
+        // Update progress
+        result.innerHTML = `<div style="font-size:12px;color:#888;margin-bottom:8px">${dry?'🔍 DRY RUN':'💬 REPLYING'} — ${ok+fail}/${targets.length}</div>${html}`;
       }
+      
+      result.innerHTML = `<div style="font-size:12px;color:#888;margin-bottom:8px">✅ Done: ${ok} ok, ${fail} errors dari ${targets.length} target</div>${html}`;
     }
+    
     function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   </script>
 </body>
