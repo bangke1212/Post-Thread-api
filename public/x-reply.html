@@ -8,9 +8,8 @@
     body{font-family:'Inter',-apple-system,sans-serif;background:#08080f;color:#e0e0e0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
     .card{background:#0f0f1a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;max-width:640px;width:100%;margin-bottom:16px}
     h1{font-size:24px;font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:8px}
-    h1 span{background:linear-gradient(135deg,#3fb950,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     .sub{color:#666;font-size:13px;margin-bottom:8px}
-    .sub2{color:#3fb950;font-size:11px;margin-bottom:16px;display:flex;align-items:center;gap:4px}
+    .sub2{color:#3fb950;font-size:11px;margin-bottom:16px}
     button{padding:12px 24px;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-right:8px;margin-bottom:8px}
     .btn-reply{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
     .btn-reply:hover{box-shadow:0 0 20px rgba(99,102,241,0.3)}
@@ -18,10 +17,9 @@
     .btn-dry:hover{background:rgba(255,255,255,0.1)}
     .btn-save{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3)}
     .btn-save:hover{background:rgba(16,185,129,0.25)}
-    textarea{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;color:#e0e0e0;font-size:13px;width:100%;min-height:80px;resize:vertical;outline:none;font-family:monospace;line-height:1.6}
+    textarea{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;color:#e0e0e0;font-size:13px;width:100%;min-height:70px;resize:vertical;outline:none;font-family:monospace;line-height:1.6}
     textarea:focus{border-color:#3fb950}
     textarea::placeholder{color:#444}
-    pre{background:#06060c;border-radius:10px;padding:16px;overflow:auto;font-size:12px;line-height:1.6;margin:12px 0;border:1px solid rgba(255,255,255,0.05);color:#a0a0b0}
     .tag{display:inline-flex;align-items:center;gap:4px;background:rgba(63,185,80,0.15);border:1px solid rgba(63,185,80,0.3);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;color:#3fb950;margin:2px 4px 2px 0}
     .tag .remove{cursor:pointer;margin-left:2px;opacity:0.6;font-size:14px}
     .tag .remove:hover{opacity:1;color:#ef4444}
@@ -29,7 +27,6 @@
     input[type=text],input[type=password]{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-size:13px;width:100%;margin-bottom:8px;outline:none}
     input:focus{border-color:#3fb950}
     input::placeholder{color:#555}
-    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .config-grid-4{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .config-label{color:#888;font-size:11px;margin-bottom:4px;display:block}
     .target-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -51,102 +48,74 @@
     details table{width:100%;font-size:11px;margin-top:8px;border-collapse:collapse}
     details td{padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)}
     details td:first-child{color:#3fb950;white-space:nowrap}
+    .tweet-url-wrap{display:flex;gap:8px;margin-bottom:12px;align-items:flex-end}
+    .tweet-url-wrap input{flex:1;margin-bottom:0}
+    .btn-direct{background:linear-gradient(135deg,#f59e0b,#eb4228);color:#fff;white-space:nowrap;padding:10px 16px;font-size:13px}
+    .btn-direct:hover{box-shadow:0 0 15px rgba(245,158,11,0.3)}
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>🤖 X Auto-Reply <span>Bot</span> <span class="free-badge" style="font-size:11px;padding:3px 8px;margin-left:6px">100% FREE</span></h1>
-    <div class="sub">Input target @username — AI auto-reply ke semua akun sekaligus</div>
+    <h1>äèæ X Auto-Reply <span>Bot</span> <span class="free-badge" style="font-size:11px;padding:3px 8px;margin-left:6px">100% FREE</span></h1>
+    <div class="sub">Paste URL tweet atau @username ᆔ AI auto-reply</div>
     
-    <div class="info-banner">
-      <b>🆓 Arsitektur 100% GRATIS & LEGAL:</b><br>
-      🔍 <b>Baca tweet</b> → FxTwitter RSS (gratis, no auth)<br>
-      🤖 <b>Generate reply</b> → Agnes AI (gratis)<br>
-      📤 <b>Post reply</b> → X API Free <b>POST /2/tweets</b> (gratis)<br>
-      ⚠️ <b>JANGAN</b> pakai /2/tweets/search/* (ITU BAYAR!)
+    <!-- Direct Tweet URL -->
+    <div class="config-label">📓 Balas Tweet Spesifik (paste URL langsung)</div>
+    <div class="tweet-url-wrap">
+      <input type="text" id="tweetUrlInput" placeholder="https://x.com/USER/status/123456789 atau x.com/i/status/123456789" oninput="saveConfig()">
+      <button class="btn-direct"  onclick="replyTweetUrl(false)">äè¹ Reply</button>
+      <button class="btn-dry" style="padding:10px 14px;font-size:13px" onclick="replyTweetUrl(true)">äè Dry</button>
     </div>
     
+    <div class="info-banner" style="margin-bottom:0;margin-top:12px">
+      <b>ìƾđ Arsitektur 100% GRATIS:</b> FxTwitter (detek via URL) ᆔ Agnes AI (generate) ᆔ X API FREE (post)
+    </div>
+    
+    </textarea><button>äè�u    <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:14px 0">
+    
+    <!-- Multi Target -->
     <div class="target-header">
-      <span class="config-label" style="font-size:12px;margin-bottom:0">🎯 Target Users (max 100, pisah koma/enter/spasi)</span>
+      <span class="config-label" style="font-size:12px;margin-bottom:0">äî¯ Multi Target @username (max 100)</span>
       <span class="target-count"><span class="num" id="targetCount">0</span>/100</span>
     </div>
     <textarea id="targetInput" placeholder="@bov4l, @elonmusk, @other_user&#10;atau pisah baris/enter&#10;@ otomatis terdeteksi" oninput="updateTags()"></textarea>
     <div class="tags-wrap" id="tagsContainer"></div>
     
     <div style="margin-top:16px">
-      <button class="btn-reply" onclick="triggerReply(false)" id="btnReply">💬 Reply All</button>
-      <button class="btn-dry" onclick="triggerReply(true)" id="btnDry">🔍 Dry Run</button>
+      <button class="btn-reply" onclick="triggerReply(false)" id="btnReply">äÊ© Reply All</button>
+      <button class="btn-dry" onclick="triggerReply(true)" id="btnDry">äÊ Dry Run</button>
     </div>
     
     <div id="result"></div>
   </div>
 
   <div class="card">
-    <h3 style="margin-bottom:12px;color:#f59e0b">🔑 X API Free — OAuth 1.0a <span class="free-badge">GRATIS</span></h3>
-    <div class="sub2" style="margin-bottom:12px">📤 Untuk POST reply ke X (POST /2/tweets = FREE)</div>
-    <div class="config-grid-4">
-      <div>
-        <span class="config-label">API Key / Consumer Key</span>
-        <input type="password" id="xApiKey" placeholder="xxxxxxxxxxxx" oninput="saveConfig()">
-      </div>
-      <div>
-        <span class="config-label">API Secret / Consumer Secret</span>
-        <input type="password" id="xApiSecret" placeholder="xxxxxxxxxxxx" oninput="saveConfig()">
-      </div>
-      <div>
-        <span class="config-label">Access Token</span>
-        <input type="password" id="xAccessToken" placeholder="xxxxxxxxxxxx" oninput="saveConfig()">
-      </div>
-      <div>
-        <span class="config-label">Access Token Secret</span>
-        <input type="password" id="xAccessSecret" placeholder="xxxxxxxxxxxx" oninput="saveConfig()">
-      </div>
-    </div>
-    <details>
-      <summary>📖 Cara dapat X OAuth credentials (GRATIS)</summary>
-      <table>
-        <tr><td>1.</td><td>Buka <a href="https://developer.x.com/en/portal/dashboard" target="_blank">developer.x.com</a></td></tr>
-        <tr><td>2.</td><td>Buat Project → App (pilih FREE tier)</td></tr>
-        <tr><td>3.</td><td>Settings → User authentication → OAuth 1.0a → ON</td></tr>
-        <tr><td>4.</td><td>Copy API Key + API Secret dari "Keys and Tokens"</td></tr>
-        <tr><td>5.</td><td>Generate Access Token + Access Token Secret</td></tr>
-        <tr><td>6.</td><td><b>PENTING:</b> Set App permissions ke "Read and Write"</td></tr>
-        <tr><td>7.</td><td>JANGAN upgrade ke Basic/Premium (itu bayar!)</td></tr>
-      </table>
-    </details>
-    <button class="btn-save" onclick="saveConfig()" style="margin-top:12px">💾 Save Config</button>
-    <span id="savedStatus" style="font-size:11px;color:#10b981;margin-left:8px"></span>
-  </div>
-
-  <div class="card">
-    <h3 style="margin-bottom:12px;color:#6366f1">🤖 AI Reply Generator <span class="free-badge">GRATIS</span></h3>
-    <div class="sub2" style="margin-bottom:12px">🧠 Generate teks reply pakai Agnes AI (gratis, OpenAI-compatible)</div>
-    <div style="margin-bottom:8px">
+    <h3 style="margin-bottom:12px;color:#f59e0b">Ñ AI Reply Generator <span class="free-badge">GRATIS</span></h3>
+    <div>
       <span class="config-label">Agnes API Key</span>
       <input type="password" id="agnesKey" placeholder="sk-xxxx" oninput="saveConfig()">
     </div>
-    <div class="hint" style="color:#666;font-size:11px">🆓 Dapatkan di <a href="https://platform.agnes-ai.com" target="_blank">platform.agnes-ai.com</a></div>
   </div>
 
   <div class="card">
-    <h3 style="margin-bottom:12px">🚀 VPS Setup (24/7 Auto Bot)</h3>
-    <pre># 1. Clone
-git clone https://github.com/bangke1212/Post-Thread-api.git
-cd Post-Thread-api
-
-# 2. Set env (atau via dashboard di atas)
-export AGNES_API_KEY=sk-xxxx
-export X_API_KEY=xxx
-export X_API_SECRET=xxx
-export X_ACCESS_TOKEN=xxx
-export X_ACCESS_SECRET=xxx
-
-# 3. Jalankan bot (loop 24/7)
-python3 bot/x-reply.py
-
-# 4. PM2 (auto-restart)
-pm2 start bot/x-reply.py --name x-reply --interpreter python3
-pm2 save && pm2 startup</pre>
+    <h3 style="margin-bottom:12px;color:#f59e0b">Ñ X API Free Ô OAuth 1.0a <span class="free-badge">GRATIS</span></h3>
+    <div class="config-grid-4">
+      <div><span class="config-label">API Key</span><input type="password" id="xApiKey" placeholder="xxxxx" oninput="saveConfig()"></div>
+      <div><span class="config-label">API Secret</span><input type="password" id="xApiSecret" placeholder="xxxxx" oninput="saveConfig()"></div>
+      <div><span class="config-label">Access Token</span><input type="password" id="xAccessToken" placeholder="xxxxx" oninput="saveConfig()"></div>
+      <div><span class="config-label">Token Secret</span><input type="password" id="xAccessSecret" placeholder="xxxxx" oninput="saveConfig()"></div>
+    </div>
+    <details><summary>Ó� Cara dapat</summary>
+      <table>
+        <tr><td>1.</td><td>Buka <a href="https://developer.x.com" target="_blank">developer.x.com</a></td></tr>
+        <tr><td>2.</td><td>Buat Project ᆔ App (FREE tier)</td></tr>
+        <tr><td>3.</td><td>OAuth 1.0a → ON ᆔ generate keys</td></tr>
+        <tr><td>4.</td><td>Set permissions ke "Read and Write"</td></tr>
+        <tr><td>5.</td><td>JANGAN upgrade (Basic/Prem = BAYAR!)</td></tr>
+      </table>
+    </details>
+    <button class="btn-save" onclick="saveConfig()" style="margin-top:12px">Ò�� Save Config</button>
+    <span id="savedStatus" style="font-size:11px;color:#10b981;margin-left:8px"></span>
   </div>
 
   <script>
@@ -160,23 +129,23 @@ pm2 save && pm2 startup</pre>
     }
     
     function updateTags() {
-      const input = document.getElementById('targetInput').value;
-      const users = parseTargets(input);
+      const users = parseTargets(document.getElementById('targetInput').value);
       document.getElementById('targetCount').textContent = users.length;
       document.getElementById('tagsContainer').innerHTML = users.map(u =>
-        `<span class="tag">@${u} <span class="remove" onclick="removeTag('${u}')">&times;</span></span>`
+        '<span class="tag">@' + u + ' <span class="remove" onclick="removeTag(\'' + u + '\')">×</span></span>'
       ).join('');
       saveConfig();
     }
     
-    function removeTag(user) {
+    function removeTag(u) {
       document.getElementById('targetInput').value = document.getElementById('targetInput').value
-        .replace(new RegExp('@'+user.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'), '')
+        .replace(new RegExp('@' + u.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'), '')
         .replace(/\s+/g,' ').trim();
       updateTags();
     }
     
     function loadConfig() {
+      document.getElementById('tweetUrlInput').value = localStorage.getItem('tweet_url') || '';
       document.getElementById('xApiKey').value = localStorage.getItem('x-api-key') || '';
       document.getElementById('xApiSecret').value = localStorage.getItem('x-api-secret') || '';
       document.getElementById('xAccessToken').value = localStorage.getItem('x-access-token') || '';
@@ -187,6 +156,7 @@ pm2 save && pm2 startup</pre>
     }
     
     function saveConfig() {
+      localStorage.setItem('tweet_url', document.getElementById('tweetUrlInput').value);
       localStorage.setItem('x-api-key', document.getElementById('xApiKey').value);
       localStorage.setItem('x-api-secret', document.getElementById('xApiSecret').value);
       localStorage.setItem('x-access-token', document.getElementById('xAccessToken').value);
@@ -194,52 +164,83 @@ pm2 save && pm2 startup</pre>
       localStorage.setItem('agnes-key', document.getElementById('agnesKey').value);
       localStorage.setItem('targets', document.getElementById('targetInput').value);
       document.getElementById('savedStatus').textContent = '✅ Saved!';
-      setTimeout(() => document.getElementById('savedStatus').textContent = '', 2000);
+      setTimeout(function() { document.getElementById('savedStatus').textContent = ''; }, 2000);
     }
-    
-    function getTargets() { return parseTargets(document.getElementById('targetInput').value); }
     
     loadConfig();
 
-    async function triggerReply(dry) {
-      const targets = getTargets();
-      if (targets.length === 0) { alert('Input minimal 1 target @username!'); return; }
-      
+    // Direct tweet URL reply
+    async function replyTweetUrl(dry) {
+      const tweetUrl = document.getElementById('tweetUrlInput').value.trim();
+      if (!tweetUrl) { alert('Paste URL tweet!'); return; }
       const result = document.getElementById('result');
       result.className = 'show';
-      result.innerHTML = '<div class="result-item">⏳ Processing ' + targets.length + ' target(s): ' + targets.map(t=>'@'+t).join(', ') + '...</div>';
-      
-      const headers = {
+      result.innerHTML = '<div class="result-item">⏳ Fetching tweet...</div>';
+      const h = {
         'X-Api-Key': document.getElementById('xApiKey').value,
         'X-Api-Secret': document.getElementById('xApiSecret').value,
         'X-Access-Token': document.getElementById('xAccessToken').value,
         'X-Access-Secret': document.getElementById('xAccessSecret').value,
         'X-Agnes-Key': document.getElementById('agnesKey').value
       };
-      
+      try {
+        const r = await fetch(API + '?dry=' + dry + '&tweet_url=' + encodeURIComponent(tweetUrl), { headers: h });
+        const d = await r.json();
+        if (d.status === 'dry_run' || d.status === 'replied') {
+          result.innerHTML = '<div class="result-item success">' +
+            '<div class="user">✅ ' + (d.status === 'replied' ? 'REPLIED!' : 'DRY RUN') + '</div>' +
+            '<div style="color:#888;font-size:12px">Tweet: ' + escapeHtml((d.tweet?.text||'').slice(0,150)) + '...</div>' +
+            '<div class="reply-text">äæ Reply: "' + escapeHtml(d.reply||'') + '"</div>' +
+            (d.url ? '<a href="' + d.url + '" target="_blank">Lihat di X ↗</a>' : '') +
+            (d.source ? '<div style="font-size:10px;color:#666">Source: ' + d.source + '</div>' : '') +
+            '</div>';
+        } else {
+          result.innerHTML = '<div class="result-item error">🌌 ' + escapeHtml(d.message||d.error||'Unknown') + '</div>';
+        }
+      } catch(e) {
+        result.innerHTML = '<div class="result-item error">❌ ' + e.message + '</div>';
+      }
+    }
+
+    // Multi target reply
+    async function triggerReply(dry) {
+      const targets = parseTargets(document.getElementById('targetInput').value);
+      if (targets.length === 0) { alert('Input minimal 1 target @username!'); return; }
+      const result = document.getElementById('result');
+      result.className = 'show';
+      result.innerHTML = '<div class="result-item">⣳ Processing ' + targets.length + ' target...</div>';
+      const h = {
+        'X-Api-Key': document.getElementById('xApiKey').value,
+        'X-Api-Secret': document.getElementById('xApiSecret').value,
+        'X-Access-Token': document.getElementById('xAccessToken').value,
+        'X-Access-Secret': document.getElementById('xAccessSecret').value,
+        'X-Agnes-Key': document.getElementById('agnesKey').value
+      };
       let html = '', ok = 0, fail = 0;
-      
       for (const target of targets) {
         try {
-          const resp = await fetch(API + '?dry=' + dry + '&target=' + target, { headers });
-          const data = await resp.json();
-          
-          if (data.status === 'dry_run' || data.status === 'replied') {
+          const r = await fetch(API + '?dry=' + dry + '&target=' + target, { headers: h });
+          const d = await r.json();
+          if (d.status === 'dry_run' || d.status === 'replied') {
             ok++;
-            html += '<div class="result-item success"><div class="user">✅ @' + target + ' — ' + (data.status === 'replied' ? 'REPLIED' : 'DRY RUN') + '</div><div style="color:#888;font-size:12px">Tweet: ' + escapeHtml((data.tweet?.text||'').slice(0,100)) + '...</div><div class="reply-text">🤖 Reply: "' + escapeHtml(data.reply||'') + '"</div>' + (data.url ? '<a href="' + data.url + '" target="_blank">Lihat di X ↗</a>' : '') + (data.source ? '<div style="font-size:10px;color:#666">Source: ' + data.source + '</div>' : '') + '</div>';
-          } else if (data.status === 'idle') {
-            html += '<div class="result-item"><div class="user">📭 @' + target + ' — ' + data.message + '</div></div>';
+            html += '<div class="result-item success">' +
+              '<div class="user">✅ @' + target + ' — ' + (d.status === 'replied' ? 'REPLIED' : 'DRY RUN') + '</div>' +
+              '<div style="color:#888;font-size:12px">Tweet: ' + escapeHtml((d.tweet?.text||'').slice(0,100)) + '...</div>' +
+              '<div class="reply-text">äæ�� Reply: "' + escapeHtml(d.reply||'') + '"</div>' +
+              (d.url ? '<a href="' + d.url + '" target="_blank">Lihat di X ↗</a>' : '') +
+              '</div>';
+          } else if (d.status === 'idle') {
+            html += '<div class="result-item"><div class="user">ß�� @' + target + ' — ' + d.message + '</div></div>';
           } else {
             fail++;
-            html += '<div class="result-item error"><div class="user">❌ @' + target + ' — ' + escapeHtml(data.error||'Unknown') + '</div></div>';
+            html += '<div class="result-item error"><div class="user">❌ @' + target + ' — ' + escapeHtml(d.error||'Unknown') + '</div></div>';
           }
         } catch(e) {
           fail++;
           html += '<div class="result-item error"><div class="user">❌ @' + target + ' — ' + e.message + '</div></div>';
         }
-        result.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px">' + (dry?'🔍 DRY RUN':'💬 REPLYING') + ' — ' + (ok+fail) + '/' + targets.length + '</div>' + html;
+        result.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px">' + (dry?'Ô� DRY RUN':'Ò� REPLYING') + ' ℔ ' + (ok+fail) + '/' + targets.length + '</div>' + html;
       }
-      
       result.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px">✅ Done: ' + ok + ' ok, ' + fail + ' errors dari ' + targets.length + ' target</div>' + html;
     }
     
