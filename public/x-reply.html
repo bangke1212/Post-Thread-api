@@ -8,8 +8,9 @@
     body{font-family:'Inter',-apple-system,sans-serif;background:#08080f;color:#e0e0e0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
     .card{background:#0f0f1a;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;max-width:640px;width:100%;margin-bottom:16px}
     h1{font-size:24px;font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:8px}
-    h1 span{background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .sub{color:#666;font-size:13px;margin-bottom:20px}
+    h1 span{background:linear-gradient(135deg,#3fb950,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sub{color:#666;font-size:13px;margin-bottom:8px}
+    .sub2{color:#3fb950;font-size:11px;margin-bottom:16px;display:flex;align-items:center;gap:4px}
     button{padding:12px 24px;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-right:8px;margin-bottom:8px}
     .btn-reply{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
     .btn-reply:hover{box-shadow:0 0 20px rgba(99,102,241,0.3)}
@@ -17,42 +18,53 @@
     .btn-dry:hover{background:rgba(255,255,255,0.1)}
     .btn-save{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3)}
     .btn-save:hover{background:rgba(16,185,129,0.25)}
-    .btn-reply-all{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}
-    .btn-reply-all:hover{box-shadow:0 0 20px rgba(245,158,11,0.3)}
     textarea{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;color:#e0e0e0;font-size:13px;width:100%;min-height:80px;resize:vertical;outline:none;font-family:monospace;line-height:1.6}
-    textarea:focus{border-color:#6366f1}
+    textarea:focus{border-color:#3fb950}
     textarea::placeholder{color:#444}
     pre{background:#06060c;border-radius:10px;padding:16px;overflow:auto;font-size:12px;line-height:1.6;margin:12px 0;border:1px solid rgba(255,255,255,0.05);color:#a0a0b0}
-    .status{font-size:12px;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:6px}
-    .status-ok{background:rgba(16,185,129,0.1);color:#10b981}
-    .status-err{background:rgba(239,68,68,0.1);color:#ef4444}
-    .status-warn{background:rgba(245,158,11,0.1);color:#f59e0b}
-    .tag{display:inline-flex;align-items:center;gap:4px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;color:#818cf8;margin:2px 4px 2px 0}
+    .tag{display:inline-flex;align-items:center;gap:4px;background:rgba(63,185,80,0.15);border:1px solid rgba(63,185,80,0.3);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;color:#3fb950;margin:2px 4px 2px 0}
     .tag .remove{cursor:pointer;margin-left:2px;opacity:0.6;font-size:14px}
     .tag .remove:hover{opacity:1;color:#ef4444}
     .tags-wrap{display:flex;flex-wrap:wrap;margin-top:8px;min-height:24px}
     input[type=text],input[type=password]{background:#06060c;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-size:13px;width:100%;margin-bottom:8px;outline:none}
-    input:focus{border-color:#6366f1}
+    input:focus{border-color:#3fb950}
     input::placeholder{color:#555}
     .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .config-grid-4{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .config-label{color:#888;font-size:11px;margin-bottom:4px;display:block}
     .target-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
     .target-count{font-size:12px;color:#888}
-    .target-count .num{color:#818cf8;font-weight:700}
-    a{color:#818cf8;text-decoration:none}
+    .target-count .num{color:#3fb950;font-weight:700}
+    a{color:#3fb950;text-decoration:none}
     #result{margin-top:16px;display:none}
     #result.show{display:block;max-height:500px;overflow-y:auto}
     .result-item{background:#06060c;border-radius:8px;padding:12px;margin-bottom:8px;font-size:13px;border-left:3px solid #6366f1}
     .result-item.success{border-left-color:#10b981}
     .result-item.error{border-left-color:#ef4444}
-    .result-item .user{color:#818cf8;font-weight:700;margin-bottom:4px}
+    .result-item .user{color:#3fb950;font-weight:700;margin-bottom:4px}
     .result-item .reply-text{color:#a0a0b0;margin-top:4px}
+    .free-badge{display:inline-block;background:rgba(63,185,80,0.15);color:#3fb950;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;margin-left:4px}
+    .info-banner{background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.15);border-radius:10px;padding:10px 14px;font-size:12px;color:#888;line-height:1.6;margin-bottom:16px}
+    .info-banner b{color:#3fb950}
+    details{margin-top:8px}
+    summary{cursor:pointer;color:#666;font-size:12px}
+    details table{width:100%;font-size:11px;margin-top:8px;border-collapse:collapse}
+    details td{padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)}
+    details td:first-child{color:#3fb950;white-space:nowrap}
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>🤖 X Auto-Reply <span>Bot</span></h1>
+    <h1>🤖 X Auto-Reply <span>Bot</span> <span class="free-badge" style="font-size:11px;padding:3px 8px;margin-left:6px">100% FREE</span></h1>
     <div class="sub">Input target @username — AI auto-reply ke semua akun sekaligus</div>
+    
+    <div class="info-banner">
+      <b>🆓 Arsitektur 100% GRATIS & LEGAL:</b><br>
+      🔍 <b>Baca tweet</b> → FxTwitter RSS (gratis, no auth)<br>
+      🤖 <b>Generate reply</b> → Agnes AI (gratis)<br>
+      📤 <b>Post reply</b> → X API Free <b>POST /2/tweets</b> (gratis)<br>
+      ⚠️ <b>JANGAN</b> pakai /2/tweets/search/* (ITU BAYAR!)
+    </div>
     
     <div class="target-header">
       <span class="config-label" style="font-size:12px;margin-bottom:0">🎯 Target Users (max 100, pisah koma/enter/spasi)</span>
@@ -70,46 +82,77 @@
   </div>
 
   <div class="card">
-    <h3 style="margin-bottom:12px;color:#f59e0b">🔑 Config API</h3>
-    <div class="config-grid">
+    <h3 style="margin-bottom:12px;color:#f59e0b">🔑 X API Free — OAuth 1.0a <span class="free-badge">GRATIS</span></h3>
+    <div class="sub2" style="margin-bottom:12px">📤 Untuk POST reply ke X (POST /2/tweets = FREE)</div>
+    <div class="config-grid-4">
       <div>
-        <span class="config-label">X Bearer Token</span>
-        <input type="password" id="xToken" placeholder="AAAAAAAAAAAAAAAAAAAAAA" oninput="saveConfig()">
+        <span class="config-label">API Key / Consumer Key</span>
+        <input type="password" id="xApiKey" placeholder="xxxxxxxxxxxx" oninput="saveConfig()">
       </div>
       <div>
-        <span class="config-label">Agnes API Key</span>
-        <input type="password" id="agnesKey" placeholder="sk-xxxx" oninput="saveConfig()">
+        <span class="config-label">API Secret / Consumer Secret</span>
+        <input type="password" id="xApiSecret" placeholder="xxxxxxxxxxxx" oninput="saveConfig()">
+      </div>
+      <div>
+        <span class="config-label">Access Token</span>
+        <input type="password" id="xAccessToken" placeholder="xxxxxxxxxxxx" oninput="saveConfig()">
+      </div>
+      <div>
+        <span class="config-label">Access Token Secret</span>
+        <input type="password" id="xAccessSecret" placeholder="xxxxxxxxxxxx" oninput="saveConfig()">
       </div>
     </div>
-    <button class="btn-save" onclick="saveConfig()">💾 Save Config</button>
+    <details>
+      <summary>📖 Cara dapat X OAuth credentials (GRATIS)</summary>
+      <table>
+        <tr><td>1.</td><td>Buka <a href="https://developer.x.com/en/portal/dashboard" target="_blank">developer.x.com</a></td></tr>
+        <tr><td>2.</td><td>Buat Project → App (pilih FREE tier)</td></tr>
+        <tr><td>3.</td><td>Settings → User authentication → OAuth 1.0a → ON</td></tr>
+        <tr><td>4.</td><td>Copy API Key + API Secret dari "Keys and Tokens"</td></tr>
+        <tr><td>5.</td><td>Generate Access Token + Access Token Secret</td></tr>
+        <tr><td>6.</td><td><b>PENTING:</b> Set App permissions ke "Read and Write"</td></tr>
+        <tr><td>7.</td><td>JANGAN upgrade ke Basic/Premium (itu bayar!)</td></tr>
+      </table>
+    </details>
+    <button class="btn-save" onclick="saveConfig()" style="margin-top:12px">💾 Save Config</button>
     <span id="savedStatus" style="font-size:11px;color:#10b981;margin-left:8px"></span>
   </div>
 
   <div class="card">
-    <h3 style="margin-bottom:12px">🚀 VPS Setup</h3>
-    <pre># 1. Install xurl
-curl -fsSL https://raw.githubusercontent.com/xdevplatform/xurl/main/install.sh | bash
+    <h3 style="margin-bottom:12px;color:#6366f1">🤖 AI Reply Generator <span class="free-badge">GRATIS</span></h3>
+    <div class="sub2" style="margin-bottom:12px">🧠 Generate teks reply pakai Agnes AI (gratis, OpenAI-compatible)</div>
+    <div style="margin-bottom:8px">
+      <span class="config-label">Agnes API Key</span>
+      <input type="password" id="agnesKey" placeholder="sk-xxxx" oninput="saveConfig()">
+    </div>
+    <div class="hint" style="color:#666;font-size:11px">🆓 Dapatkan di <a href="https://platform.agnes-ai.com" target="_blank">platform.agnes-ai.com</a></div>
+  </div>
 
-# 2. Auth X API
-xurl auth apps add my-app --client-id XXX --client-secret XXX
-xurl auth oauth2 --app my-app
+  <div class="card">
+    <h3 style="margin-bottom:12px">🚀 VPS Setup (24/7 Auto Bot)</h3>
+    <pre># 1. Clone
+git clone https://github.com/bangke1212/Post-Thread-api.git
+cd Post-Thread-api
 
-# 3. Set Agnes AI key
+# 2. Set env (atau via dashboard di atas)
 export AGNES_API_KEY=sk-xxxx
+export X_API_KEY=xxx
+export X_API_SECRET=xxx
+export X_ACCESS_TOKEN=xxx
+export X_ACCESS_SECRET=xxx
 
-# 4. Jalankan bot
+# 3. Jalankan bot (loop 24/7)
 python3 bot/x-reply.py
 
-# 5. PM2 (24/7)
+# 4. PM2 (auto-restart)
 pm2 start bot/x-reply.py --name x-reply --interpreter python3
-pm2 save</pre>
+pm2 save && pm2 startup</pre>
   </div>
 
   <script>
     const API = '/api/x-reply';
     const MAX_TARGETS = 100;
     
-    // Parse @usernames from text input
     function parseTargets(text) {
       const matches = text.match(/@([a-zA-Z0-9_]+)/g) || [];
       const unique = [...new Set(matches.map(m => m.replace('@','').toLowerCase()))];
@@ -120,93 +163,87 @@ pm2 save</pre>
       const input = document.getElementById('targetInput').value;
       const users = parseTargets(input);
       document.getElementById('targetCount').textContent = users.length;
-      
-      const container = document.getElementById('tagsContainer');
-      container.innerHTML = users.map(u => 
+      document.getElementById('tagsContainer').innerHTML = users.map(u =>
         `<span class="tag">@${u} <span class="remove" onclick="removeTag('${u}')">&times;</span></span>`
       ).join('');
-      
       saveConfig();
     }
     
     function removeTag(user) {
-      const input = document.getElementById('targetInput');
-      input.value = input.value.replace(new RegExp('@'+user, 'gi'), '').replace(/\s+/g,' ').trim();
+      document.getElementById('targetInput').value = document.getElementById('targetInput').value
+        .replace(new RegExp('@'+user.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'), '')
+        .replace(/\s+/g,' ').trim();
       updateTags();
     }
     
     function loadConfig() {
-      document.getElementById('xToken').value = localStorage.getItem('x-token') || '';
+      document.getElementById('xApiKey').value = localStorage.getItem('x-api-key') || '';
+      document.getElementById('xApiSecret').value = localStorage.getItem('x-api-secret') || '';
+      document.getElementById('xAccessToken').value = localStorage.getItem('x-access-token') || '';
+      document.getElementById('xAccessSecret').value = localStorage.getItem('x-access-secret') || '';
       document.getElementById('agnesKey').value = localStorage.getItem('agnes-key') || '';
       document.getElementById('targetInput').value = localStorage.getItem('targets') || '@bov4l';
       updateTags();
     }
     
     function saveConfig() {
-      localStorage.setItem('x-token', document.getElementById('xToken').value);
+      localStorage.setItem('x-api-key', document.getElementById('xApiKey').value);
+      localStorage.setItem('x-api-secret', document.getElementById('xApiSecret').value);
+      localStorage.setItem('x-access-token', document.getElementById('xAccessToken').value);
+      localStorage.setItem('x-access-secret', document.getElementById('xAccessSecret').value);
       localStorage.setItem('agnes-key', document.getElementById('agnesKey').value);
       localStorage.setItem('targets', document.getElementById('targetInput').value);
       document.getElementById('savedStatus').textContent = '✅ Saved!';
       setTimeout(() => document.getElementById('savedStatus').textContent = '', 2000);
     }
     
-    function getTargets() {
-      return parseTargets(document.getElementById('targetInput').value);
-    }
+    function getTargets() { return parseTargets(document.getElementById('targetInput').value); }
     
     loadConfig();
 
     async function triggerReply(dry) {
       const targets = getTargets();
-      if (targets.length === 0) {
-        alert('Input minimal 1 target @username!');
-        return;
-      }
+      if (targets.length === 0) { alert('Input minimal 1 target @username!'); return; }
       
       const result = document.getElementById('result');
       result.className = 'show';
-      result.innerHTML = `<div class="result-item">⏳ Processing ${targets.length} target(s): ${targets.map(t=>'@'+t).join(', ')}...</div>`;
+      result.innerHTML = '<div class="result-item">⏳ Processing ' + targets.length + ' target(s): ' + targets.map(t=>'@'+t).join(', ') + '...</div>';
       
-      const xToken = document.getElementById('xToken').value;
-      const agnesKey = document.getElementById('agnesKey').value;
+      const headers = {
+        'X-Api-Key': document.getElementById('xApiKey').value,
+        'X-Api-Secret': document.getElementById('xApiSecret').value,
+        'X-Access-Token': document.getElementById('xAccessToken').value,
+        'X-Access-Secret': document.getElementById('xAccessSecret').value,
+        'X-Agnes-Key': document.getElementById('agnesKey').value
+      };
       
-      // Process targets sequentially
-      let html = '';
-      let ok = 0, fail = 0;
+      let html = '', ok = 0, fail = 0;
       
       for (const target of targets) {
         try {
-          const resp = await fetch(`${API}?dry=${dry}&target=${target}`, {
-            headers: { 'X-Bearer-Token': xToken, 'X-Agnes-Key': agnesKey }
-          });
+          const resp = await fetch(API + '?dry=' + dry + '&target=' + target, { headers });
           const data = await resp.json();
           
           if (data.status === 'dry_run' || data.status === 'replied') {
             ok++;
-            html += `<div class="result-item success">
-              <div class="user">✅ @${target} — ${data.status === 'replied' ? 'REPLIED' : 'DRY RUN'}</div>
-              <div style="color:#888;font-size:12px">Tweet: ${escapeHtml((data.tweet?.text||'').slice(0,100))}...</div>
-              <div class="reply-text">🤖 Reply: "${escapeHtml(data.reply||'')}"</div>
-              ${data.url ? `<a href="${data.url}" target="_blank">Lihat di X ↗</a>` : ''}
-            </div>`;
+            html += '<div class="result-item success"><div class="user">✅ @' + target + ' — ' + (data.status === 'replied' ? 'REPLIED' : 'DRY RUN') + '</div><div style="color:#888;font-size:12px">Tweet: ' + escapeHtml((data.tweet?.text||'').slice(0,100)) + '...</div><div class="reply-text">🤖 Reply: "' + escapeHtml(data.reply||'') + '"</div>' + (data.url ? '<a href="' + data.url + '" target="_blank">Lihat di X ↗</a>' : '') + (data.source ? '<div style="font-size:10px;color:#666">Source: ' + data.source + '</div>' : '') + '</div>';
           } else if (data.status === 'idle') {
-            html += `<div class="result-item"><div class="user">📭 @${target} — ${data.message}</div></div>`;
+            html += '<div class="result-item"><div class="user">📭 @' + target + ' — ' + data.message + '</div></div>';
           } else {
             fail++;
-            html += `<div class="result-item error"><div class="user">❌ @${target} — ${escapeHtml(data.error||'Unknown')}</div></div>`;
+            html += '<div class="result-item error"><div class="user">❌ @' + target + ' — ' + escapeHtml(data.error||'Unknown') + '</div></div>';
           }
         } catch(e) {
           fail++;
-          html += `<div class="result-item error"><div class="user">❌ @${target} — ${e.message}</div></div>`;
+          html += '<div class="result-item error"><div class="user">❌ @' + target + ' — ' + e.message + '</div></div>';
         }
-        // Update progress
-        result.innerHTML = `<div style="font-size:12px;color:#888;margin-bottom:8px">${dry?'🔍 DRY RUN':'💬 REPLYING'} — ${ok+fail}/${targets.length}</div>${html}`;
+        result.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px">' + (dry?'🔍 DRY RUN':'💬 REPLYING') + ' — ' + (ok+fail) + '/' + targets.length + '</div>' + html;
       }
       
-      result.innerHTML = `<div style="font-size:12px;color:#888;margin-bottom:8px">✅ Done: ${ok} ok, ${fail} errors dari ${targets.length} target</div>${html}`;
+      result.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px">✅ Done: ' + ok + ' ok, ' + fail + ' errors dari ' + targets.length + ' target</div>' + html;
     }
     
-    function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function escapeHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   </script>
 </body>
 </html>
