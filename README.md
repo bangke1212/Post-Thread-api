@@ -1,5 +1,14 @@
 # threads-smart-bot
 
+## 🚀 Deployments
+
+| App | URL |
+|---|---|
+| 💬 **ReplyAI v6** — Smart Reply Generator | [post-thread-api.vercel.app](https://post-thread-api.vercel.app) |
+| 🤖 **X Auto-Reply Bot** — Multi-target AI reply | [post-thread-api.vercel.app/x-reply](https://post-thread-api.vercel.app/x-reply) |
+
+---
+
 Threads bot for crawling trending posts, generating original Bahasa Indonesia content with OpenRouter, and publishing on demand or on a schedule.
 
 Pipeline: `keyword search -> prompt -> optional image -> publish -> SQLite`
