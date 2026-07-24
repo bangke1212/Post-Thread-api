@@ -16,10 +16,20 @@ function H(r) {
 }
 
 var AB = 'https://apihub.agnes-ai.com/v1', AM = 'agnes-2.0-flash';
-var UA = 'PostThreadBot/2.4';
+var UA = 'PostThreadBot/2.5';
 
-// ── OAuth 1.0a signature builder (for POST only) ──
+// ── OAuth 1.0a signature builder ──
 function O(m, u, h) {
+  // Parse URL: separate base from query params for correct signing
+  var qm = u.indexOf('?');
+  var baseUrl = qm > -1 ? u.slice(0, qm) : u;
+  var qp = {};
+  if (qm > -1) {
+    u.slice(qm + 1).split('&').forEach(function(kv) {
+      var parts = kv.split('=');
+      if (parts[0]) qp[decodeURIComponent(parts[0])] = parts[1] ? decodeURIComponent(parts[1]) : '';
+    });
+  }
   var o = {
     oauth_consumer_key: h.ak,
     oauth_nonce: crypto.randomBytes(16).toString('hex'),
@@ -28,14 +38,16 @@ function O(m, u, h) {
     oauth_token: h.at,
     oauth_version: '1.0'
   };
-  var s = Object.keys(o).sort();
+  // Merge OAuth params + query params for signature
+  var allParams = Object.assign({}, qp, o);
+  var s = Object.keys(allParams).sort();
   var p = s.map(function(k) {
-    return encodeURIComponent(k) + '=' + encodeURIComponent(o[k]);
+    return encodeURIComponent(k) + '=' + encodeURIComponent(allParams[k]);
   }).join('&');
-  var b = m.toUpperCase() + '&' + encodeURIComponent(u) + '&' + encodeURIComponent(p);
+  var b = m.toUpperCase() + '&' + encodeURIComponent(baseUrl) + '&' + encodeURIComponent(p);
   var sk = encodeURIComponent(h.as) + '&' + encodeURIComponent(h.ats);
   o.oauth_signature = crypto.createHmac('sha1', sk).update(b).digest('base64');
-  return 'OAuth ' + s.map(function(k) {
+  return 'OAuth ' + Object.keys(o).sort().map(function(k) {
     return k + '="' + encodeURIComponent(o[k]) + '"';
   }).join(', ');
 }
@@ -72,16 +84,50 @@ async function xFetch(url, h) {
   return oaFetch(url, h);
 }
 
-// ═══ X API v2: Fetch user by username ═══
-async function getUserId(username, h) {
-  var url = 'https://api.x.com/2/users/by/username/' + encodeURIComponent(username);
-  var r = await xFetch(url, h);
+// ═══ X API v1.1: Fetch user by username (Free-tier friendly) ═══
+async function getUserIdV1(username, h) {
+  if (!h.ak || !h.at) return null;
+  var url = 'https://api.twitter.com/1.1/users/show.json?screen_name=' + encodeURIComponent(username);
+  var r = await oaFetch(url, h);
   if (!r.ok) {
-    console.log('[x-reply] getUserId failed:', r.status, await r.text().then(function(t){return t.slice(0,200)}));
+    console.log('[x-reply] getUserIdV1 failed:', r.status, await r.text().then(function(t){return t.slice(0,200)}));
     return null;
   }
   var d = await r.json();
-  return (d.data && d.data.id) ? d.data.id : null;
+  return (d && d.id_str) ? d.id_str : null;
+}
+
+// ═══ X API v2: Fetch user by username ═══
+async function getUserId(username, h) {
+  // v2 (Bearer Token → OAuth 1.0a)
+  var url = 'https://api.x.com/2/users/by/username/' + encodeURIComponent(username);
+  var r = await xFetch(url, h);
+  if (r.ok) {
+    var d = await r.json();
+    if (d.data && d.data.id) return d.data.id;
+  }
+  console.log('[x-reply] getUserId v2 failed:', r.status, '→ trying v1.1');
+  // v1.1 fallback (OAuth 1.0a only, more reliable on Free tier)
+  return getUserIdV1(username, h);
+}
+
+// ═══ X API v1.1: Fetch tweets ═══
+async function fetchTweetsV1(userId, h, max) {
+  var url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?user_id=' + userId + '&count=' + (max || 3) + '&tweet_mode=extended';
+  var r = await oaFetch(url, h);
+  if (!r.ok) {
+    console.log('[x-reply] fetchTweetsV1 failed:', r.status);
+    return [];
+  }
+  var d = await r.json();
+  if (!Array.isArray(d)) return [];
+  return d.map(function(t) {
+    return {
+      id: t.id_str,
+      text: (t.full_text || t.text || ''),
+      created_at: t.created_at || new Date().toISOString()
+    };
+  });
 }
 
 // ═══ X API v2: Fetch latest tweets ═══
@@ -90,18 +136,18 @@ async function fetchTweetsX(userId, h, max) {
   var url = 'https://api.x.com/2/users/' + userId +
     '/tweets?max_results=' + max + '&tweet.fields=created_at';
   var r = await xFetch(url, h);
-  if (!r.ok) {
-    console.log('[x-reply] fetchTweetsX failed:', r.status, await r.text().then(function(t){return t.slice(0,200)}));
-    return [];
+  if (r.ok) {
+    var d = await r.json();
+    return (d.data || []).map(function(t) {
+      return {
+        id: t.id,
+        text: t.text || '',
+        created_at: t.created_at || new Date().toISOString()
+      };
+    });
   }
-  var d = await r.json();
-  return (d.data || []).map(function(t) {
-    return {
-      id: t.id,
-      text: t.text || '',
-      created_at: t.created_at || new Date().toISOString()
-    };
-  });
+  console.log('[x-reply] fetchTweetsX v2 failed:', r.status, '→ trying v1.1');
+  return fetchTweetsV1(userId, h, max);
 }
 
 // ═══ X API v2: Fetch single tweet ═══
@@ -272,7 +318,7 @@ export default async function handler(req, res) {
   if (u.searchParams.get('debug') === 'true') {
     var hasBearer = !!h.bt, hasOAuth = !!(h.ak && h.at), hasPost = !!(h.ak && h.at && h.as && h.ats);
     return res.json({
-      status: 'debug', target: ta, version: '2.4',
+      status: 'debug', target: ta, version: '2.5',
       credentials: {
         X_API_KEY: h.ak ? h.ak.slice(0,8)+'...' : '❌ EMPTY',
         X_API_SECRET: h.as ? '✅ SET' : '❌ EMPTY',
@@ -283,7 +329,7 @@ export default async function handler(req, res) {
       },
       can_fetch: hasBearer || hasOAuth,
       can_post: hasPost,
-      fetch_method: hasBearer ? 'Bearer Token (OAuth 2.0)' : hasOAuth ? 'OAuth 1.0a (Bearer Token recommended)' : 'FxTwitter / Nitter (dead)',
+      fetch_method: hasBearer && hasOAuth ? 'Bearer Token → OAuth 1.0a → v1.1 fallback' : hasBearer ? 'Bearer Token → v1.1 fallback' : hasOAuth ? 'OAuth 1.0a → v1.1 fallback' : 'FxTwitter / Nitter (dead)',
       dry_run: dr,
       tip: !hasBearer && !hasOAuth ? '⚠️ No credentials. Set Bearer Token atau OAuth 1.0a di dashboard.' :
            !hasBearer && hasOAuth ? '💡 OAuth 1.0a ready tapi Bearer Token lebih reliable untuk fetch. Tambahkan X_BEARER_TOKEN.' :
